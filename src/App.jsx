@@ -1,40 +1,14 @@
-import React, { useEffect, useState } from 'react';
-import { supabase } from './util/supabaseClient';
-import Auth from './components/Auth';
-import Courses from './components/Courses';
-import CourseDetail from './components/CoursesDetail';
+import { Routes, Route } from 'react-router-dom'
+import Success from './components/Success.jsx'
+import Home from './components/Home.jsx'
+import MyCourses from './components/MyCourses.jsx'
 
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  Navigate,
-} from 'react-router-dom';
-
-function App() {
-  const [session, setSession] = useState(null);
-
-  useEffect(() => {
-    setSession(supabase.auth.getSession());
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-    });
-    return () => listener.subscription.unsubscribe();
-  }, []);
-
+export default function App() {
   return (
-    <Router>
-      {!session?.data?.session ? (
-        <Auth />
-      ) : (
-        <Routes>
-          <Route path="/" element={<Courses />} />
-          <Route path="/course/:id" element={<CourseDetail />} />
-          <Route path="*" element={<Navigate to="/" />} />
-        </Routes>
-      )}
-    </Router>
-  );
+    <Routes>
+      <Route path='/' element={<Home />} />
+      <Route path='/success' element={<Success />} />
+      <Route path='/myCourses' element={<MyCourses></MyCourses>}></Route>
+    </Routes>
+  )
 }
-
-export default App;

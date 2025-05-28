@@ -1,42 +1,31 @@
-import { useEffect, useState } from "react"
-import { Link } from "react-router-dom";
+import { useEffect, useState } from 'react'
+import  supabase  from '../util/supabaseClient'
+import CourseCard from './CourseCard'
 
 export default function Courses() {
   const [courses, setCourses] = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetchCourses()
-  }, []);
-
-  async function fetchCourses(){
-    setLoading(true)
-    let {data, error} = await supabase.from('courses').select("*")
-    if (error) {
-      alert("Błąd przy pobieraniu kursów: " + error.message)
-    } else {
-      setCourses(data)
+    const fetchCourses = async () => {
+      const { data, error } = await supabase.from('courses').select('*')
+      if (!error) setCourses(data)
+      setLoading(false)
     }
-    setLoading(false)
-  }
 
-  if (loading) return <p>Ładowanie kursów...</p>;
+    fetchCourses()
+  }, [])
+
+  if (loading) return <p>Ładowanie kursów...</p>
 
   return (
-    <div>
-      <h1>Dostępne kursy</h1>
-
-      <ul>
+    <div className="max-w-4xl mx-auto py-10 px-4">
+      <h1 className="text-2xl font-bold mb-6">Dostępne kursy</h1>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
         {courses.map(course => (
-          <li key={course.id}>
-            <h2>{course.title}</h2>
-            <p>{course.description}</p>
-            <p>Cena: {(course.price / 100).toFixed(2)} zł</p>
-            <Link to={`/course/${course.id}`}>Zobacz kurs</Link>
-          </li>
+          <CourseCard key={course.id} course={course} />
         ))}
-      </ul>
+      </div>
     </div>
   )
 }
-
