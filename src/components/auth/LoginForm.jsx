@@ -38,23 +38,25 @@ export default function LoginForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-      <div>
-        <label className="block text-sm font-medium">Email</label>
+    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col justify-center items-center space-y-4 w-full h-fit">
+      <div className='w-full'>
+        <label className="block text-sm font-medium mb-2">Email</label>
         <input
           type="email"
           {...register('email')}
-          className="w-full p-2 border border-gray-300 rounded"
+          className="w-full p-2 border border-gray-300 rounded bg-gray-50 sm:bg-transparent"
+          placeholder='Wprowadź swój email'
         />
         {errors.email && <p className="text-red-500 text-sm">{errors.email.message}</p>}
       </div>
 
-      <div>
-        <label className="block text-sm font-medium">Hasło</label>
+      <div className='w-full'>
+        <label className="block text-sm font-medium mb-2">Hasło</label>
         <input
           type="password"
           {...register('password')}
-          className="w-full p-2 border border-gray-300 rounded"
+          className="w-full p-2 border border-gray-300 rounded bg-gray-50 sm:bg-transparent"
+          placeholder='Podaj swoje hasło'
         />
         {errors.password && <p className="text-red-500 text-sm">{errors.password.message}</p>}
       </div>
@@ -64,7 +66,7 @@ export default function LoginForm() {
       <button
         type="submit"
         disabled={loading}
-        className="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700 transition"
+        className="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700 transition mt-4"
       >
         {loading ? 'Logowanie...' : 'Zaloguj się'}
       </button>

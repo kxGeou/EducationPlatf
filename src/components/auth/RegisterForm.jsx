@@ -60,33 +60,33 @@ export default function RegisterForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 max-w-md mx-auto">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 w-full mx-auto">
       <div>
-        <label className="block text-sm font-medium">Email</label>
+        <label className="block text-sm font-medium mb-2">Email</label>
         <input
           type="email"
           {...register('email')}
-          className="w-full p-2 border border-gray-300 rounded"
+          className="w-full p-2 border border-gray-300 bg-gray-50 sm:bg-transparent rounded"
         />
         {errors.email && <p className="text-red-500 text-sm">{errors.email.message}</p>}
       </div>
 
       <div>
-        <label className="block text-sm font-medium">Hasło</label>
+        <label className="block text-sm font-medium mb-2">Hasło</label>
         <input
           type="password"
           {...register('password')}
-          className="w-full p-2 border border-gray-300 rounded"
+          className="w-full p-2 border border-gray-300 rounded bg-gray-50 sm:bg-transparent"
         />
         {errors.password && <p className="text-red-500 text-sm">{errors.password.message}</p>}
       </div>
 
       <div>
-        <label className="block text-sm font-medium">Imię i nazwisko</label>
+        <label className="block text-sm font-medium mb-2">Imię i nazwisko</label>
         <input
           type="text"
           {...register('full_name')}
-          className="w-full p-2 border border-gray-300 rounded"
+          className="w-full p-2 border border-gray-300 rounded bg-gray-50 sm:bg-transparent"
         />
         {errors.full_name && <p className="text-red-500 text-sm">{errors.full_name.message}</p>}
       </div>
@@ -97,7 +97,7 @@ export default function RegisterForm() {
       <button
         type="submit"
         disabled={loading}
-        className="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700 transition"
+        className="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700 transition mt-4"
       >
         {loading ? 'Rejestruję...' : 'Zarejestruj się'}
       </button>

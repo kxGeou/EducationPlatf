@@ -1,0 +1,19 @@
+.gradient-background {
+  background: linear-gradient(337deg,#a043f9,#43abf9,#f94357,#43eff9);
+  background-size: 150% 150%;
+  animation: gradient-animation 15s ease infinite;
+  clip-path: polygon(100% 0, 100% 35%, 0 100%, 0 0);
+}
+
+@keyframes gradient-animation {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
