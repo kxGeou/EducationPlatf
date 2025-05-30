@@ -9,9 +9,9 @@ function AuthPage() {
   return (
     <div className="w-screen h-screen flex flex-col items-center justify-center px-6">
 
-      <div className="gradient-background absolute top-0 left-0 w-full h-[55%] hidden sm:block"></div>
+      <div className="gradient-background absolute top-0 left-0 w-full h-[75%] hidden sm:block"></div>
 
-      <div className="flex flex-col justify-between items-center shadow-xl w-full max-w-[420px] px-6 py-12 h-[80%] rounded-lg z-50 bg-white">
+      <div className="flex flex-col justify-between items-center shadow-xl w-full max-w-[420px] px-6 py-12 h-[60%] rounded-lg z-50 bg-white">
           <div className="flex flex-col justify-between items-center mb-4 text-center">
             <h2 className="text-xl font-semibold">
               {mode === "login" ? "Witaj ponownie!" : "Zarejestruj się"}

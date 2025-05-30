@@ -1,19 +1,119 @@
 .gradient-background {
-  background: linear-gradient(337deg,#a043f9,#43abf9,#f94357,#43eff9);
-  background-size: 150% 150%;
-  animation: gradient-animation 15s ease infinite;
-  clip-path: polygon(100% 0, 100% 35%, 0 100%, 0 0);
-}
+  background: radial-gradient(
+      100% 100% at var(--21-x-position) var(--21-y-position),
+      #603edd -7%,
+      transparent
+    ),
+    radial-gradient(
+      100% 100% at var(--22-x-position) var(--22-y-position),
+      #4be2fa -26%,
+      transparent
+    ),
+    radial-gradient(
+      100% 100% at var(--23-x-position) var(--23-y-position),
+      #d72f5d 14%,
+      transparent
+    ),
+    radial-gradient(
+      100% 100% at var(--24-x-position) var(--24-y-position),
+      #36d739 0%,
+      transparent
+    ),
+    #1b253b;
+  animation-name: main;
+  animation-iteration-count: infinite;
+  clip-path: polygon(100% 0, 100% 45%, 0 95%, 0 0);
 
-@keyframes gradient-animation {
-  0% {
-    background-position: 0% 50%;
+  animation-duration: 6s;
+  transition-timing-function: ease-in;
+}
+@property --21-x-position {
+  syntax: "<percentage>";
+  inherits: false;
+  initial-value: 29.375%;
+}
+@property --21-y-position {
+  syntax: "<percentage>";
+  inherits: false;
+  initial-value: 6.562500000000002%;
+}
+@property --22-x-position {
+  syntax: "<percentage>";
+  inherits: false;
+  initial-value: 99.0234375%;
+}
+@property --22-y-position {
+  syntax: "<percentage>";
+  inherits: false;
+  initial-value: 6.328124999999998%;
+}
+@property --23-x-position {
+  syntax: "<percentage>";
+  inherits: false;
+  initial-value: 4.414062500000003%;
+}
+@property --23-y-position {
+  syntax: "<percentage>";
+  inherits: false;
+  initial-value: 95.4296875%;
+}
+@property --24-x-position {
+  syntax: "<percentage>";
+  inherits: false;
+  initial-value: 90.15625%;
+}
+@property --24-y-position {
+  syntax: "<percentage>";
+  inherits: false;
+  initial-value: 95.625%;
+}
+:root {
+  --9-x-position: 6.523437500000001%;
+  --9-y-position: 6.757812500000003%;
+  --10-x-position: 99.0234375%;
+  --10-y-position: 6.328124999999998%;
+  --11-x-position: 34.10156250000001%;
+  --11-y-position: 59.49218750000001%;
+  --13-x-position: 29.375%;
+  --13-y-position: 6.562500000000002%;
+  --14-x-position: 99.0234375%;
+  --14-y-position: 6.328124999999998%;
+  --15-x-position: 17.890625000000004%;
+  --15-y-position: 50.89843750000001%;
+  --16-x-position: 77.265625%;
+  --16-y-position: 53.24218750000001%;
+  --17-x-position: 29.375%;
+  --17-y-position: 6.562500000000002%;
+  --18-x-position: 99.0234375%;
+  --18-y-position: 6.328124999999998%;
+  --19-x-position: 4.414062500000003%;
+  --19-y-position: 95.4296875%;
+  --20-x-position: 77.265625%;
+  --20-y-position: 53.24218750000001%;
+  --21-x-position: 29.375%;
+  --21-y-position: 6.562500000000002%;
+  --22-x-position: 99.0234375%;
+  --22-y-position: 6.328124999999998%;
+  --23-x-position: 4.414062500000003%;
+  --23-y-position: 95.4296875%;
+  --24-x-position: 90.15625%;
+  --24-y-position: 95.625%;
+}
+@keyframes main {
+  25% {
+    --21-x-position: 15%;
+    --21-y-position: 15%;
+    --22-x-position: 85%;
+    --22-y-position: 80%;
   }
   50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
+    --21-x-position: 80%;
+    --21-y-position: 15%;
+    --22-x-position: 15%;
+    --22-y-position: 85%;
+    --23-x-position: 20%;
+    --23-y-position: 20%;
+    --24-x-position: 20%;
+    --24-y-position: 20%;
   }
 }
-
