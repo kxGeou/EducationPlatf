@@ -59,6 +59,12 @@ export default function MyCourses() {
           <li key={course.id} className="border p-4 my-2 rounded shadow">
             <h2 className="font-bold text-lg">{course.title}</h2>
             <p>{course.description}</p>
+            <button
+              onClick={() => navigate(`/course/${course.id}`)}
+              className="mt-3 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+            >
+              Przejdź do kursu
+            </button>
           </li>
         ))}
       </ul>
