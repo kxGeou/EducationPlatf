@@ -52,7 +52,7 @@ export default function MyCourses() {
   if (!courses.length) return <p>Nie masz jeszcze żadnych zakupionych kursów.</p>
 
   return (
-    <div>
+    <div >
       <h1>Twoje kursy</h1>
       <ul>
         {courses.map((course) => (
