@@ -13,6 +13,7 @@ export default function CoursePage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [accessDenied, setAccessDenied] = useState(false)
+  const [openSections, setOpenSections] = useState({})
 
   useEffect(() => {
     if (authLoading) return
@@ -23,46 +24,56 @@ export default function CoursePage() {
 
     const fetchCourse = async () => {
       setLoading(true)
-      const { data: userData, error: userError } = await supabase
+
+      const { data: userData } = await supabase
         .from('users')
         .select('purchased_courses')
         .eq('id', user.id)
         .single()
-      if (userError) {
-        setError(userError.message)
-        setLoading(false)
-        return
-      }
+
       if (!userData?.purchased_courses?.includes(id)) {
         setAccessDenied(true)
         setLoading(false)
         return
       }
 
-      const { data: courseData, error: courseError } = await supabase
+      const { data: courseData } = await supabase
         .from('courses')
         .select('id, title, description')
         .eq('id', id)
         .single()
-      if (courseError) {
-        setError(courseError.message)
-        setLoading(false)
-        return
-      }
+
       setCourse(courseData)
 
-      const { data: videosData, error: videosError } = await supabase
+      const { data: videosData } = await supabase
         .from('video_base')
-        .select('videoId, title, directUrl, course_id')
-        .eq('course_id', id) 
+        .select('videoId, title, directUrl, course_id, section_title, order')
+        .eq('course_id', id)
+        .order('section_title', { ascending: true })
+        .order('order', { ascending: true })
 
-      if (videosError) setError(videosError.message)
-      else setVideos(videosData)
+      setVideos(videosData)
       setLoading(false)
     }
-    
+
     fetchCourse()
   }, [id, user, authLoading, navigate])
+
+  const groupVideosBySection = (videos) => {
+    return videos.reduce((acc, video) => {
+      const section = video.section_title || 'Bez działu'
+      if (!acc[section]) acc[section] = []
+      acc[section].push(video)
+      return acc
+    }, {})
+  }
+
+  const toggleSection = (section) => {
+    setOpenSections((prev) => ({
+      ...prev,
+      [section]: !prev[section],
+    }))
+  }
 
   const HlsPlayer = ({ src, title }) => {
     const videoRef = useRef(null)
@@ -92,7 +103,6 @@ export default function CoursePage() {
         className="w-full h-full rounded bg-black"
         title={title}
         style={{ objectFit: 'contain', background: 'black' }}
-        poster=""
       />
     )
   }
@@ -102,18 +112,36 @@ export default function CoursePage() {
   if (accessDenied) return <p>Nie masz dostępu do tego kursu.</p>
   if (!course) return <p>Kurs nie znaleziony.</p>
 
+  const groupedVideos = groupVideosBySection(videos)
+
   return (
     <div className="p-4 w-full max-w-3xl mx-auto flex flex-col items-center">
       <h1 className="text-2xl font-bold mb-2 text-center">{course.title}</h1>
       <p className="mb-4 text-center">{course.description}</p>
       <h2 className="text-xl font-semibold mb-4">Wideo:</h2>
       {videos.length === 0 && <p>Brak wideo w tym kursie.</p>}
-      {videos.map(video => (
-        <div key={video.videoId} className="mb-8 w-full flex flex-col items-center">
-          <h3 className="font-medium mb-2 text-center">{video.title}</h3>
-          <div className="w-full max-w-2xl aspect-video">
-            <HlsPlayer src={video.directUrl} title={video.title} />
-          </div>
+
+      {Object.entries(groupedVideos).map(([section, vids]) => (
+        <div key={section} className="w-full mb-4 border rounded">
+          <button
+            onClick={() => toggleSection(section)}
+            className="w-full text-left px-4 py-2 bg-gray-100 hover:bg-gray-200 font-semibold text-lg"
+          >
+            {openSections[section] ? '▼' : '▶'} {section}
+          </button>
+
+          {openSections[section] && (
+            <div className="p-4 space-y-6">
+              {vids.map(video => (
+                <div key={video.videoId} className="w-full flex flex-col items-center">
+                  <h3 className="font-medium mb-2 text-center">{video.title}</h3>
+                  <div className="w-full max-w-2xl aspect-video">
+                    <HlsPlayer src={video.directUrl} title={video.title} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       ))}
     </div>

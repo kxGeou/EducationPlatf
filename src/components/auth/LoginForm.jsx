@@ -3,7 +3,7 @@ import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import  supabase  from '../../util/supabaseClient'
 import { useState } from 'react'
-
+import { useNavigate } from 'react-router-dom'
 const loginSchema = z.object({
   email: z.string().email({ message: 'Niepoprawny email' }),
   password: z.string().min(6, { message: 'Hasło musi mieć min. 6 znaków' }),
@@ -15,7 +15,7 @@ export default function LoginForm() {
     handleSubmit,
     formState: { errors },
   } = useForm({ resolver: zodResolver(loginSchema) })
-
+  const navigate = useNavigate()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -32,8 +32,9 @@ export default function LoginForm() {
 
     if (loginError) {
       setError(loginError.message)
+    } else {
+      navigate('/')
     }
-    console.log("wyszlo")
     setLoading(false)
   }
 

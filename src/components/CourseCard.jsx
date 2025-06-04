@@ -8,7 +8,7 @@ export default function CourseCard({ course }) {
 
   useEffect(() => {
     const checkIfBought = async () => {
-      if (!user) return; // nie sprawdzamy, jeśli user niezalogowany
+      if (!user) return; 
       const { data, error } = await supabase
         .from('users')
         .select('purchased_courses')
@@ -63,7 +63,7 @@ export default function CourseCard({ course }) {
   if (loading) return <p>Ładowanie...</p>;
 
   return (
-    <div className="border rounded-xl p-4 shadow-md flex flex-col justify-between">
+    <div className="border rounded-lg p-6 shadow-md flex flex-col justify-between bg-white">
       <div>
         <h2 className="text-xl font-semibold">{course.title}</h2>
         <p className="text-gray-600">{course.description}</p>

@@ -1,7 +1,6 @@
 import fs from "fs";
 import axios from "axios";
 
-// 🔧 UZUPEŁNIJ TE DANE:
 const API_KEY = "e756c694-0181-4cbe-84ce424bf2ca-65e8-4067";
 const LIBRARY_ID = "448959";
 
