@@ -1,7 +1,7 @@
 import Access from "/access.svg";
 import Excel from "/excel.svg";
 import Forms from "/forms.svg";
-import Vsc from "/vsc.svg";
+import Python from "/python.svg";
 import React from "react";
 
 function CourseListHero() {
@@ -11,7 +11,7 @@ function CourseListHero() {
       icon: Excel,
     },
     {
-      label: "Forms",
+      label: "Teoria",
       icon: Forms,
     },
     {
@@ -19,16 +19,16 @@ function CourseListHero() {
       icon: Access,
     },
     {
-      label: "VS code",
-      icon: Vsc,
+      label: "Python",
+      icon: Python,
     },
   ];
 
   return (
-    <section className="grid grid-cols-2 grid-rows-2 w-full gap-4  px-4">
+    <section className="grid grid-cols-2 grid-rows-2 w-full gap-4  px-6">
         {courses.map((courses, index) => (
             <div key={index} className="bg-gray-100/50 border border-gray-200 rounded-lg flex justify-center items-center py-2 gap-2 flex-col transition-all hover:bg-gray-300/30 cursor-pointer">
-                <img src={courses.icon} alt="#" />
+                <img src={courses.icon} alt="#" className="w-10"/>
                 <p>{courses.label}</p>
             </div>
         ))}
