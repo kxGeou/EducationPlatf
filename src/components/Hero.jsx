@@ -4,7 +4,7 @@ function Hero() {
   return (
     <div className="flex flex-col gap-5 z-10 w-full px-6 mt-8">
       <div className="flex flex-col gap-10">
-        <h2 className="font-bold text-4xl leading-[40px] text-black">
+        <h2 className="font-bold text-4xl leading-[40px] text-blackText">
           Lorem ipsum dolor sit amet consectetur adipisicing elit
         </h2>
 
@@ -21,7 +21,7 @@ function Hero() {
           placeholder="Adres Email"
           className="focus:outline-0 placeholder:text-sm"
         />
-        <button className="flex items-center gap-2 text-white bg-[#1a1a1c] px-6 py-2 rounded-full cursor-pointer text-sm transition-all hover:bg-[#272629]">
+        <button className="flex items-center gap-2 text-white bg-blackText px-6 py-2 rounded-full cursor-pointer text-sm transition-all hover:bg-[#272629]">
           Wyślij
           <ArrowRight size={14}></ArrowRight>
         </button>

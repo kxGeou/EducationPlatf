@@ -63,29 +63,32 @@ export default function CourseCard({ course }) {
   if (loading) return <p>Ładowanie...</p>;
 
   return (
-    <div className="border rounded-lg p-6 shadow-md flex flex-col justify-between bg-white">
-      <div>
-        <h2 className="text-xl font-semibold">{course.title}</h2>
-        <p className="text-gray-600">{course.description}</p>
+    <div className="border border-gray-300 flex flex-col items-start pb-4 cursor-pointer rounded-lg "
+            onClick={handleBuy}
+    >
+       <img src="react2.png" alt="mockup image" className='max-h-35 w-full rounded-t-lg mb-3'/>
+      <div className='px-2 flex flex-col'>
+        <h2 className="text-lg font-semibold text-blackText">{course.title}</h2>
+        <p className="text-blackText/50 text-sm">{course.description}</p>
       </div>
-      <div className="mt-4 flex items-center justify-between">
-        <span className="text-lg font-bold">
-          {(course.price_cents ? course.price_cents : course.price) + ' zł'}
+      <div className="flex flex-col items-start gap-1 w-full px-2 mt-3">
+        <span className="flex gap-2 items-center">
+          <p className='text-lg text-blackText'>{(course.price_cents ? course.price_cents : course.price) + ' zł'}</p>
+          <p className='text-md text-blackText/50 line-through'>220 zł</p>
         </span>
         {user && alreadyBought ? (
-          <button
+          <span
             disabled
-            className="bg-gray-400 text-white px-4 py-2 rounded cursor-not-allowed"
+            className="text-green-300 text-sm"
           >
-            Kurs kupiony
-          </button>
+            Posiadasz ten kurs
+          </span>
         ) : (
-          <button
-            onClick={handleBuy}
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          <span
+            className="text-red-300 text-sm transition-all rounded"
           >
-            Kup teraz
-          </button>
+            Nie posiadasz tego kursu
+          </span>
         )}
       </div>
     </div>

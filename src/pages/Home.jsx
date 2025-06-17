@@ -4,8 +4,11 @@ import "./AuthPage.css";
 import CourseListHero from "../components/CourseListHero";
 import Hero from "../components/Hero";
 import About from "../components/About";
-import Interactive from '../components/Interactive'
+import Interactive from '../components/Interactive/Interactive'
 import { BookMarked } from "lucide-react";
+import Courses from "../components/Courses";
+import AboutPlatform from "../components/AboutPlatform";
+import Reviews from "../components/Reviews";
 
 function App() {
   return (
@@ -19,6 +22,9 @@ function App() {
       <CourseListHero></CourseListHero>
       <About></About>
       <Interactive></Interactive>
+      <Courses></Courses>
+      <AboutPlatform></AboutPlatform>
+      <Reviews></Reviews>
     </main>
   );
 }
