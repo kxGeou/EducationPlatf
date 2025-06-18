@@ -6,5 +6,6 @@ body {
 
 @theme {
     --color-darkBlue : #00285E;
-    --color-blackText: #0D0C14;
+    --color-darkerBlack: #0D0C14;
+    --color-blackText: #0a2540;
 }

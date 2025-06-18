@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",
+    "@react-three/fiber": "^9.1.2",
     "@stripe/stripe-js": "^7.3.0",
     "@supabase/auth-helpers-react": "^0.5.0",
     "@supabase/auth-ui-react": "^0.4.7",
@@ -27,6 +28,7 @@
     "react-hook-form": "^7.56.4",
     "react-router-dom": "^7.6.1",
     "tailwindcss": "^4.1.7",
+    "three": "^0.177.0",
     "ui": "github:shadcn/ui",
     "zod": "^3.25.30"
   },
