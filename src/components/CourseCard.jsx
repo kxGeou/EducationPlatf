@@ -63,10 +63,10 @@ export default function CourseCard({ course }) {
   if (loading) return <p>Ładowanie...</p>;
 
   return (
-    <div className="border border-gray-300 flex flex-col items-start pb-4 cursor-pointer rounded-lg "
+    <div className="border border-gray-300 flex flex-col items-start pb-4 cursor-pointer rounded-lg"
             onClick={handleBuy}
     >
-       <img src="react2.png" alt="mockup image" className='max-h-35 w-full rounded-t-lg mb-3'/>
+       <img src="react2.png" alt="mockup image" className='max-h-45 w-full rounded-t-lg mb-3'/>
       <div className='px-2 flex flex-col'>
         <h2 className="text-lg font-semibold text-blackText">{course.title}</h2>
         <p className="text-blackText/50 text-sm">{course.description}</p>

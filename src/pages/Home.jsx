@@ -9,26 +9,57 @@ import { BookMarked } from "lucide-react";
 import Courses from "../components/Courses";
 import AboutPlatform from "../components/AboutPlatform";
 import Reviews from "../components/Reviews";
-
+import '../components/Interactive/Interactive.css'
+import Footer from "../components/Footer";
 function App() {
   return (
-    <div className="flex items-center justify-center relative">
+    <main className="flex flex-col items-center justify-center relative">
       
-      <main className="flex flex-col items-center justify-start w-full max-w-[1100px] min-h-screen bg-white">
-      <div className="gradient-background gradient-hero absolute top-0 left-0 w-full h-[10%] md:h-[15%]"></div>
+      <div className="flex flex-col items-center justify-start w-full max-w-[1100px] min-h-screen ">
+      <div className="gradient-background gradient-hero absolute top-0 left-0 w-full h-[10%] lg:h-[17%] md:h-[15%]"></div>
       <Header></Header>
       <Hero></Hero>
       <p className="flex gap-2 items-center w-full px-6 mt-14 mb-5 opacity-50 lg:hidden">
         <BookMarked size={18}></BookMarked>Dostępne kursy
       </p>
       <CourseListHero></CourseListHero>
+      
       <About></About>
-      <Interactive></Interactive>
+      </div>
+      <div className="flex flex-col items-center justify-start w-full bg-darkBlue banner mt-26">
+      <div className="flex w-full max-w-[1100px]">
+        <Interactive></Interactive>
+      </div>
+      </div>
+      
+      
+      <div className="flex flex-col items-center justify-start w-full max-w-[1100px]">
+
       <Courses></Courses>
-      <AboutPlatform></AboutPlatform>
+
+
+      
+      </div>
+
+      <div className="flex flex-col items-center justify-start w-full bg-blue-100/50 mt-26">
+      <div className="flex w-full max-w-[1100px]">
+       <AboutPlatform></AboutPlatform>
+       
+      </div>
+      </div>
+
+
       <Reviews></Reviews>
-      </main>
-    </div>
+
+      <div className="flex flex-col items-center justify-start w-full bg-white border-t border-gray-300 mt-26">
+      <div className="flex w-full max-w-[1100px]">
+       <Footer></Footer>
+       
+      </div>
+      </div>
+
+
+    </main>
   );
 }
 

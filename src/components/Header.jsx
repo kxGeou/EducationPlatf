@@ -1,11 +1,12 @@
 import { User, Menu, XIcon } from "lucide-react";
 import { useState } from "react";
 import useWindowWith from '../hooks/useWindowWidth';
+import { useNavigate } from "react-router-dom";
 
 function Header() {
   const [visibleModal, setVisibleModal] = useState(false);
   const width = useWindowWith();
-
+  const navigate = useNavigate();
   function toggleModal() {
 
     if (width > 800 ) {
@@ -20,7 +21,7 @@ function Header() {
       <div className="bg-white h-8 w-8 mr-6"></div>
       {width < 800 ?
       <div
-        className={`absolute  right-5 bg-white/30 border border-white/20 flex flex-col justify-center items-start rounded-lg  py-1 px-3 ${visibleModal ? "py-4 px-5 backdrop-blur-sm bg-white/10 text-left w-full max-w-[15rem]" : null}`}
+        className={`absolute  right-5 bg-white/30 border border-white/20 flex flex-col justify-center items-start rounded-lg  py-1 px-3 ${visibleModal ? "py-4 px-5 backdrop-blur-sm text-left w-full max-w-[15rem]" : null}`}
       >
         <div className="flex w-full items-center justify-end">
         {visibleModal ? <XIcon onClick={() => toggleModal()} className="text-white cursor-pointer "></XIcon> : <Menu onClick={() => toggleModal()} className="text-white cursor-pointer"></Menu>} 
@@ -43,7 +44,7 @@ function Header() {
             <li className="transition-all hover:text-white/75 cursor-pointer">Opinie</li>
           </ul>
 
-          <span className=" flex gap-2 text-white items-center justify-end font-semibold w-40 ">Zaloguj się <User size={18}></User></span>
+          <span className=" flex gap-2 text-white items-center justify-end font-semibold w-40 cursor-pointer transition-all hover:text-white/75" onClick={()=> navigate('/login-register')}>Zaloguj się <User size={18}></User></span>
         </div>
     }
       

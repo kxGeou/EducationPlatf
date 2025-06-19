@@ -43,15 +43,17 @@ function Reviews() {
     ]
 
   return (
-    <section className='px-6 flex flex-col justify-start mt-16'>
-        <h2 className='flex gap-2 items-center opacity-50 mb-6'><Star size={17}></Star>Opinie</h2>
-        <ul className='flex flex-col gap-6'>
+    <section className='px-6 flex flex-col justify-start items-center  mt-26 max-w-[1100px] '>
+        <div className='w-full'>
+            <h2 className='flex gap-2 items-center opacity-50 mb-6'><Star size={17}></Star>Opinie</h2>
+        </div>
+        <ul className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
             {reviews.map((r, index) => (
                 <Review user={r.user} description={r.description} key={index}></Review>
             ))}
         </ul>
 
-        <button className='cursor-pointer w-full bg-darkBlue text-white py-2 rounded mt-8'>Więcej opini..</button>
+        <button className='cursor-pointer w-full bg-darkBlue  text-white py-2 rounded-lg mt-8 max-w-[50%] transition-all hover:bg-darkBlue/90 md:mt-12'>Więcej opini..</button>
     </section>
   )
 }
