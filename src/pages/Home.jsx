@@ -11,6 +11,7 @@ import AboutPlatform from "../components/AboutPlatform";
 import Reviews from "../components/Reviews";
 import '../components/Interactive/Interactive.css'
 import Footer from "../components/Footer";
+import StripeHero from "../components/StripeHero";
 function App() {
   return (
     <main className="flex flex-col items-center justify-center relative">
@@ -50,7 +51,7 @@ function App() {
 
 
       <Reviews></Reviews>
-
+      <StripeHero></StripeHero>
       <div className="flex flex-col items-center justify-start w-full bg-white border-t border-gray-300 mt-26">
       <div className="flex w-full max-w-[1100px]">
        <Footer></Footer>
