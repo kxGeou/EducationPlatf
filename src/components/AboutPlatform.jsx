@@ -1,6 +1,6 @@
 function AboutPlatform() {
   return (
-    <section className="w-full px-6 flex flex-col py-8 md:flex-row md:justify-between md:gap-20">
+    <section className="w-full px-6 flex flex-col py-16 md:flex-row md:justify-between md:gap-20">
         <div className="bg-blackText w-full h-35 md:w-[50%] md:h-70 rounded flex justify-center items-center text-white">
             <p>Prototyp</p>
         </div>

@@ -1,29 +1,29 @@
 import { useEffect, useRef, useState } from "react";
-
+import { Wrench, Bot, Cable, Settings } from "lucide-react";
 const features = [
   {
-    icon: "🛠️",
+    icon: <Wrench className="text-3xl mb-2"></Wrench>,
     title: "Use Stripe wour stack",
     description: "We support development across languages—from React and PHP to .NET and iOS.",
     link: "See libraries »",
     href: "#",
   },
   {
-    icon: "🤖",
+    icon: <Bot className="text-3xl mb-2"></Bot>,
     title: "Build AI agents",
     description: "Create agents that can manage customer actions like payments and refunds.",
     link: "View docs »",
     href: "#",
   },
   {
-    icon: "🔌",
+    icon: <Cable className="text-3xl mb-2"></Cable>,
     title: "Explore pre-built integrations",
     description: "Connect to over a hundred third-party tools — Zoho, Salesforce and more.",
     link: "Browse app Marketplace »",
     href: "#",
   },
   {
-    icon: "⚙️",
+    icon: <Settings className="text-3xl mb-2"></Settings>,
     title: "Build on Stripe Apps",
     description: "Discover new developer products and tools for your business.",
     link: "Learn more »",
@@ -32,8 +32,8 @@ const features = [
 ];
 
 const FeatureCard = ({ icon, title, description, link, href }) => (
-  <div>
-    <div className="text-3xl mb-2">{icon}</div>
+  <div className="flex flex-col items-start justify-end">
+    {icon}
     <h3 className="font-bold text-lg mb-1">{title}</h3>
     <p className="text-blue-100 text-sm">{description}</p>
     <a href={href} className="text-green-300 text-sm mt-2 inline-block">
@@ -88,7 +88,7 @@ export default function StripeHero() {
   }, [charIndex, lineIndex, startTyping]);
 
   return (
-    <div ref={ref} className="bg-gradient-to-br from-blue-800 to-indigo-900 text-white w-full mt-26 py-12">
+    <div ref={ref} className="bg-gradient-to-br from-darkBlue to-indigo-900 text-white w-full mt-26 pt-12">
       <div className="flex flex-col md:flex-row justify-between max-w-[1100px] px-6 mx-auto items-center gap-12">
         <div className="w-full md:mb-12">
           <p className="text-green-300 text-sm font-medium">Designed for developers</p>

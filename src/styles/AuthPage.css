@@ -1,22 +1,22 @@
 .gradient-background {
   background: radial-gradient(
       100% 100% at var(--21-x-position) var(--21-y-position),
-      #603edd -7%,
+      #fb2a5b -7%,
       transparent
     ),
     radial-gradient(
       100% 100% at var(--22-x-position) var(--22-y-position),
-      #4be2fa -26%,
+      #8c20ff -26%,
       transparent
     ),
     radial-gradient(
       100% 100% at var(--23-x-position) var(--23-y-position),
-      #d72f5d 14%,
+      #e1ff36 14%,
       transparent
     ),
     radial-gradient(
       100% 100% at var(--24-x-position) var(--24-y-position),
-      #36d739 0%,
+      #3336ff 0%,
       transparent
     ),
     #1b253b;
@@ -33,7 +33,7 @@
 }
 @media(min-width: 800px) {
   .gradient-hero{
-    clip-path: polygon(100% 0, 100% 55%, 0 90%, 0 0);
+    clip-path: polygon(100% 0, 100% 55%, 0 100%, 0 0);
   }
 }
 

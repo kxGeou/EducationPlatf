@@ -2,7 +2,7 @@ import LoginForm from "../components/auth/LoginForm.jsx";
 import RegisterForm from "../components/auth/RegisterForm.jsx";
 import React from "react";
 import { useState } from "react";
-import "./AuthPage.css";
+import "../styles/AuthPage.css";
 
 function AuthPage() {
   const [mode, setMode] = useState("login");

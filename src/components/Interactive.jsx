@@ -1,5 +1,5 @@
 import React from 'react'
-import './Interactive.css'
+import '../styles/Interactive.css'
 
 function Stats({Title, Description}) {
   return (
