@@ -63,15 +63,15 @@ export default function CourseCard({ course }) {
   if (loading) return <p>Ładowanie...</p>;
 
   return (
-    <div className="border border-gray-300 flex flex-col items-start pb-4 cursor-pointer rounded-lg"
+    <div className="border border-gray-300 flex flex-col items-start pb-4 cursor-pointer rounded-xl"
             onClick={handleBuy}
     >
-       <img src="react2.png" alt="mockup image" className='max-h-45 w-full rounded-t-lg mb-3'/>
-      <div className='px-2 flex flex-col'>
-        <h2 className="text-lg font-semibold text-blackText">{course.title}</h2>
+       <img src="react2.png" alt="mockup image" className='max-h-50 w-full rounded-t-xl mb-3'/>
+      <div className='px-4 flex flex-col'>
+        <h2 className="text-xl font-semibold text-blackText">{course.title}</h2>
         <p className="text-blackText/50 text-sm">{course.description}</p>
       </div>
-      <div className="flex flex-col items-start gap-1 w-full px-2 mt-3">
+      <div className="flex flex-col items-start gap-1 w-full px-4 mt-3">
         <span className="flex gap-2 items-center">
           <p className='text-lg text-blackText'>{(course.price_cents ? course.price_cents : course.price) + ' zł'}</p>
           <p className='text-md text-blackText/50 line-through'>220 zł</p>

@@ -21,7 +21,7 @@ export default function Courses() {
   return (
     <div className="flex flex-col w-full px-6 mt-26">
       <h2 className='mb-6 flex gap-2 items-center opacity-50'><ShoppingBag size={16}></ShoppingBag>Kursy do zakupu</h2>
-      <div className="grid grid-col-1 md:grid-cols-2 gap-8">
+      <div className="grid grid-col-1 md:grid-cols-2 gap-10">
         {courses.map(course => (
           <CourseCard key={course.id} course={course} />
         ))}
