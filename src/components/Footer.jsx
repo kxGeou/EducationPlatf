@@ -1,8 +1,8 @@
 import { Facebook, Instagram, Mail } from "lucide-react";
 
-function Footer() {
+function Footer({padding}) {
     return (
-        <footer className="w-full text-black py-10 px-6">
+        <footer className={`w-full text-black py-10 ${padding}`}>
             <div className="max-w-[1100px] mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
                 
                 <div>
