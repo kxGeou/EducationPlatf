@@ -1,21 +1,26 @@
-import Userwelcome from './Userwelcome'
 import CourseList from './CourseList'
 import { useAuth } from '../../context/AuthContext'
 import Footer from '../Footer'
 import Header from '../Header'
 import UserHeader from './userHeader'
+import UserData from './UserData'
+import { useState } from 'react'
 export default function MyCourses() {
+  const [userDataModal, setUserDataModal] = useState(false)
   return (
-    <div className='flex justify-center'>
-      <div className='w-full max-w-[1100px]'>
-        <div className='h-screen'>
-<UserHeader></UserHeader>
-        <Userwelcome></Userwelcome>
+    <div className='flex justify-center bg-slate-200 relative'>
+      <div className='w-full'>
+        <div className='min-h-screen'>
+        <UserHeader userDataModal={userDataModal} setUserDataModal={setUserDataModal}></UserHeader>
         <CourseList></CourseList>
         </div>
-        
-        <Footer padding={"px-4"}></Footer>
+        <hr className='mt-26 text-gray-400' />
+        <Footer padding={""}></Footer>
       </div>
+
+      {userDataModal &&
+        <UserData userDataModal={userDataModal} setUserDataModal={setUserDataModal}></UserData>
+      }
     </div>
   
   )

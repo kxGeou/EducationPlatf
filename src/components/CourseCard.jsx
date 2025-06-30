@@ -63,7 +63,7 @@ export default function CourseCard({ course }) {
   if (loading) return <p>Ładowanie...</p>;
 
   return (
-    <div className="border border-gray-300 flex flex-col items-start pb-4 cursor-pointer rounded-xl"
+    <div className="shadow-lg transiton-all duration-400 hover:shadow-xl hover:scale-102 flex flex-col items-start pb-4 cursor-pointer rounded-xl"
             onClick={handleBuy}
     >
        <img src="react2.png" alt="mockup image" className='max-h-50 w-full rounded-t-xl mb-3'/>

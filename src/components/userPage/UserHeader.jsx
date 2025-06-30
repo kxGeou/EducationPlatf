@@ -1,45 +1,49 @@
-import { Menu, X } from "lucide-react";
 import useWindowWidth from "../../hooks/useWindowWidth";
-import React, { useState } from "react";
+import supabase from "../../util/supabaseClient";
+import Avatar from "boring-avatars";
+import { User } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
-function UserHeader() {
+function userHeader({ userDataModal, setUserDataModal }) {
+  const [userEmail, setUserEmail] = useState("userName");
   const width = useWindowWidth();
-  const [showHeader, setShowHeader] = useState(false);
+  const navigate = useNavigate();
+  const fetchUser = async () => {
+    const { data, error } = await supabase.auth.getUser();
+    if (error) {
+      console.log("Error fatching user", error);
+      return;
+    }
+    setUserEmail(data.user.user_metadata.full_name);
+  };
+
+  useEffect(() => {
+    fetchUser();
+  }, []);
 
   return (
-    <div className="px-4 py-4 md:mt-4 flex justify-between relative overflow-x-hidden text-blackText ">
-      <div className="w-6 h-6 bg-blue-500"></div>
-      {width < 600 ? (
-        <div className="relative z-50">
-          {showHeader ? (
-            <X size={26} className="cursor-pointer" onClick={() => setShowHeader(false)} />
-          ) : (
-            <Menu size={26} className="cursor-pointer" onClick={() => setShowHeader(true)} />
-          )}
-
-          <div
-            className={`fixed top-0 right-0 h-full w-2/3 max-w-xs bg-slate-200 shadow-lg px-6 py-6 transition-transform duration-300 ease-in-out border-l border-slate-300
-            ${showHeader ? "translate-x-0" : "translate-x-full"}`}
-          >
-            <ul className="flex flex-col gap-4 pt-10 relative">
-              <X size={26} className="cursor-pointer absolute top-0 right-0" onClick={() => setShowHeader(false)} />
-              <li className="cursor-pointer opacity-75 transition-all hover:opacity-100">Strona główna</li>
-              <li className="cursor-pointer opacity-75 transition-all hover:opacity-100">Profil</li>
-              <li className="cursor-pointer opacity-75 transition-all hover:opacity-100">Wyloguj się</li>
-            </ul>
-          </div>
-
-          
+    <header className="bg-white border-b border-gray-300 w-full flex justify-center py-3">
+      <div className="w-full max-w-[1600px] flex justify-between items-center px-6 lg:px-0">
+        <div className="flex items-center gap-4">
+          <p className="cursor-pointer font-semibold" onClick={()=> navigate("/")}>Strona główna</p>
         </div>
-      ) : (
-        <div className="w-full flex gap-8 justify-end ">
-                <p className="cursor-pointer opacity-75 transition-all hover:opacity-100">Strona główna</p>
-              <p className="cursor-pointer opacity-75 transition-all hover:opacity-100">Profil</p>
-              <p className="cursor-pointer opacity-75 transition-all hover:opacity-100">Wyloguj się</p>
+        <div onClick={() => setUserDataModal(!userDataModal)} className="cursor-pointer">
+          <p className="flex gap-2 items-center">
+
+            <span className="opacity-75">{userEmail}</span>
+            
+            <Avatar
+              name="Mary Edwards"
+              colors={["#0056d6", "#669c35", "#ffffff", "#74a7fe", "#cce8b5"]}
+              variant="beam"
+              size={30}
+            />
+          </p>
         </div>
-      )}
-    </div>
+      </div>
+    </header>
   );
 }
 
-export default UserHeader;
+export default userHeader;
