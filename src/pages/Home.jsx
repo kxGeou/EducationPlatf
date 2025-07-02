@@ -1,17 +1,17 @@
-import Header from "../components/Header";
+import Header from "../components/homepage/Header";
 import { useState } from "react";
 import "../styles/AuthPage.css";
-import CourseListHero from "../components/CourseListHero";
-import Hero from "../components/Hero";
-import About from "../components/About";
-import Interactive from '../components/Interactive'
+import CourseListHero from "../components/homepage/CourseListHero";
+import Hero from "../components//homepage/Hero";
+import About from "../components/homepage/About";
+import Interactive from '../components/homepage/Interactive'
 import { BookMarked } from "lucide-react";
-import Courses from "../components/Courses";
-import AboutPlatform from "../components/AboutPlatform";
-import Reviews from "../components/Reviews";
+import Courses from "../components/homepage/Courses";
+import AboutPlatform from "../components/homepage/AboutPlatform";
+import Reviews from "../components/homepage/Reviews";
 import '../styles/Interactive.css'
-import Footer from "../components/Footer";
-import StripeHero from "../components/StripeHero";
+import Footer from "../components/homepage/Footer";
+import StripeHero from "../components/homepage/StripeHero";
 
 function App() {
 

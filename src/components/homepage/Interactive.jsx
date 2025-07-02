@@ -1,5 +1,8 @@
 import React from 'react'
-import '../styles/Interactive.css'
+import '../../styles/Interactive.css'
+import Heading2 from '../typography/Heading2'
+import SectionHeading from '../typography/SectionHeading'
+import Description from '../typography/Description'
 
 function Stats({Title, Description}) {
   return (
@@ -22,11 +25,11 @@ function Interactive() {
   ]
 
   return (
-      <section className='bg-darkBlue text-white py-4 pb-12 w-full px-6 '>
-        <h2 className='mt-16 text-blue-400'>Lorem, ipsum.</h2>
+      <section className='bg-darkBlue text-white py-16 pb-12 w-full px-6 '>
+        <SectionHeading textColor={"text-primaryGreen"}>Lorem, ipsum.</SectionHeading>
         <div className='mt-8 flex flex-col gap-4 md:w-full md:max-w-[400px]'>
-          <h3 className='text-2xl font-semibold w-full md:text-4xl'>Lorem ipsum dolor sit ipsum</h3>
-          <p className='opacity-75'>Lorem ipsum dolor sit amet consectetur adipisicing elit. Veniam cumque molestiae veritatis nisi facilis vitae corporis amet maxime, vel animi!</p>
+          <Heading2 margin={"mb-2"} textColor={"text-white"}>Lorem ipsum dolor sit ipsum</Heading2>
+          <Description textColor={"text-white"}>Lorem ipsum dolor sit amet consectetur adipisicing elit. Veniam cumque molestiae veritatis nisi facilis vitae corporis amet maxime, vel animi!</Description>
         </div>
 
           <ul className='flex flex-col gap-6 mt-12 md:flex-row '>

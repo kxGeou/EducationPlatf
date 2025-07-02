@@ -3,11 +3,11 @@ import { Star } from 'lucide-react'
 function Review({user, description}) {
     const i = 5;
     return(
-        <div className='w-full border border-gray-300 rounded p-4 flex flex-col gap-2'>
+        <div className='w-full shadow-lg rounded-[12px] p-5 flex flex-col gap-2'>
             <div className='flex gap-3 items-center'>
-                <span className='w-10 h-10 bg-darkBlue rounded-full'></span>
+                <span className='w-12 h-12 bg-darkBlue rounded-full'></span>
                 <div>
-                    <p>{user}</p>
+                    <p className='text-lg'>{user}</p>
                     <div className='flex gap-1'>
                     <Star size={20}></Star>
                     <Star size={20} ></Star>
@@ -19,7 +19,7 @@ function Review({user, description}) {
             </div>
          
 
-            <p className='text-sm mt-2 opacity-75'>{description}</p>
+            <p className=' mt-2 opacity-75'>{description}</p>
         </div>
     )
 }
@@ -53,7 +53,7 @@ function Reviews() {
             ))}
         </ul>
 
-        <button className='cursor-pointer w-full bg-darkBlue  text-white py-2 rounded-lg mt-8 max-w-[50%] transition-all hover:bg-darkBlue/90 md:mt-12'>Więcej opini..</button>
+        <button className='cursor-pointer w-full bg-darkBlue  text-white py-2 rounded-[12px] mt-8 max-w-[50%] transition-all hover:bg-darkBlue/90 md:mt-12'>Więcej opini..</button>
     </section>
   )
 }

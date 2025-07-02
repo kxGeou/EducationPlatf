@@ -8,7 +8,6 @@ export const AuthProvider = ({ children }) => {
   const [purchasedCourses, setPurchasedCourses] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-
   useEffect(() => {
     const getSessionAndUserData = async () => {
       setLoading(true)

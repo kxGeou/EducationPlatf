@@ -1,7 +1,7 @@
 import { Routes, Route } from 'react-router-dom'
-import Success from './components/Success.jsx'
+import Success from './components/userPage/Success.jsx';
 import Home from './pages/Home.jsx'
-import MyCourses from './components/userPage/MyCourses.jsx'
+import MyCourses from './pages/MyCourses.jsx'
 import AuthPage from './pages/AuthPage.jsx'
 import CoursePage from './pages/CoursePage.jsx' 
 

@@ -1,22 +1,22 @@
 .gradient-background {
   background: radial-gradient(
       100% 100% at var(--21-x-position) var(--21-y-position),
-      #fb2a5b -7%,
+      #2b2685 -7%,
       transparent
     ),
     radial-gradient(
       100% 100% at var(--22-x-position) var(--22-y-position),
-      #8c20ff -26%,
+       #41df95 -26%,
       transparent
     ),
     radial-gradient(
       100% 100% at var(--23-x-position) var(--23-y-position),
-      #e1ff36 14%,
+      #0d4dad 14%,
       transparent
     ),
     radial-gradient(
       100% 100% at var(--24-x-position) var(--24-y-position),
-      #3336ff 0%,
+      #41df6e 0%,
       transparent
     ),
     #1b253b;

@@ -1,12 +1,12 @@
-import useWindowWith from "../hooks/useWindowWidth";
-import supabase from "../util/supabaseClient";
+import useWindowWidth from "../../hooks/useWindowWidth";
+import supabase from "../../util/supabaseClient";
 import { ChevronRight, Menu, XIcon } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 function Header() {
   const [visibleModal, setVisibleModal] = useState(false);
-  const width = useWindowWith();
+  const width = useWindowWidth();
   const navigate = useNavigate();
   const [userEmail, setUserEmail] = useState("");
   const fetchUser = async () => {

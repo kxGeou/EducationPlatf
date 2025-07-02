@@ -2,6 +2,7 @@ import { useAuth } from "../../context/AuthContext";
 import { useCourses } from "../../hooks/useCourses";
 import { useNavigate } from "react-router-dom";
 import {useState} from 'react'
+import YouTubeEmbed from "react-youtube-embed";
 function CourseList() {
   const { user, loading: authLoading } = useAuth();
   const { courses, loading: coursesLoading, error } = useCourses();
@@ -17,7 +18,7 @@ function CourseList() {
   }
 
   if (!user) {
-    navigate("/login");
+    navigate("/");
     return null;
   }
 
@@ -30,6 +31,50 @@ function CourseList() {
     Łatwy: "bg-[#3b9c4e] text-white",
     Średni: "bg-[#f5d32c] text-black/75",
   };
+ 
+  const videoResources = [
+    {
+      id: "xTtL8E4LzTQ",
+      title : "Kurs Java dla początkujących",
+      description: "Wszystkie przydatne inforamcje są zawarte w tym kursie"
+    },
+    {
+      id: "xTtL8E4LzTQ",
+      title : "Kurs Java dla początkujących",
+      description: "Wszystkie przydatne inforamcje są zawarte w tym kursie"
+    },
+    {
+      id: "xTtL8E4LzTQ",
+      title : "Kurs Java dla początkujących",
+      description: "Wszystkie przydatne inforamcje są zawarte w tym kursie"
+    },
+    {
+      id: "xTtL8E4LzTQ",
+      title : "Kurs Java dla początkujących",
+      description: "Wszystkie przydatne inforamcje są zawarte w tym kursie"
+    },
+    {
+      id: "xTtL8E4LzTQ",
+      title : "Kurs Java dla początkujących",
+      description: "Wszystkie przydatne inforamcje są zawarte w tym kursie"
+    },
+  ]
+
+  const ResourceVideo = ({videoID, videoTitle, videoDescription}) => {
+    return (
+      <div className="w-full max-w-[350px] bg-white rounded-xl shadow-lg transition-all duration-400 hover:scale-103">
+        <div>
+          <YouTubeEmbed id={videoID}></YouTubeEmbed>
+        </div>
+
+        <div className="px-4 py-6">
+          <p className="font-bold text-lg ">{videoTitle}</p>
+          <span className="text-md opacity-50">{videoDescription}</span>
+        </div>
+      </div>
+    )
+  }
+
 
   return (
     <div className="flex flex-col items-center mt-8 ">
@@ -44,13 +89,13 @@ function CourseList() {
       {pageChange ? 
       <ul className="w-full max-w-[1100px] flex flex-col gap-16">
         {courses.map((course) => (
-          <div className="flex justify-between items-center" key={course.id}>
-            <div className="flex flex-col items-start gap-3 w-[50%]">
+          <div className="flex justify-center md:justify-between items-center px-6" key={course.id}>
+            <div className="md:flex flex-col items-start gap-3 w-[50%] hidden">
               <h3 className="font-bold text-4xl">{course.section_title}</h3>
               <p className="text-md opacity-75">{course.section_description}</p>
             </div>
             <li
-              className="my-2 w-full max-w-[400px] shadow-lg cursor-pointer transiton-all duration-400 hover:scale-102 hover:shadow-xl rounded-xl h-fit pb-4 bg-white"
+              className="my-2  w-full max-w-[400px] shadow-lg cursor-pointer transiton-all duration-400 hover:scale-102 hover:shadow-xl rounded-xl h-fit pb-4 bg-white"
               onClick={() => navigate(`/course/${course.id}`)}
             >
               <img
@@ -81,7 +126,11 @@ function CourseList() {
         ))}
       </ul>
       : 
-      <>qwe</>
+      <div className=" w-full max-w-[1100px] grid grid-cols-3 gap-8">
+       {videoResources.map((video,index) => (
+        <ResourceVideo key={index} videoID={video.id} videoDescription={video.description} videoTitle={video.title}></ResourceVideo>
+       ))}
+      </div>
       }
       
     </div>

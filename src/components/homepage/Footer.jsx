@@ -17,10 +17,10 @@ function Footer({padding}) {
                     <h3 className="text-xl font-semibold mb-2">Social Media</h3>
                     <div className="flex flex-col gap-1 text-sm">
                         <p className="flex gap-2 items-center opacity-50 cursor-pointer transition-all hover:opacity-100">
-                            <Instagram size={15} /> MaturaIT
+                            <Instagram size={15} /> IT
                         </p>
                         <p className="flex gap-2 items-center opacity-50 cursor-pointer transition-all hover:opacity-100">
-                            <Facebook size={15} /> MaturaIT
+                            <Facebook size={15} /> IT
                         </p>
                     </div>
                 </div>

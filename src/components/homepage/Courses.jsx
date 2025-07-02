@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import  supabase  from '../util/supabaseClient'
+import  supabase  from '../../util/supabaseClient'
 import CourseCard from './CourseCard'
 import { ShoppingBag } from 'lucide-react'
 export default function Courses() {

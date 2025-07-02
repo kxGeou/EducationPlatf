@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Wrench, Bot, Cable, Settings } from "lucide-react";
+import Heading2 from "../typography/Heading2";
+import SectionHeading from "../typography/SectionHeading";
 const features = [
   {
     icon: <Wrench className="text-3xl mb-2"></Wrench>,
@@ -91,10 +93,10 @@ export default function StripeHero() {
     <div ref={ref} className="bg-gradient-to-br from-darkBlue to-indigo-900 text-white w-full mt-26 pt-12">
       <div className="flex flex-col md:flex-row justify-between max-w-[1100px] px-6 mx-auto items-center gap-12">
         <div className="w-full md:mb-12">
-          <p className="text-green-300 text-sm font-medium">Designed for developers</p>
-          <h1 className="text-3xl md:text-5xl font-bold my-4 leading-tight">
+          <SectionHeading textColor={"text-green-500"}>Designed for developers</SectionHeading>
+          <Heading2 margin={"mb-2"} textColor={"text-white"}>
             Ship faster with powerful and easy-to-use APIs
-          </h1>
+          </Heading2>
           <p className="text-blue-100 mb-6 w-full max-w-[500px]">
             Save engineering time with unified payments functionality. We obsess over the maze of
             gateways, payments reils, and financial lostitutions that make up the global economic

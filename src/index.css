@@ -8,4 +8,8 @@ body {
     --color-darkBlue : #00285E;
     --color-darkerBlack: #0D0C14;
     --color-blackText: #0a2540;
+    --color-primaryBlue: #00498a;
+    --color-secondaryBlue: #006aa7;
+    --color-primaryGreen: #17d19b;
+    --color-secondaryGreen: #00bfaf;
 }

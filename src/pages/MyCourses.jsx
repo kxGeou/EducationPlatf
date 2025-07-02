@@ -1,9 +1,8 @@
-import CourseList from './CourseList'
-import { useAuth } from '../../context/AuthContext'
-import Footer from '../Footer'
-import Header from '../Header'
-import UserHeader from './userHeader'
-import UserData from './UserData'
+import CourseList from '../components/userPage/CourseList'
+import { useAuth } from '../context/AuthContext'
+import Footer from '../components/homepage/Footer'
+import UserHeader from '../components/userPage/userHeader'
+import UserData from '../components/userPage/UserData'
 import { useState } from 'react'
 export default function MyCourses() {
   const [userDataModal, setUserDataModal] = useState(false)

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { useAuth } from '../context/AuthContext';
-import supabase from '../util/supabaseClient';
+import { useAuth } from '../../context/AuthContext';
+import supabase from '../../util/supabaseClient';
 
 export default function CourseCard({ course }) {
   const { user, loading } = useAuth();
@@ -63,10 +63,10 @@ export default function CourseCard({ course }) {
   if (loading) return <p>Ładowanie...</p>;
 
   return (
-    <div className="shadow-lg transiton-all duration-400 hover:shadow-xl hover:scale-102 flex flex-col items-start pb-4 cursor-pointer rounded-xl"
+    <div className="shadow-lg transiton-all duration-400 hover:shadow-xl hover:scale-102 flex flex-col items-start pb-4 cursor-pointer rounded-[12px]"
             onClick={handleBuy}
     >
-       <img src="react2.png" alt="mockup image" className='max-h-50 w-full rounded-t-xl mb-3'/>
+       <img src="react2.png" alt="mockup image" className='max-h-50 w-full rounded-t-[12px] mb-3'/>
       <div className='px-4 flex flex-col'>
         <h2 className="text-xl font-semibold text-blackText">{course.title}</h2>
         <p className="text-blackText/50 text-sm">{course.description}</p>
@@ -85,7 +85,7 @@ export default function CourseCard({ course }) {
           </span>
         ) : (
           <span
-            className="text-red-300 text-sm transition-all rounded"
+            className="text-red-300 text-sm transition-all rounded-[12px]"
           >
             Nie posiadasz tego kursu
           </span>

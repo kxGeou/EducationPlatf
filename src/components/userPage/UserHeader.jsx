@@ -23,7 +23,7 @@ function userHeader({ userDataModal, setUserDataModal }) {
   }, []);
 
   return (
-    <header className="bg-white border-b border-gray-300 w-full flex justify-center py-3">
+    <header className="bg-white border-b border-gray-300 w-full flex justify-center py-3 px-6">
       <div className="w-full max-w-[1600px] flex justify-between items-center px-6 lg:px-0">
         <div className="flex items-center gap-4">
           <p className="cursor-pointer font-semibold" onClick={()=> navigate("/")}>Strona główna</p>
