@@ -71,7 +71,7 @@ function UserData({ userDataModal, setUserDataModal }) {
                   </p>
                  
 
-                 <button onClick={() => logout()} className='bg-red-400 text-white  w-fit px-4 py-2 rounded-lg'>Wyloguj się</button>
+                 <button onClick={() => logout()} className='bg-red-400 mt-4 cursor-pointer text-white  w-fit px-4 py-2 rounded-lg'>Wyloguj się</button>
                   </div>
                   
                   

@@ -3,6 +3,7 @@ import { useCourses } from "../../hooks/useCourses";
 import { useNavigate } from "react-router-dom";
 import {useState} from 'react'
 import YouTubeEmbed from "react-youtube-embed";
+import BlogList from "./BlogList";
 function CourseList() {
   const { user, loading: authLoading } = useAuth();
   const { courses, loading: coursesLoading, error } = useCourses();
@@ -77,7 +78,7 @@ function CourseList() {
 
 
   return (
-    <div className="flex flex-col items-center mt-8 ">
+    <div className="flex flex-col items-center mt-8">
       <div className="mb-10 flex justify-between items-center w-full max-w-[300px] font-semibold">
         <p className={`w-[50%] border border-gray-300 py-2 flex justify-center ${pageChange? "bg-white" : "bg-transparent"} cursor-pointer`} onClick={()=> setPageChange(true)} >
           📚 Twoje Kursy
@@ -86,6 +87,11 @@ function CourseList() {
           🗂️ Zasoby
         </p>
       </div>
+    <div className="flex justify-between w-full">
+      <BlogList></BlogList>
+      <div className="flex flex-col items-center lg:w-[75%]">
+      
+
       {pageChange ? 
       <ul className="w-full max-w-[1100px] flex flex-col gap-16">
         {courses.map((course) => (
@@ -126,14 +132,15 @@ function CourseList() {
         ))}
       </ul>
       : 
-      <div className=" w-full max-w-[1100px] grid grid-cols-3 gap-8">
+      <div className=" w-full max-w-[1100px] px-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 place-items-center gap-8">
        {videoResources.map((video,index) => (
         <ResourceVideo key={index} videoID={video.id} videoDescription={video.description} videoTitle={video.title}></ResourceVideo>
        ))}
       </div>
       }
-      
+      </div>
     </div>
+</div>
   );
 }
 

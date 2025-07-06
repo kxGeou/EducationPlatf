@@ -27,6 +27,8 @@ function Header() {
   useEffect(() => {
     fetchUser();
   }, []);
+
+
   return (
     <header className="relative flex justify-between w-full item-scenter py-6 px-6 z-100">
       <div className="bg-white h-8 w-8 mr-6"></div>

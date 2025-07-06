@@ -1,7 +1,7 @@
 import CourseList from '../components/userPage/CourseList'
 import { useAuth } from '../context/AuthContext'
 import Footer from '../components/homepage/Footer'
-import UserHeader from '../components/userPage/userHeader'
+import UserHeader from '../components/userPage/UserHeader'
 import UserData from '../components/userPage/UserData'
 import { useState } from 'react'
 export default function MyCourses() {
