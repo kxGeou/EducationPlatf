@@ -90,7 +90,7 @@ function Header() {
           {userEmail ? (
               <span
                 className=" flex gap-2 text-white items-center justify-end font-semibold w-40 cursor-pointer transition-all hover:text-white/75"
-                onClick={() => navigate("/myCourses")}
+                onClick={() => navigate("/user_page")}
               >
                 {userEmail}
               </span>
@@ -98,7 +98,7 @@ function Header() {
           
               <span
               className=" flex gap-2 text-white items-center justify-end font-semibold w-40 cursor-pointer transition-all hover:text-white/75"
-              onClick={() => navigate("/login-register")}
+              onClick={() => navigate("/user_page")}
             >
               Zaloguj się <ChevronRight size={18}></ChevronRight>
             </span>

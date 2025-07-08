@@ -1,11 +1,13 @@
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
-import  supabase  from '../../util/supabaseClient'
+import supabase from '../../util/supabaseClient'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { toast } from 'react-hot-toast'
+
 const loginSchema = z.object({
-  email: z.string().email({ message: 'Niepoprawny email' }),
+  email: z.string().email({ message: 'Niepoprawny adres email' }),
   password: z.string().min(6, { message: 'Hasło musi mieć min. 6 znaków' }),
 })
 
@@ -13,56 +15,80 @@ export default function LoginForm() {
   const {
     register,
     handleSubmit,
+    trigger,
+    getValues,
     formState: { errors },
   } = useForm({ resolver: zodResolver(loginSchema) })
+
   const navigate = useNavigate()
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
 
-  const onSubmit = async (data) => {
-    setLoading(true)
-    setError('')
+ const onSubmit = async () => {
+  const valid = await trigger()
+  if (!valid) {
+    const values = getValues()
+    const validationResult = loginSchema.safeParse(values)
+    if (!validationResult.success) {
+      validationResult.error.errors.forEach((err) => {
+        toast.error(err.message)
+      })
+    }
+    return
+  }
 
-    const { email, password } = data
+  setLoading(true)
+  const { email, password } = getValues()
 
+  try {
     const { error: loginError } = await supabase.auth.signInWithPassword({
       email,
       password,
     })
 
     if (loginError) {
-      setError(loginError.message)
-    } else {
-      navigate('/')
+      if (
+        loginError.message.toLowerCase().includes('invalid login credentials') ||
+        loginError.message.toLowerCase().includes('invalid') ||
+        loginError.status === 400
+      ) {
+        toast.error('Nieprawidłowy email lub hasło.')
+      } else {
+        toast.error(`Błąd logowania: ${loginError.message}`)
+      }
+      return 
     }
+
+    toast.success('Zalogowano pomyślnie!')
+    navigate('/')
+  } catch {
+    toast.error('Wystąpił nieoczekiwany błąd. Spróbuj ponownie później.')
+  } finally {
     setLoading(false)
   }
+}
+
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col justify-center items-center space-y-4 w-full h-fit">
-      <div className='w-full'>
+    <form onSubmit={(e) => { e.preventDefault(); onSubmit() }} className="flex flex-col justify-center items-center space-y-4 w-full h-fit">
+      <div className="w-full">
         <label className="block text-sm font-medium mb-2">Email</label>
         <input
           type="email"
           {...register('email')}
           className="w-full p-2 border border-gray-300 rounded bg-gray-50 sm:bg-transparent"
-          placeholder='Wprowadź swój email'
+          placeholder="Wprowadź swój email"
         />
-        {errors.email && <p className="text-red-500 text-sm">{errors.email.message}</p>}
       </div>
 
-      <div className='w-full'>
+      <div className="w-full">
         <label className="block text-sm font-medium mb-2">Hasło</label>
         <input
           type="password"
           {...register('password')}
           className="w-full p-2 border border-gray-300 rounded bg-gray-50 sm:bg-transparent"
-          placeholder='Podaj swoje hasło'
+          placeholder="Podaj swoje hasło"
         />
-        {errors.password && <p className="text-red-500 text-sm">{errors.password.message}</p>}
       </div>
-
-      {error && <p className="text-red-600 text-sm">{error}</p>}
 
       <button
         type="submit"

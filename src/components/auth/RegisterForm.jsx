@@ -1,8 +1,10 @@
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import supabase  from '../../util/supabaseClient'
+import supabase from '../../util/supabaseClient'
 import { useState } from 'react'
+import { toast } from 'react-hot-toast'
+import { useNavigate } from 'react-router-dom'
 
 const registerSchema = z.object({
   email: z.string().email({ message: 'Niepoprawny email' }),
@@ -14,53 +16,69 @@ export default function RegisterForm() {
   const {
     register,
     handleSubmit,
+    trigger,
+    getValues,
     formState: { errors },
-  } = useForm({
-    resolver: zodResolver(registerSchema),
-  })
-
+  } = useForm({ resolver: zodResolver(registerSchema) })
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-  const [success, setSuccess] = useState(false)
 
-  const onSubmit = async (data) => {
+  const onSubmit = async () => {
+    const isValid = await trigger()
+    if (!isValid) {
+      const result = registerSchema.safeParse(getValues())
+      if (!result.success) {
+        result.error.errors.forEach((err) => toast.error(err.message))
+      }
+      return
+    }
+
     setLoading(true)
-    setError('')
-    setSuccess(false)
 
-    const { email, password, full_name } = data
+    const { email, password, full_name } = getValues()
 
-    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          full_name,
+    try {
+      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: { full_name },
         },
-      },
-    })
+      })
 
-    if (signUpError) {
-    setError(signUpError.message)
-    } else {
-    const userId = signUpData.user?.id
+      if (signUpError) {
+        if (signUpError.message.toLowerCase().includes('user already registered')) {
+          toast.error('Użytkownik o tym adresie już istnieje.')
+        } else {
+          toast.error(`Błąd rejestracji: ${signUpError.message}`)
+        }
+        return
+      }
 
-    if (userId) {
+      const userId = signUpData.user?.id
+
+      if (userId) {
         const { error: insertError } = await supabase
-        .from('users')
-        .insert([{ id: userId, full_name, avatar_url: '' }])
+          .from('users')
+          .insert([{ id: userId, full_name, avatar_url: '' }])
 
         if (insertError) {
-        setError('Rejestracja powiodła się, ale wystąpił problem z zapisaniem użytkownika.')
-        } else {
-        setSuccess(true)
+          toast.error('Rejestracja powiodła się, ale wystąpił błąd przy zapisie danych.')
+          return
         }
-    }
+      }
+
+      toast.success('Rejestracja zakończona! Sprawdź maila, aby potwierdzić konto.')
+      navigate('/authentication')
+    } catch (err) {
+      toast.error('Wystąpił nieoczekiwany błąd. Spróbuj ponownie później.')
+    } finally {
+      setLoading(false)
     }
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 w-full mx-auto">
+    <form onSubmit={(e) => { e.preventDefault(); onSubmit() }} className="space-y-4 w-full mx-auto">
       <div>
         <label className="block text-sm font-medium mb-2">Email</label>
         <input
@@ -68,7 +86,6 @@ export default function RegisterForm() {
           {...register('email')}
           className="w-full p-2 border border-gray-300 bg-gray-50 sm:bg-transparent rounded"
         />
-        {errors.email && <p className="text-red-500 text-sm">{errors.email.message}</p>}
       </div>
 
       <div>
@@ -78,7 +95,6 @@ export default function RegisterForm() {
           {...register('password')}
           className="w-full p-2 border border-gray-300 rounded bg-gray-50 sm:bg-transparent"
         />
-        {errors.password && <p className="text-red-500 text-sm">{errors.password.message}</p>}
       </div>
 
       <div>
@@ -88,11 +104,7 @@ export default function RegisterForm() {
           {...register('full_name')}
           className="w-full p-2 border border-gray-300 rounded bg-gray-50 sm:bg-transparent"
         />
-        {errors.full_name && <p className="text-red-500 text-sm">{errors.full_name.message}</p>}
       </div>
-
-      {error && <p className="text-red-600 text-sm">{error}</p>}
-      {success && <p className="text-green-600 text-sm">Rejestracja zakończona sukcesem! Sprawdź maila, aby potwierdzić konto.</p>}
 
       <button
         type="submit"

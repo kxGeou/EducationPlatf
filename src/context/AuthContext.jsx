@@ -8,29 +8,43 @@ export const AuthProvider = ({ children }) => {
   const [purchasedCourses, setPurchasedCourses] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+
   useEffect(() => {
-    const getSessionAndUserData = async () => {
+    const fetchUserData = async (session) => {
+      const currentUser = session?.user ?? null
+      setUser(currentUser)
+
+      if (currentUser) {
+        const { data, error } = await supabase
+          .from('users')
+          .select('purchased_courses')
+          .eq('id', currentUser.id)
+          .single()
+
+        if (error) {
+          setError(error.message)
+          setPurchasedCourses(null)
+        } else {
+          setPurchasedCourses(data.purchased_courses)
+        }
+      } else {
+        setPurchasedCourses(null)
+      }
+    }
+
+    const getSession = async () => {
       setLoading(true)
       try {
         const {
           data: { session },
+          error,
         } = await supabase.auth.getSession()
 
-        const currentUser = session?.user ?? null
-        setUser(currentUser)
-
-        if (currentUser) {
-          const { data, error } = await supabase
-            .from('users')
-            .select('purchased_courses')
-            .eq('id', currentUser.id)
-            .single()
-
-          if (error) throw error
-
-          setPurchasedCourses(data.purchased_courses)
+        if (error) throw error
+        if (!session) {
+          await logout() // session expired or doesn't exist
         } else {
-          setPurchasedCourses(null)
+          await fetchUserData(session)
         }
       } catch (err) {
         setError(err.message)
@@ -39,34 +53,19 @@ export const AuthProvider = ({ children }) => {
       }
     }
 
-    getSessionAndUserData()
+    getSession()
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      const currentUser = session?.user ?? null
-      setUser(currentUser)
-
-      if (currentUser) {
-        supabase
-          .from('users')
-          .select('purchased_courses')
-          .eq('id', currentUser.id)
-          .single()
-          .then(({ data, error }) => {
-            if (error) {
-              setError(error.message)
-              setPurchasedCourses(null)
-            } else {
-              setPurchasedCourses(data.purchased_courses)
-            }
-          })
+    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session && session.user) {
+        await fetchUserData(session)
       } else {
-        setPurchasedCourses(null)
+        await logout() 
       }
     })
 
-    return () => subscription.unsubscribe()
+    return () => {
+      authListener?.subscription?.unsubscribe?.()
+    }
   }, [])
 
   const logout = async () => {

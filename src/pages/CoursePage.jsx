@@ -21,7 +21,7 @@ export default function CoursePage() {
   useEffect(() => {
     if (authLoading) return;
     if (!user) {
-      navigate("/login-register");
+      navigate("/authentication");
       return;
     }
 

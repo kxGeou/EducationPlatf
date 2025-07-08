@@ -24,7 +24,7 @@ function BlogList() {
         <h2 className='flex gap-2 items-center text-lg mb-4 text-primaryBlue'>Materiały pomocnicze <FileQuestion size={20}></FileQuestion></h2>
         <ul className='flex flex-col gap-3'>
             {nav.map((n, index) => (
-                <li onClick={() => navigate(n.direct)} className={`text-md  transition-all hover:text-primaryBlue cursor-pointer hover:translate-x-1`} key={index}><ChevronRight size={17}></ChevronRight>{n.title}</li>
+                <li onClick={() => navigate(n.direct)} className={`text-md flex items-center gap-1 transition-all hover:text-primaryBlue cursor-pointer hover:translate-x-1`} key={index}><ChevronRight size={17}></ChevronRight>{n.title}</li>
             ))}
         </ul>
     </div>
