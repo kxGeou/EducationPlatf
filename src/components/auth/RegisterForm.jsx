@@ -59,8 +59,14 @@ export default function RegisterForm() {
 
       if (userId) {
         const { error: insertError } = await supabase
-          .from('users')
-          .insert([{ id: userId, full_name, avatar_url: '' }])
+        .from('users')
+        .insert([{
+          id: userId,
+          full_name,
+          avatar_url: '',
+          purchased_courses: []
+        }])
+
 
         if (insertError) {
           toast.error('Rejestracja powiodła się, ale wystąpił błąd przy zapisie danych.')

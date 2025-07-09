@@ -35,43 +35,35 @@ function CourseList() {
  
   const videoResources = [
     {
-      id: "xTtL8E4LzTQ",
       title : "Kurs Java dla początkujących",
       description: "Wszystkie przydatne inforamcje są zawarte w tym kursie"
     },
     {
-      id: "xTtL8E4LzTQ",
       title : "Kurs Java dla początkujących",
       description: "Wszystkie przydatne inforamcje są zawarte w tym kursie"
     },
     {
-      id: "xTtL8E4LzTQ",
       title : "Kurs Java dla początkujących",
       description: "Wszystkie przydatne inforamcje są zawarte w tym kursie"
     },
     {
-      id: "xTtL8E4LzTQ",
       title : "Kurs Java dla początkujących",
       description: "Wszystkie przydatne inforamcje są zawarte w tym kursie"
     },
     {
-      id: "xTtL8E4LzTQ",
       title : "Kurs Java dla początkujących",
       description: "Wszystkie przydatne inforamcje są zawarte w tym kursie"
     },
   ]
 
-  const ResourceVideo = ({videoID, videoTitle, videoDescription}) => {
+  const ResourceVideo = ({ videoTitle, videoDescription}) => {
     return (
-      <div className="w-full max-w-[350px] bg-white rounded-xl shadow-lg transition-all duration-400 hover:scale-103">
-        <div>
-          <YouTubeEmbed id={videoID}></YouTubeEmbed>
-        </div>
-
+      <div className="w-full max-w-[350px]  bg-white rounded-xl shadow-lg transition-all duration-400 hover:scale-103">
         <div className="px-4 py-6">
           <p className="font-bold text-lg ">{videoTitle}</p>
           <span className="text-md opacity-50">{videoDescription}</span>
         </div>
+
       </div>
     )
   }
@@ -134,7 +126,7 @@ function CourseList() {
       : 
       <div className=" w-full max-w-[1100px] px-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 place-items-center gap-8">
        {videoResources.map((video,index) => (
-        <ResourceVideo key={index} videoID={video.id} videoDescription={video.description} videoTitle={video.title}></ResourceVideo>
+        <ResourceVideo key={index} videoDescription={video.description} videoTitle={video.title}></ResourceVideo>
        ))}
       </div>
       }

@@ -1,7 +1,8 @@
 import { useEffect } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import supabase from '../../util/supabaseClient'
-
+import { Cog } from 'lucide-react'
+import toast from 'react-hot-toast'
 export default function Success() {
   const [params] = useSearchParams()
   const navigate = useNavigate()
@@ -16,7 +17,7 @@ export default function Success() {
       } = await supabase.auth.getSession()
 
       if (!session) {
-        alert('Musisz być zalogowany.')
+        toast.error('Musisz być zalogowany.')
         navigate('/')
         return
       }
@@ -35,15 +36,18 @@ export default function Success() {
 
       const data = await res.json()
       if (res.ok && data.success) {
-        alert('Zakup zapisany! Kurs został dodany do Twojego konta.')
+        toast.success('Zakup zapisany! Kurs został dodany do Twojego konta.')
         navigate('/')
       } else {
-        alert('Błąd podczas zapisu płatności: ' + (data.error || ''))
+        toast.error('Błąd podczas zapisu płatności: ' + (data.error || ''))
       }
     }
 
     confirmPayment()
   }, [])
 
-  return <p>Przetwarzanie zakupu...</p>
+  return <div className='flex flex-col w-full h-screen items-center justify-center'>
+    <p className="text-primaryBlue">Przetwarzanie zakupu...</p>
+    <img src='./loading.svg' className='w-30'></img>
+  </div>
 }

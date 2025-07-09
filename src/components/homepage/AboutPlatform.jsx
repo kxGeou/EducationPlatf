@@ -19,7 +19,7 @@ function AboutPlatform() {
             velit minus quia ab?
           </Description>
         </div>
-        <button className="mt-6 w-full bg-darkBlue text-white py-2 md:py-3 rounded-[12px] cursor-pointer">
+        <button className="mt-6 w-full bg-gradient-to-r to-primaryBlue from-darkBlue text-white py-2 md:py-3 rounded-[12px] cursor-pointer">
           Kup Kurs
         </button>
       </div>

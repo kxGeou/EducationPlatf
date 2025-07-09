@@ -24,7 +24,7 @@ export default function Courses() {
         Kursy do zakupu
       </h2>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {loading ? (
           Array.from({ length: 4 }).map((_, i) => (
             <div
