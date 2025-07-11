@@ -5,6 +5,7 @@ import MyCourses from './pages/MyCourses.jsx'
 import AuthPage from './pages/AuthPage.jsx'
 import CoursePage from './pages/CoursePage.jsx' 
 import { Toaster } from 'react-hot-toast';
+import CourseLandingPage from './pages/CourseLandingPage.jsx';
 export default function App() {
   return (
     <>
@@ -15,6 +16,7 @@ export default function App() {
         <Route path='/success' element={<Success />} />
         <Route path='/user_page' element={<MyCourses />} />
         <Route path='/course/:id' element={<CoursePage />} />  
+        <Route path="/kurs/:id" element={<CourseLandingPage />} />
       </Routes>
     </>
     
