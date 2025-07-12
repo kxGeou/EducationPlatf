@@ -18,18 +18,10 @@ function LandingHeader() {
     }
 
   return (
-    <div className='w-full shadow-lg px-2 py-3 flex justify-center'>
+    <div className='w-full px-4 py-3 flex justify-center md:py-4'>
         <header className='flex justify-between items-center w-full max-w-[1100px]'>
             <div className='bg-primaryBlue w-6 h-6'></div>
-            
-            {width > 800 ?
-            <ul className='flex items-center gap-4'>
-                <li>qwe</li>
-                <User size={20} onClick={() => UserNavigateHandle()}></User>
-            </ul>
-            :
-            <Menu size={32}></Menu>
-            }
+                <User size={22} className='transiton-all duration-300 cursor-pointer hover:text-primaryBlue' onClick={() => UserNavigateHandle()}></User>
         </header>
     </div>
   )

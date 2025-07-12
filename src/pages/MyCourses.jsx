@@ -27,7 +27,6 @@ export default function MyCourses() {
         <UserHeader userDataModal={userDataModal} setUserDataModal={setUserDataModal}></UserHeader>
         <CourseList></CourseList>
         </div>
-        <hr className='mt-26 text-gray-400' />
         <Footer padding={""}></Footer>
       </div>
 
