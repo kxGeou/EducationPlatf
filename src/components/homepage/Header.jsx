@@ -67,6 +67,22 @@ function Header() {
               <p className="transition-all hover:text-blue-600 cursor-pointer">
                 Opinie
               </p>
+               {userEmail ? (
+              <span
+                className=" flex gap-2 text-white items-center justify-end font-semibold w-40 cursor-pointer transition-all hover:text-white/75"
+                onClick={() => navigate("/user_page")}
+              >
+                {userEmail}
+              </span>
+          ) : (
+          
+              <span
+              className=" flex gap-2 text-white items-center justify-end font-semibold w-40 cursor-pointer transition-all hover:text-white/75"
+              onClick={() => navigate("/user_page")}
+            >
+              Zaloguj się <ChevronRight size={18}></ChevronRight>
+            </span>
+          )}
             </div>
           ) : null}
         </div>
@@ -85,6 +101,7 @@ function Header() {
             <li className="transition-all hover:text-white/75 cursor-pointer">
               Opinie
             </li>
+           
           </ul>
 
           {userEmail ? (
