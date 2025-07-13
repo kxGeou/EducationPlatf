@@ -4,6 +4,8 @@ import { useNavigate } from "react-router-dom";
 import {useState} from 'react'
 import YouTubeEmbed from "react-youtube-embed";
 import BlogList from "./BlogList";
+import Loading from "../systemLayouts/Loading";
+import Error from "../systemLayouts/Error";
 function CourseList() {
   const { user, loading: authLoading } = useAuth();
   const { courses, loading: coursesLoading, error } = useCourses();
@@ -12,9 +14,7 @@ function CourseList() {
 
   if (authLoading || coursesLoading) {
     return (
-      <div className="w-full h-screen flex justify-center items-center bg-slate-200">
-        <img src="./loading.svg" alt="loading animation" className="w-30" />
-      </div>
+      <Loading></Loading>
     );
   }
 
@@ -23,7 +23,7 @@ function CourseList() {
     return null;
   }
 
-  if (error) return <p>Błąd: {error}</p>;
+  if (error) return <Error></Error>;
 
   if (!courses.length) return <p>Nie masz żadnych kursów.</p>;
 

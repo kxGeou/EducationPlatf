@@ -26,17 +26,7 @@ function Hero() {
         </div>
       </div>
 
-      <div className=" mt-2 flex bg-gray-100 pl-4 border border-gray-400/30 rounded-full py-[3px] w-fit pr-1">
-        <input
-          type="text"
-          placeholder="Adres Email"
-          className="focus:outline-0 placeholder:text-sm"
-        />
-        <button className="flex  items-center gap-2 text-white bg-blackText px-3 py-2 h-full rounded-full cursor-pointer text-sm transition-all hover:bg-[#272629]">
-          Wyślij
-          <ArrowRight size={14}></ArrowRight>
-        </button>
-      </div>
+    
     </div>
   );
 }

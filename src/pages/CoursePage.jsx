@@ -4,7 +4,8 @@ import supabase from "../util/supabaseClient";
 import Hls from "hls.js";
 import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-
+import Loading from '../components/systemLayouts/Loading';
+import Error from '../components/systemLayouts/Error';
 export default function CoursePage() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -111,10 +112,10 @@ export default function CoursePage() {
     );
   };
 
-  if (authLoading || loading) return <p className="p-6">Ładowanie...</p>;
+  if (authLoading || loading) return <Loading></Loading>;
   if (accessDenied)
-    return <p className="p-6 text-red-600">Nie masz dostępu do tego kursu.</p>;
-  if (!course) return <p className="p-6 text-red-600">Kurs nie znaleziony.</p>;
+    return <Error></Error>;
+  if (!course) return <Error></Error>;
   if (videos.length === 0)
     return <p className="p-6">Brak wideo w tym kursie.</p>;
 

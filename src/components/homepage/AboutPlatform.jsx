@@ -3,7 +3,7 @@ import Heading2 from "../typography/Heading2";
 
 function AboutPlatform() {
   return (
-    <section className="w-full px-6 flex flex-col py-16 md:flex-row md:justify-between md:gap-20 items-center">
+    <section className="w-full px-6 flex flex-col py-16 md:flex-row md:justify-between md:gap-20 lg:items-center">
       <div className="bg-blackText w-full h-35 md:w-[50%] md:h-70 rounded-[12px] flex justify-center items-center text-white">
         <p>Prototyp</p>
       </div>

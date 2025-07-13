@@ -6,6 +6,9 @@ import AuthPage from './pages/AuthPage.jsx'
 import CoursePage from './pages/CoursePage.jsx' 
 import { Toaster } from 'react-hot-toast';
 import CourseLandingPage from './pages/CourseLandingPage.jsx';
+import Loading from './components/systemLayouts/Loading.jsx';
+import Error from './components/systemLayouts/Error.jsx';
+import WrongPage from './components/systemLayouts/WrongPage.jsx';
 export default function App() {
   return (
     <>
@@ -17,6 +20,9 @@ export default function App() {
         <Route path='/user_page' element={<MyCourses />} />
         <Route path='/course/:id' element={<CoursePage />} />  
         <Route path="/kurs/:id" element={<CourseLandingPage />} />
+        <Route path='/loading' element={<Loading></Loading>} />
+        <Route path='/error' element={<Error></Error>} />
+        <Route path='/*' element={<WrongPage></WrongPage>} />
       </Routes>
     </>
     
