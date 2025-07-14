@@ -5,7 +5,7 @@ import { ArrowRight } from "lucide-react";
 function Hero() {
   const width = useWindowWidth();
   return (
-    <div className="flex flex-col gap-5 z-10 w-full px-6 mt-16">
+    <div className="flex flex-col gap-5 z-8 w-full px-6 mt-26">
       <div className="flex items-center justify-between gap-20">
         <div className="flex flex-col gap-6 lg:gap-10">
           <h2

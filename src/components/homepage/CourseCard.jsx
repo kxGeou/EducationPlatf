@@ -23,12 +23,12 @@ export default function CourseCard({ course }) {
         Zobacz szczegóły <Lightbulb size={15} />
       </div>
 
-      <div className="px-4 flex flex-col z-10">
+      <div className="px-4 flex flex-col ">
         <h2 className="text-xl font-semibold text-blackText">{course.title}</h2>
         <p className="text-blackText/50 text-sm">{course.description}</p>
       </div>
 
-      <div className="flex flex-col items-start gap-1 w-full px-4 mt-3 z-10">
+      <div className="flex flex-col items-start gap-1 w-full px-4 mt-3">
         <span className="flex gap-2 items-center">
           <p className="text-lg text-blackText">
             {(course.price_cents ? course.price_cents : course.price) + ' zł'}

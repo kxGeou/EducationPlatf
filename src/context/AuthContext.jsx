@@ -42,7 +42,7 @@ export const AuthProvider = ({ children }) => {
 
         if (error) throw error
         if (!session) {
-          await logout() // session expired or doesn't exist
+          await logout() 
         } else {
           await fetchUserData(session)
         }
