@@ -1,4 +1,3 @@
-import Header from "../components/homepage/Header";
 import { useState } from "react";
 import "../styles/AuthPage.css";
 import CourseListHero from "../components/homepage/CourseListHero";
@@ -25,7 +24,6 @@ function App() {
 
       <div className="gradient-background gradient-hero absolute top-0 w-full h-[35rem]"></div>
 
-      {/* <Header></Header> */}
       <div className="relative flex items-center justify-center z-10 w-full max-w-[1100px] px-6">
        <RedHeader></RedHeader>
       </div>

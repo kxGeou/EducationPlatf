@@ -35,7 +35,7 @@ function RedHeader() {
               <li>Osiągnięcia</li>
               <li>Kursy</li>
               <li>Opinie</li>
-              <li>Blog</li>
+              <li onClick={() => navigate("/blog")}>Blog</li>
               {userName ? (
                 <li
                   className="flex items-center gap-3 bg-gradient-to-r to-primaryBlue from-secondaryBlue px-4 cursor-pointer py-[5px] rounded-[12px]"
@@ -90,7 +90,7 @@ function RedHeader() {
                 <li className="cursor-pointer" >Osiągnięcia</li>
                 <li className="cursor-pointer" >Kursy</li>
                 <li className="cursor-pointer" >Opinie</li>
-                <li className="cursor-pointer" >Blog</li>
+                <li onClick={() => navigate("/blog")}>Blog</li>
                 {userName ? (
                   <li
                     className="flex items-center gap-2 bg-gradient-to-r to-primaryBlue from-secondaryBlue px-4 py-2 rounded-[8px] cursor-pointer"
