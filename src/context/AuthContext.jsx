@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useState, useCallback } from 'react'
 import supabase from '../util/supabaseClient'
 
 const AuthContext = createContext()
@@ -9,69 +9,80 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
-  useEffect(() => {
-    const fetchUserData = async (session) => {
+  const fetchUserData = useCallback(async (user) => {
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select('purchased_courses')
+        .eq('id', user.id)
+        .single()
+
+      if (error) throw error
+      setPurchasedCourses(data?.purchased_courses || [])
+    } catch (err) {
+      console.error('Error fetching user data:', err)
+      setError(err.message)
+      setPurchasedCourses(null)
+    }
+  }, [])
+
+  const initializeSession = useCallback(async () => {
+    setLoading(true)
+    try {
+      const {
+        data: { session },
+        error,
+      } = await supabase.auth.getSession()
+
+      if (error) throw error
+
       const currentUser = session?.user ?? null
       setUser(currentUser)
 
       if (currentUser) {
-        const { data, error } = await supabase
-          .from('users')
-          .select('purchased_courses')
-          .eq('id', currentUser.id)
-          .single()
-
-        if (error) {
-          setError(error.message)
-          setPurchasedCourses(null)
-        } else {
-          setPurchasedCourses(data.purchased_courses)
-        }
+        await fetchUserData(currentUser)
       } else {
         setPurchasedCourses(null)
       }
+    } catch (err) {
+      console.error('Error initializing session:', err)
+      setError(err.message)
+    } finally {
+      setLoading(false)
     }
+  }, [fetchUserData])
 
-    const getSession = async () => {
-      setLoading(true)
-      try {
-        const {
-          data: { session },
-          error,
-        } = await supabase.auth.getSession()
+  useEffect(() => {
+    initializeSession()
 
-        if (error) throw error
-        if (!session) {
-          await logout() 
-        } else {
-          await fetchUserData(session)
-        }
-      } catch (err) {
-        setError(err.message)
-      } finally {
-        setLoading(false)
-      }
-    }
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      const currentUser = session?.user ?? null
+      setUser(currentUser)
 
-    getSession()
-
-    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (session && session.user) {
-        await fetchUserData(session)
+      if (currentUser) {
+        await fetchUserData(currentUser)
       } else {
-        await logout() 
+        setPurchasedCourses(null)
       }
     })
 
     return () => {
-      authListener?.subscription?.unsubscribe?.()
+      subscription.unsubscribe()
     }
-  }, [])
+  }, [initializeSession, fetchUserData])
 
   const logout = async () => {
-    await supabase.auth.signOut()
-    setUser(null)
-    setPurchasedCourses(null)
+    try {
+      await supabase.auth.signOut()
+    } catch (err) {
+      console.error('Logout error:', err)
+      setError(err.message)
+    } finally {
+      setUser(null)
+      setPurchasedCourses(null)
+    }
   }
 
   return (
