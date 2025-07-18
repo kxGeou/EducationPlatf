@@ -1,4 +1,4 @@
-// import Header from "../components/homepage/Header";
+import Header from "../components/homepage/Header";
 import { useState } from "react";
 import "../styles/AuthPage.css";
 import CourseListHero from "../components/homepage/CourseListHero";

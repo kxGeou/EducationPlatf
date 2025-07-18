@@ -130,8 +130,8 @@ export default function CourseLandingPage() {
     }
   };
 
-  if (loading) return <Loading></Loading>
-  if (!course) return <Error></Error>
+  if (loading) return <Loading></Loading>;
+  if (!course) return <Error></Error>;
 
   const learn = [
     "Programować w wybranym języku",
@@ -168,40 +168,40 @@ export default function CourseLandingPage() {
                 Posiadasz ten kurs
               </p>
             )}
-
           </div>
-          <aside className="lg:block hidden bg-white right-0 absolute w-[20rem] shadow-lg rounded-lg p-3">
-            <div className="bg-darkBlue flex items-center h-40 w-full justify-center">
-              prototyp
-            </div>
+            <aside className="lg:block hidden bg-white right-0 absolute w-[20rem] shadow-lg rounded-lg p-3">
+              <div className="bg-darkBlue flex items-center h-40 w-full justify-center">
+                prototyp
+              </div>
 
-            <p className="text-black font-bold text-2xl mt-4 mb-2">
-              {course.price_cents} zł
-            </p>
-            {!alreadyBought && (
-              <button
-                onClick={handleBuy}
-                className="px-4 py-3 flex gap-3 items-center justify-center border font-bold border-darkBlue w-full text-darkBlue cursor-pointer rounded transition-all duration-300 hover:bg-darkBlue hover:text-white"
-              >
-                <ShoppingBasket size={18}></ShoppingBasket> Kup teraz
-              </button>
-            )}
-
-            {alreadyBought && (
-              <p className="flex cursor-not-allowed items-center justify-center border px-4 py-3 rounded border-darkBlue/50 w-full text-darkBlue/50 font-semibold">
-                Posiadasz ten kurs
+              <p className="text-black font-bold text-2xl mt-4 mb-2">
+                {course.price_cents} zł
               </p>
-            )}
-            <div className="text-gray-600 text-sm mt-6 flex flex-col gap-1 items-start">
-              <span>Roczny dostęp do kursu</span>
-              <span>Gwarancja profesjonalnej obsługi</span>
-            </div>
-          </aside>
+              {!alreadyBought && (
+                <button
+                  onClick={handleBuy}
+                  className="px-4 py-3 flex gap-3 items-center justify-center border font-bold border-darkBlue w-full text-darkBlue cursor-pointer rounded transition-all duration-300 hover:bg-darkBlue hover:text-white"
+                >
+                  <ShoppingBasket size={18}></ShoppingBasket> Kup teraz
+                </button>
+              )}
+
+              {alreadyBought && (
+                <p className="flex cursor-not-allowed items-center justify-center border px-4 py-3 rounded border-darkBlue/50 w-full text-darkBlue/50 font-semibold">
+                  Posiadasz ten kurs
+                </p>
+              )}
+              <div className="text-gray-600 text-sm mt-6 flex flex-col gap-1 items-start">
+                <span>Roczny dostęp do kursu</span>
+                <span>Gwarancja profesjonalnej obsługi</span>
+              </div>
+            </aside>
+            
         </div>
       </section>
 
       <main className="w-full max-w-[1100px] px-4 md:px-0">
-        <section className="border-[0.75px] p-4 mt-16 border-gray-400 md:py-6 rounded w-full max-w-[700px]">
+        <section className="border-[0.75px] p-4 mt-16 border-gray-400 md:py-6 rounded-xl w-full max-w-[700px]">
           <h2 className="text-xl font-bold md:text-2xl">Czego się nauczysz</h2>
           <ul className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-3 items-start mt-2 md:mt-4">
             {learn.map((l, index) => (
@@ -215,7 +215,7 @@ export default function CourseLandingPage() {
           </ul>
         </section>
 
-        <section className="flex flex-col my-16">
+        <section className="flex flex-col my-16 relative ">
           <h2 className="text-xl font-bold mb-4 md:text-2xl">
             Ten kurs obejmuje:
           </h2>
@@ -244,6 +244,10 @@ export default function CourseLandingPage() {
               {videos.length} Filmów Video
             </span>
           </ul>
+
+          <div className="absolute -right-10 -top-30 hidden lg:block">
+              <img src="../robocik.svg" className="w-[24rem]"/>
+            </div>
         </section>
 
         <section className="flex flex-col my-16">
@@ -257,7 +261,7 @@ export default function CourseLandingPage() {
             {otherCourses.length === 0 && <p>Brak innych kursów.</p>}
             {otherCourses.map(({ id: cId, title, description }) => (
               <div
-              key={cId}
+                key={cId}
                 className="relative shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-[1.01] flex flex-col items-start pb-4 cursor-pointer rounded-[12px] overflow-hidden group"
                 onClick={() => navigate(`/`)}
               >
@@ -275,9 +279,7 @@ export default function CourseLandingPage() {
                   <h2 className="text-xl font-semibold text-blackText">
                     {title}
                   </h2>
-                  <p className="text-blackText/50 text-sm">
-                    {description}
-                  </p>
+                  <p className="text-blackText/50 text-sm">{description}</p>
                 </div>
 
                 <div className="flex flex-col items-start gap-1 w-full px-4 mt-3 z-10">
@@ -350,17 +352,17 @@ function CourseSections({ videos, firstVideoId }) {
   };
 
   return (
-    <div className="rounded">
-      {Object.entries(groupedVideos).map(([section, vids], idx) => (
-        <div key={section}>
-          <button
-            onClick={() => toggleSection(section)}
-            className={`w-full text-left font-semibold  text-md  flex justify-between items-center px-4 py-4 ${
-              openSections[section]
-                ? "bg-gray-100/90 border border-gray-300"
-                : "bg-gray-100/90  border border-gray-300"
-            }`}
+    <div className="rounded-xl ">
+    {Object.entries(groupedVideos).map(([section, vids], idx) => (
+          <div
+            key={section}
+            className="rounded-xl overflow-hidden border border-gray-300 mb-2"
           >
+            <button
+              onClick={() => toggleSection(section)}
+              className="w-full text-left font-semibold text-md flex justify-between items-center px-4 py-4 bg-gray-100/90"
+            >
+
             {section}
             <span>
               {openSections[section] ? <ChevronDown /> : <ChevronRight />}

@@ -5,28 +5,28 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 function Header() {
-  const [visibleModal, setVisibleModal] = useState(false);
-  const width = useWindowWidth();
-  const navigate = useNavigate();
-  const [userEmail, setUserEmail] = useState("");
-  const fetchUser = async () => {
-    const { data, error } = await supabase.auth.getUser();
-    if (error) {
-      console.log("Error fatching user", error);
-      return;
-    }
-    setUserEmail(data.user.email);
-  };
-  function toggleModal() {
-    if (width > 800) {
-      setVisibleModal(false);
-    }
+    const [visibleModal, setVisibleModal] = useState(false);
+    const width = useWindowWidth();
+    const navigate = useNavigate();
+    const [userEmail, setUserEmail] = useState("");
+    const fetchUser = async () => {
+      const { data, error } = await supabase.auth.getUser();
+      if (error) {
+        console.log("Error fatching user", error);
+        return;
+      }
+      setUserEmail(data.user.email);
+    };
+    function toggleModal() {
+      if (width > 800) {
+        setVisibleModal(false);
+      }
 
-    setVisibleModal(!visibleModal);
-  }
-  useEffect(() => {
-    fetchUser();
-  }, []);
+      setVisibleModal(!visibleModal);
+    }
+    useEffect(() => {
+      fetchUser();
+    }, []);
 
 
   return (
