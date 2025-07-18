@@ -1,5 +1,6 @@
 import LandingHeader from "../components/coursePage/LandingHeader";
 import Footer from "../components/homepage/Footer";
+import RedHeader from "../components/homepage/RedHeader";
 import Error from "../components/systemLayouts/Error";
 import Loading from "../components/systemLayouts/Loading";
 import { useAuth } from "../context/AuthContext";
@@ -142,9 +143,10 @@ export default function CourseLandingPage() {
 
   return (
     <div className="w-full flex flex-col items-center">
-      <LandingHeader></LandingHeader>
-      <section className="bg-darkBlue flex justify-center text-white px-4 py-8 w-full ">
-        <div className="max-w-[1100px] w-full min-h-[10rem] flex justify-between items-start relative">
+      {/* <LandingHeader></LandingHeader> */}
+      <RedHeader></RedHeader>
+      <section className="bg-darkBlue flex justify-center text-white px-4 py-28 w-full ">
+        <div className="max-w-[1100px] w-full min-h-[10rem] flex justify-between items-start relative px-6">
           <div>
             <h1 className="text-3xl font-semibold mb-2 md:text-4xl">
               {course.title}
@@ -169,7 +171,7 @@ export default function CourseLandingPage() {
               </p>
             )}
           </div>
-            <aside className="lg:block hidden bg-white right-0 absolute w-[20rem] shadow-lg rounded-lg p-3">
+            <aside className="lg:block hidden bg-white right-6 absolute w-[20rem] shadow-lg rounded-lg p-3">
               <div className="bg-darkBlue flex items-center h-40 w-full justify-center">
                 prototyp
               </div>
@@ -200,8 +202,8 @@ export default function CourseLandingPage() {
         </div>
       </section>
 
-      <main className="w-full max-w-[1100px] px-4 md:px-0">
-        <section className="border-[0.75px] p-4 mt-16 border-gray-400 md:py-6 rounded-xl w-full max-w-[700px]">
+      <main className="w-full max-w-[1100px] px-6">
+        <section className="border-[0.75px] p-4 mt-16 border-gray-400 md:py-6 rounded-xl w-full max-w-[650px]">
           <h2 className="text-xl font-bold md:text-2xl">Czego się nauczysz</h2>
           <ul className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-3 items-start mt-2 md:mt-4">
             {learn.map((l, index) => (

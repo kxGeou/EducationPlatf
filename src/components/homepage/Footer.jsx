@@ -3,7 +3,7 @@ import { Facebook, Instagram, Mail } from "lucide-react";
 function Footer({padding}) {
     return (
         <footer className={`w-full text-black bg-white  mt-12 py-10 ${padding}`}>
-            <div className="max-w-[1100px] bg-white mx-auto grid grid-cols-1 px-4 sm:grid-cols-2 md:grid-cols-3 gap-8">
+            <div className="max-w-[1100px] bg-white mx-auto grid grid-cols-1 px-6 sm:grid-cols-2 md:grid-cols-3 gap-8">
                 
                 <div>
                     <h3 className="text-xl font-semibold mb-2">Kontakt</h3>

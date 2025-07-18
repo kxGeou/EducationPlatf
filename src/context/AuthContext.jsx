@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, useCallback } from 'react'
 import supabase from '../util/supabaseClient'
+import toast from 'react-hot-toast'
 
 const AuthContext = createContext()
 
@@ -82,6 +83,7 @@ export const AuthProvider = ({ children }) => {
     } finally {
       setUser(null)
       setPurchasedCourses(null)
+      toast.success("Wylogowano się")
     }
   }
 

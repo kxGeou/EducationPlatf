@@ -1,49 +1,24 @@
-import React, { useEffect, useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { ChevronRight } from 'lucide-react'
+import React from 'react'
 
-export default function HeroBlog() {
-  const quotes = ['Python', 'Teoria', 'Excel', 'Access']
-  const [index, setIndex] = useState(0)
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setIndex((prev) => (prev + 1) % quotes.length)
-    }, 4000)
-    return () => clearInterval(interval)
-  }, [])
-
+function HeroBlog() {
   return (
-    <section>
-      <div className="text-left">
-        <div className="mb-4 inline-flex items-center px-4 py-1 rounded-full bg-violet-100 text-primaryBlue font-medium text-sm">
-          <span className="w-2 h-2 rounded-full bg-primaryBlue mr-2"></span>
-          Innovative Digital Solutions
+    <section className='w-full flex justify-between items-center mb-24 px-6'>
+        <div>
+          <div className='h-8 w-8 md:w-10 md:h-10 rounded-full bg-primaryGreen mb-6'></div>
+          <div className='flex flex-col items-start text-5xl md:text-7xl'>
+            <p className='text-blackText/75 font-thin'>Reach 245,00+</p>
+            <p className='font-bold text-blackText'>monday.com</p>
+            <p className='font-bold text-blackText'>customers</p>
+          </div>
+            <p className='w-full max-w-[500px] mt-6 text-blackText/75 leading-[26px] md:leading-[28px] md:text-lg'>Lorem ipsum dolor, sit amet consectetur adipisicing elit. Laborum, ea in perferendis repellat molestiae obcaecati iure magni deleniti repellendus magnam?</p>
+            <button className='flex items-center gap-1 text-white mt-6 md:text-lg cursor-pointer  rounded-[12px] px-4 py-[6px] bg-gradient-to-br from-secondaryGreen to-secondaryBlue'>Zobacz blogi <ChevronRight size={20}></ChevronRight></button>
         </div>
-
-        <h1 className="text-4xl md:text-6xl font-extrabold leading-tight text-gray-900">
-          Transforming Ideas Into <br />
-          <span className="inline-block mt-4 bg-gradient-to-br from-secondaryBlue  to-primaryGreen text-white px-6 py-3 rounded-xl shadow-lg text-3xl md:text-6xl">
-            <AnimatePresence mode="wait">
-              <motion.span
-                key={quotes[index]}
-                initial={{ opacity: 0, x: 10 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -10 }}
-                transition={{ duration: 0.4 }}
-                className="inline-block"
-              >
-                {quotes[index]}
-              </motion.span>
-            </AnimatePresence>
-          </span>
-        </h1>
-
-        <p className="mt-8 text-lg text-gray-600 max-w-xl">
-          We turn your ideas into powerful digital experiences with cutting-edge technologies.
-          Our solutions elevate your brand, drive growth, and leave a lasting impression.
-        </p>
-      </div>
-      
+        <div className='md:flex hidden bg-blackText w-[40%] h-80  rounded-[12px] text-white items-center justify-center'>
+          Prototyp
+        </div>
     </section>
   )
 }
+
+export default HeroBlog
