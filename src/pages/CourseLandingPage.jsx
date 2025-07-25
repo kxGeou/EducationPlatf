@@ -1,3 +1,4 @@
+import toast from "react-hot-toast";
 import LandingHeader from "../components/coursePage/LandingHeader";
 import Footer from "../components/homepage/Footer";
 import RedHeader from "../components/homepage/RedHeader";
@@ -7,7 +8,6 @@ import { useAuth } from "../context/AuthContext";
 import supabase from "../util/supabaseClient";
 import Hls from "hls.js";
 import {
-  ArrowDown01,
   ArrowDown01Icon,
   Check,
   ChevronDown,
@@ -33,29 +33,37 @@ export default function CourseLandingPage() {
   const hasFetchedRef = useRef(false);
   const [videos, setVideos] = useState([]);
   const [otherCourses, setOtherCourses] = useState([]);
+
   useEffect(() => {
-    if (!user || hasFetchedRef.current) return;
+    if (hasFetchedRef.current) return;
 
     const fetchData = async () => {
       setLoading(true);
 
-      const { data: courseData } = await supabase
+      const { data: courseData, error: courseError } = await supabase
         .from("courses")
         .select("id, title, description, price_cents")
         .eq("id", id)
         .single();
 
+      if (courseError || !courseData) {
+        setCourse(null);
+        setLoading(false);
+        return;
+      }
+
       setCourse(courseData);
 
       const { data: videosData } = await supabase
         .from("video_base")
-        .select("videoId, title, section_title")
+        .select("videoId, title, section_title, directUrl")
         .eq("course_id", id)
         .order("section_title", { ascending: true })
         .order("order", { ascending: true });
 
       setVideos(videosData || []);
       setFirstVideo(videosData?.[0] || null);
+
       if (user) {
         const { data: userData } = await supabase
           .from("users")
@@ -66,11 +74,13 @@ export default function CourseLandingPage() {
         if (userData?.purchased_courses?.includes(id)) {
           setAlreadyBought(true);
         }
+      } else {
+        setAlreadyBought(false);
       }
 
       const { data: otherCoursesData } = await supabase
         .from("courses")
-        .select("id, title, description")
+        .select("id, title, description, price_cents")
         .neq("id", id)
         .limit(4);
 
@@ -85,7 +95,7 @@ export default function CourseLandingPage() {
 
   const handleBuy = async () => {
     if (!user) {
-      alert("Musisz być zalogowany, żeby kupić kurs.");
+      toast.error("Musisz być zalogowany, żeby kupić kurs.");
       return;
     }
 
@@ -126,7 +136,7 @@ export default function CourseLandingPage() {
     if (res.ok && data.url) {
       window.location.href = data.url;
     } else {
-      console.error("Błąd przy tworzeniu sesji płatności:", data);
+      toast.error("Błąd przy tworzeniu sesji płatności:", data);
       alert("Coś poszło nie tak. Spróbuj ponownie.");
     }
   };
