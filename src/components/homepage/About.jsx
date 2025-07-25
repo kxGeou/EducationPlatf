@@ -47,7 +47,7 @@ function About() {
           </Description>
         </div>
       </div>
-      <div className='w-full h-40 md:h-60 lg:h-70 md:w-[45%] rounded-[12px] bg-blackText text-white flex justify-center items-center'>
+      <div className='w-full h-40 md:h-60 lg:h-70 md:w-[45%] mt-8 md:mt-0 rounded-[12px] bg-blackText text-white flex justify-center items-center'>
         Prototyp
       </div>
     </motion.section>

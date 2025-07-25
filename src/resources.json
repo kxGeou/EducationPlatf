@@ -1,0 +1,237 @@
+[
+  {
+    "title": "Formuła 2023 - maj, czerwiec poziom rozszerzony",
+    "colors": ["#26237a", "#7142d6"],
+    "resource": [
+      {
+        "resTitle": "maj 2025",
+        "section": [
+          {
+            "title": "PRAKTYKA",
+            "pdfUrl": ""
+          },
+          {
+            "title": "ODPOWIEDZI",
+            "pdfUrl": ""
+          },
+          {
+            "title": "WSZYSTKO",
+            "pdfUrl": ""
+          }
+        ]
+      },
+      {
+        "resTitle": "maj 2024",
+        "section": [
+          {
+            "title": "PRAKTYKA",
+            "pdfUrl": ""
+          },
+          {
+            "title": "ODPOWIEDZI",
+            "pdfUrl": ""
+          },
+          {
+            "title": "WSZYSTKO",
+            "pdfUrl": ""
+          }
+        ]
+      },
+      {
+        "resTitle": "maj 2023",
+        "section": [
+          {
+            "title": "PRAKTYKA",
+            "pdfUrl": ""
+          },
+          {
+            "title": "ODPOWIEDZI",
+            "pdfUrl": ""
+          },
+          {
+            "title": "WSZYSTKO",
+            "pdfUrl": ""
+          }
+        ]
+      },
+      {
+        "resTitle": "maj 2022",
+        "section": [
+          {
+            "title": "PRAKTYKA",
+            "pdfUrl": ""
+          },
+          {
+            "title": "ODPOWIEDZI",
+            "pdfUrl": ""
+          },
+          {
+            "title": "WSZYSTKO",
+            "pdfUrl": ""
+          }
+        ]
+      },
+      {
+        "resTitle": "maj 2021",
+        "section": [
+          {
+            "title": "PRAKTYKA",
+            "pdfUrl": ""
+          },
+          {
+            "title": "ODPOWIEDZI",
+            "pdfUrl": ""
+          },
+          {
+            "title": "WSZYSTKO",
+            "pdfUrl": ""
+          }
+        ]
+      },
+      {
+        "resTitle": "maj 2020",
+        "section": [
+          {
+            "title": "PRAKTYKA",
+            "pdfUrl": ""
+          },
+          {
+            "title": "ODPOWIEDZI",
+            "pdfUrl": ""
+          },
+          {
+            "title": "WSZYSTKO",
+            "pdfUrl": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Formuła 2015 - maj, czerwiec poziom rozszerzony",
+    "colors": ["#eb34df", "#7734eb"],
+    "resource": [
+      {
+        "resTitle": "maj 2025",
+        "section": [
+          {
+            "title": "PRAKTYKA",
+            "pdfUrl": ""
+          },
+          {
+            "title": "ODPOWIEDZI",
+            "pdfUrl": ""
+          },
+          {
+            "title": "WSZYSTKO",
+            "pdfUrl": ""
+          }
+        ]
+      },
+      {
+        "resTitle": "maj 2024",
+        "section": [
+          {
+            "title": "PRAKTYKA",
+            "pdfUrl": ""
+          },
+          {
+            "title": "ODPOWIEDZI",
+            "pdfUrl": ""
+          },
+          {
+            "title": "WSZYSTKO",
+            "pdfUrl": ""
+          }
+        ]
+      },
+      {
+        "resTitle": "maj 2023",
+        "section": [
+          {
+            "title": "PRAKTYKA",
+            "pdfUrl": ""
+          },
+        
+          {
+            "title": "ODPOWIEDZI",
+            "pdfUrl": ""
+          },
+          {
+            "title": "WSZYSTKO",
+            "pdfUrl": ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Formuła 2013 - maj, czerwiec poziom rozszerzony",
+    "colors": ["#154d1c", "#07b31e"],
+    "resource": [
+      {
+        "resTitle": "maj 2025",
+        "section": [
+          {
+            "title": "PRAKTYKA",
+            "pdfUrl": ""
+          },
+          {
+            "title": "TEORIA",
+            "pdfUrl": ""
+          },
+          {
+            "title": "ODPOWIEDZI",
+            "pdfUrl": ""
+          },
+          {
+            "title": "WSZYSTKO",
+            "pdfUrl": ""
+          }
+        ]
+      },
+      {
+        "resTitle": "maj 2024",
+        "section": [
+          {
+            "title": "PRAKTYKA",
+            "pdfUrl": ""
+          },
+          {
+            "title": "TEORIA",
+            "pdfUrl": ""
+          },
+          {
+            "title": "ODPOWIEDZI",
+            "pdfUrl": ""
+          },
+          {
+            "title": "WSZYSTKO",
+            "pdfUrl": ""
+          }
+        ]
+      },
+      {
+        "resTitle": "maj 2023",
+        "section": [
+          {
+            "title": "PRAKTYKA",
+            "pdfUrl": ""
+          },
+          {
+            "title": "TEORIA",
+            "pdfUrl": ""
+          },
+          {
+            "title": "ODPOWIEDZI",
+            "pdfUrl": ""
+          },
+          {
+            "title": "WSZYSTKO",
+            "pdfUrl": ""
+          }
+        ]
+      }
+    ]
+  }
+]

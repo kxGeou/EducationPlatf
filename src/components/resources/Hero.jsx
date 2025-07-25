@@ -2,7 +2,7 @@ import React from 'react'
 
 function Hero() {
   return (
-    <div className='min-h-screen w-full mt-36 px-6 font-semibold text-darkBlue'>
+    <div className=' w-full mt-32 font-semibold text-darkBlue'>
         <h2 className='text-5xl max-w-[650px] leading-[1.2]'>
             Arkusze Maturalne Informatyka
         </h2>

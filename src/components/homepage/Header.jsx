@@ -27,7 +27,7 @@ function RedHeader() {
   return (
     <header className="fixed top-6 left-1/2 transform -translate-x-1/2 w-full max-w-[1100px] text-darkerBlack flex flex-col px-6 justify-center z-50">
       <div className="bg-slate-950/35 border border-slate-500/25 backdrop-blur-md  w-full py-[9px] px-3 rounded-[12px] flex justify-between items-center shadow-lg">
-        <div className="w-8 h-8 bg-primaryGreen rounded-full"></div>
+        <div className="w-8 h-8 bg-primaryGreen cursor-pointer rounded-full" onClick={() => navigate('/')} title="Logo platformy"></div>
         <div>
           {width > 800 && (
             <ul className="flex gap-8 items-center text-white">
