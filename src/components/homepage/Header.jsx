@@ -4,12 +4,15 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Menu, User, X } from "lucide-react";
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 
 function RedHeader() {
   const [visibleModal, setVisibleModal] = useState(false);
   const width = useWindowWidth();
   const navigate = useNavigate();
-  const [userName, setUserName] = useState();
+  const { user, loading } = useAuth();
+  const userName = user?.user_metadata?.full_name;
+
 
   const fetchUser = async () => {
     const { data, error } = await supabase.auth.getUser();
@@ -23,6 +26,7 @@ function RedHeader() {
   useEffect(() => {
     fetchUser();
   }, []);
+  if (loading) return null;
 
   return (
     <header className="fixed top-6 left-1/2 transform -translate-x-1/2 w-full max-w-[1100px] text-darkerBlack flex flex-col px-6 justify-center z-50">

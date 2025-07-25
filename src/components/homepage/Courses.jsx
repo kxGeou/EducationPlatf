@@ -29,7 +29,7 @@ export default function Courses() {
           Array.from({ length: 4 }).map((_, i) => (
             <div
               key={i}
-              className="w-full h-60 bg-gray-100 rounded-xl shadow-md animate-pulse"
+              className="w-full h-72 bg-gray-100 rounded-xl shadow-md animate-pulse"
             >
               <div className="h-full w-full p-4 space-y-4">
                 <div className="w-3/4 h-4 bg-gray-300 rounded" />

@@ -3,12 +3,12 @@ import React from "react";
 function AboutBlogs() {
   return (
     <div className="mt-42 px-6 min-h-screen flex flex-col gap-20">
-      <div className="flex flex-col lg:flex-row justify-between gap-10">
+      <div className="flex flex-col-reverse lg:flex-row justify-between gap-10">
         <div className="bg-secondaryBlue/25 w-full lg:w-1/2 rounded-[12px] flex items-center justify-center min-h-[200px]">
           prototyp
         </div>
 
-        <div className="w-full lg:w-1/2 flex flex-col items-end text-right lg:items-end lg:text-right">
+        <div className="w-full lg:w-1/2 flex flex-col  items-end text-left lg:text-right lg:items-end">
           <h2 className="font-bold text-4xl md:text-5xl text-blackText">
             Why build{" "}
             <span className="font-normal text-blackText/75">
