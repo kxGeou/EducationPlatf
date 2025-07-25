@@ -38,7 +38,7 @@ function RedHeader() {
               <li onClick={() => navigate("/blog")}>Blog</li>
               {userName ? (
                 <li
-                  className="flex items-center gap-3 bg-gradient-to-r to-primaryBlue from-secondaryBlue px-4 cursor-pointer py-[5px] rounded-[12px]"
+                  className="flex items-center gap-3 bg-gradient-to-r to-primaryGreen from-secondaryGreen px-4 cursor-pointer py-[5px] rounded-[12px]"
                   onClick={() => navigate("/user_page")}
                 >
                   {userName}
@@ -46,7 +46,7 @@ function RedHeader() {
                 </li>
               ) : (
                 <li
-                  className="bg-gradient-to-r to-primaryBlue from-secondaryBlue px-5 py-[5px] rounded-[12px] cursor-pointer"
+                  className="bg-gradient-to-r to-primaryGreen from-secondaryGreen px-5 py-[5px] rounded-[12px] cursor-pointer"
                   onClick={() => navigate("/user_page")}
                 >
                   Zaloguj się
@@ -93,7 +93,7 @@ function RedHeader() {
                 <li onClick={() => navigate("/blog")}>Blog</li>
                 {userName ? (
                   <li
-                    className="flex items-center gap-2 bg-gradient-to-r to-primaryBlue from-secondaryBlue px-4 py-2 rounded-[8px] cursor-pointer"
+                    className="flex items-center gap-2 bg-gradient-to-r to-primaryGreen from-secondaryGreen px-4 py-2 rounded-[8px] cursor-pointer"
                     onClick={() => {
                       setVisibleModal(false);
                       navigate("/user_page");
@@ -104,7 +104,7 @@ function RedHeader() {
                   </li>
                 ) : (
                   <li
-                    className="bg-gradient-to-r to-primaryBlue from-secondaryBlue px-5 py-2 rounded-[8px] cursor-pointer"
+                    className="bg-gradient-to-r to-primaryGreen from-secondaryGreen px-5 py-2 rounded-[8px] cursor-pointer"
                     onClick={() => {
                       setVisibleModal(false);
                       navigate("/user_page");

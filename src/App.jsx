@@ -10,6 +10,7 @@ import Loading from './components/systemLayouts/Loading.jsx';
 import Error from './components/systemLayouts/Error.jsx';
 import WrongPage from './components/systemLayouts/WrongPage.jsx';
 import BlogMainPage from './components/blog/BlogMainPage.jsx';
+import TestResources from './pages/TestResources.jsx';
 export default function App() {
   return (
     <>
@@ -24,6 +25,7 @@ export default function App() {
         <Route path='/loading' element={<Loading></Loading>} />
         <Route path='/error' element={<Error></Error>} />
         <Route path="/blog" element={<BlogMainPage></BlogMainPage>}></Route>
+        <Route path="/zasoby" element={<TestResources></TestResources>}></Route>
         <Route path='/*' element={<WrongPage></WrongPage>} />
       </Routes>
     </>
