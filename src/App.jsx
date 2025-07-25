@@ -9,7 +9,7 @@ import CourseLandingPage from './pages/CourseLandingPage.jsx';
 import Loading from './components/systemLayouts/Loading.jsx';
 import Error from './components/systemLayouts/Error.jsx';
 import WrongPage from './components/systemLayouts/WrongPage.jsx';
-import BlogMainPage from './components/blog/BlogMainPage.jsx';
+import BlogMainPage from './pages/BlogMainPage.jsx';
 import TestResources from './pages/TestResources.jsx';
 export default function App() {
   return (

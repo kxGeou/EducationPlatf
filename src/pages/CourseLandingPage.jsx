@@ -1,7 +1,7 @@
 import toast from "react-hot-toast";
 import LandingHeader from "../components/coursePage/LandingHeader";
 import Footer from "../components/homepage/Footer";
-import RedHeader from "../components/homepage/RedHeader";
+import Header from "../components/homepage/Header";
 import Error from "../components/systemLayouts/Error";
 import Loading from "../components/systemLayouts/Loading";
 import { useAuth } from "../context/AuthContext";
@@ -154,7 +154,7 @@ export default function CourseLandingPage() {
   return (
     <div className="w-full flex flex-col items-center">
       {/* <LandingHeader></LandingHeader> */}
-      <RedHeader></RedHeader>
+      <Header></Header>
       <section className="bg-darkBlue flex justify-center text-white px-4 py-28 w-full ">
         <div className="max-w-[1100px] w-full min-h-[10rem] flex justify-between items-start relative px-6">
           <div>

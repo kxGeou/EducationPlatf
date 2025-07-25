@@ -1,130 +1,28 @@
-.gradient-background {
+.corner-gradient {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  pointer-events: none;
+  clip-path: polygon(0 0, 100% 0%, 100% 25%, 0 60%);
   background: radial-gradient(
-      100% 100% at var(--21-x-position) var(--21-y-position),
-      #2b2685 -7%,
-      transparent
-    ),
-    radial-gradient(
-      100% 100% at var(--22-x-position) var(--22-y-position),
-       #41df95 -26%,
-      transparent
-    ),
-    radial-gradient(
-      100% 100% at var(--23-x-position) var(--23-y-position),
-      #0d4dad 14%,
-      transparent
-    ),
-    radial-gradient(
-      100% 100% at var(--24-x-position) var(--24-y-position),
-      #41df6e 0%,
-      transparent
-    ),
-    #1b253b;
-  animation-name: main;
-  animation-iteration-count: infinite;
-  clip-path: polygon(100% 0, 100% 45%, 0 95%, 0 0);
-
-  animation-duration: 6s;
-  transition-timing-function: ease-in;
+    circle at top left,
+    #17d19b 0%,
+    #00498a 25%,
+    #2b2685 50%,
+    #41df95 100%
+    );
+  background-size: 300% 300%;
+  animation: gradient-move 12s ease-in-out infinite alternate;
+  z-index: -1;
 }
 
-.gradient-hero {
-  clip-path: polygon(100% 0, 100% 50%, 0 70%, 0 0);
-}
-@media(min-width: 800px) {
-  .gradient-hero{
-    clip-path: polygon(100% 0, 100% 55%, 0 100%, 0 0);
+@keyframes gradient-move {
+  0% {
+    background-position: 0% 0%;
+  }
+  100% {
+    background-position: 100% 100%;
   }
 }
-
-@property --21-x-position {
-  syntax: "<percentage>";
-  inherits: false;
-  initial-value: 29.375%;
-}
-@property --21-y-position {
-  syntax: "<percentage>";
-  inherits: false;
-  initial-value: 6.562500000000002%;
-}
-@property --22-x-position {
-  syntax: "<percentage>";
-  inherits: false;
-  initial-value: 99.0234375%;
-}
-@property --22-y-position {
-  syntax: "<percentage>";
-  inherits: false;
-  initial-value: 6.328124999999998%;
-}
-@property --23-x-position {
-  syntax: "<percentage>";
-  inherits: false;
-  initial-value: 4.414062500000003%;
-}
-@property --23-y-position {
-  syntax: "<percentage>";
-  inherits: false;
-  initial-value: 95.4296875%;
-}
-@property --24-x-position {
-  syntax: "<percentage>";
-  inherits: false;
-  initial-value: 90.15625%;
-}
-@property --24-y-position {
-  syntax: "<percentage>";
-  inherits: false;
-  initial-value: 95.625%;
-}
-:root {
-  --9-x-position: 6.523437500000001%;
-  --9-y-position: 6.757812500000003%;
-  --10-x-position: 99.0234375%;
-  --10-y-position: 6.328124999999998%;
-  --11-x-position: 34.10156250000001%;
-  --11-y-position: 59.49218750000001%;
-  --13-x-position: 29.375%;
-  --13-y-position: 6.562500000000002%;
-  --14-x-position: 99.0234375%;
-  --14-y-position: 6.328124999999998%;
-  --15-x-position: 17.890625000000004%;
-  --15-y-position: 50.89843750000001%;
-  --16-x-position: 77.265625%;
-  --16-y-position: 53.24218750000001%;
-  --17-x-position: 29.375%;
-  --17-y-position: 6.562500000000002%;
-  --18-x-position: 99.0234375%;
-  --18-y-position: 6.328124999999998%;
-  --19-x-position: 4.414062500000003%;
-  --19-y-position: 95.4296875%;
-  --20-x-position: 77.265625%;
-  --20-y-position: 53.24218750000001%;
-  --21-x-position: 29.375%;
-  --21-y-position: 6.562500000000002%;
-  --22-x-position: 99.0234375%;
-  --22-y-position: 6.328124999999998%;
-  --23-x-position: 4.414062500000003%;
-  --23-y-position: 95.4296875%;
-  --24-x-position: 90.15625%;
-  --24-y-position: 95.625%;
-}
-@keyframes main {
-  25% {
-    --21-x-position: 15%;
-    --21-y-position: 15%;
-    --22-x-position: 85%;
-    --22-y-position: 80%;
-  }
-  50% {
-    --21-x-position: 80%;
-    --21-y-position: 15%;
-    --22-x-position: 15%;
-    --22-y-position: 85%;
-    --23-x-position: 20%;
-    --23-y-position: 20%;
-    --24-x-position: 20%;
-    --24-y-position: 20%;
-  }
-}
-

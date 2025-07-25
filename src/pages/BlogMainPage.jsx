@@ -1,17 +1,17 @@
 import React from 'react'
-import RedHeader from '../homepage/RedHeader';
-import HeroBlog from './HeroBlog';
-import CourseListHero from '../homepage/CourseListHero';
-import Footer from '../homepage/Footer';
-import BlogList from './BlogList';
-import AboutBlogs from './AboutBlogs';
-import ImageSection from './ImageSection';
+import Header from '../components/homepage/Header';
+import HeroBlog from '../components/blog/HeroBlog';
+import CourseListHero from '../components/homepage/CourseListHero';
+import Footer from '../components/homepage/Footer';
+import BlogList from '../components/blog/BlogList';
+import AboutBlogs from '../components/blog/AboutBlogs';
+import ImageSection from '../components/blog/ImageSection';
 
 
 function BlogMainPage() {
   return (
     <div className='flex flex-col items-center min-h-screen bg-gradient-to-br to-35% from-secondaryGreen to-white'>
-      <RedHeader />
+      <Header />
       
       <div className='w-full max-w-[1100px] mt-26 lg:mt-38'>
         <HeroBlog />
