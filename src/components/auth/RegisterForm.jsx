@@ -115,7 +115,6 @@ export default function RegisterForm() {
 
       toast.success('Rejestracja zakończona! Sprawdź maila.')
       setTimeout(() => {
-        navigate('/login')
         window.location.reload()
       }, 1500)
     } catch {
