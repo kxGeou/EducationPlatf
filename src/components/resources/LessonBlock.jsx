@@ -76,7 +76,7 @@ function ReSection({ ReSection, Color }) {
             <button
               key={index}
               onClick={() => handleClick(s.pdfUrl)}
-              className="cursor-pointer transition-all duration-300 hover:scale-[1.05] text-white flex items-center justify-center px-8 py-2 rounded-[12px]"
+              className="cursor-pointer transition-all duration-300 hover:scale-[1.05] text-white flex items-center justify-center px-8 py-3 rounded-[12px]"
               style={{ background: Color }}
             >
               {s.title}

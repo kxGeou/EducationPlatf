@@ -40,17 +40,22 @@ const strengthColors = [
 ]
 
 function PasswordStrength({ password }) {
-  const pwd = password || ''
-  const result = zxcvbn(pwd)
-  const score = result.score
-  const widthPercent = ((score + 1) / 5) * 100
+  const pwd = password || '';
+  const result = zxcvbn(pwd);
+  const score = result.score;
+  const widthPercent = ((score + 1) / 5) * 100;
+
+  if (!pwd) return null; // renderuj tylko jeśli coś wpisano
 
   return (
     <div className="mt-2">
       <div className="w-full bg-gray-300 rounded h-3 overflow-hidden">
         <div
           className="h-3 rounded transition-all duration-300"
-          style={{ width: `${widthPercent}%`, backgroundColor: strengthColors[score] }}
+          style={{
+            width: `${widthPercent}%`,
+            backgroundColor: strengthColors[score],
+          }}
         />
       </div>
       <p
@@ -60,8 +65,9 @@ function PasswordStrength({ password }) {
         {strengthLabels[score]}
       </p>
     </div>
-  )
+  );
 }
+
 
 
 export default function RegisterForm() {

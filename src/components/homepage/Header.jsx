@@ -10,23 +10,8 @@ function RedHeader() {
   const [visibleModal, setVisibleModal] = useState(false);
   const width = useWindowWidth();
   const navigate = useNavigate();
-  const { user, loading } = useAuth();
+  const { user } = useAuth();
   const userName = user?.user_metadata?.full_name;
-
-
-  const fetchUser = async () => {
-    const { data, error } = await supabase.auth.getUser();
-    if (error) {
-      toast.error("Error fetching user", error);
-      return;
-    }
-    setUserName(data.user.user_metadata.full_name);
-  };
-
-  useEffect(() => {
-    fetchUser();
-  }, []);
-  if (loading) return null;
 
   return (
     <header className="fixed top-6 left-1/2 transform -translate-x-1/2 w-full max-w-[1100px] text-darkerBlack flex flex-col px-6 justify-center z-50">
