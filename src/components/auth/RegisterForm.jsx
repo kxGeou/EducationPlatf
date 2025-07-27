@@ -45,7 +45,7 @@ function PasswordStrength({ password }) {
   const score = result.score;
   const widthPercent = ((score + 1) / 5) * 100;
 
-  if (!pwd) return null; // renderuj tylko jeśli coś wpisano
+  if (!pwd) return null; 
 
   return (
     <div className="mt-2">
@@ -83,52 +83,52 @@ export default function RegisterForm() {
   const [loading, setLoading] = useState(false)
   const password = watch('password')
 
-  const onSubmit = async () => {
-    const isValid = await trigger()
-    if (!isValid) {
-      const result = registerSchema.safeParse(getValues())
-      if (!result.success) {
-        result.error.errors.forEach((err) => toast.error(err.message))
-      }
+  
+const onSubmit = async () => {
+  const isValid = await trigger()
+  if (!isValid) {
+    const result = registerSchema.safeParse(getValues())
+    if (!result.success) {
+      result.error.errors.forEach((err) => toast.error(err.message))
+    }
+    return
+  }
+
+  setLoading(true)
+  const { email, password, full_name } = getValues()
+
+  try {
+   const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+  email,
+  password,
+  options: {
+    data: { full_name } 
+  }
+})
+
+
+    if (signUpError) {
+      toast.error(signUpError.message)
+      setLoading(false)
       return
     }
 
-    setLoading(true)
-    const { email, password, full_name } = getValues()
-
-    try {
-      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-        email,
-        password,
-        options: { data: { full_name } },
-      })
-
-      if (signUpError) {
-        toast.error(signUpError.message)
-        return
-      }
-
-      const userId = signUpData.user?.id
-      if (userId) {
-        const { error: insertError } = await supabase.from('users').insert([
-          { id: userId, full_name, avatar_url: '', purchased_courses: [] },
-        ])
-        if (insertError) {
-          toast.error('Konto utworzone, ale błąd przy zapisie danych użytkownika.')
-          return
-        }
-      }
-
-      toast.success('Rejestracja zakończona! Sprawdź maila.')
-      setTimeout(() => {
-        window.location.reload()
-      }, 1500)
-    } catch {
-      toast.error('Wystąpił błąd. Spróbuj ponownie.')
-    } finally {
+    if (!signUpData.user) {
+      toast.error('Nie udało się utworzyć użytkownika.')
       setLoading(false)
+      return
     }
+
+    toast.success('Rejestracja zakończona! Sprawdź maila, aby potwierdzić konto.')
+
+  } catch (error) {
+    toast.error('Wystąpił błąd. Spróbuj ponownie.')
+  } finally {
+    setLoading(false)
   }
+}
+
+
 
   return (
     <form onSubmit={(e) => { e.preventDefault(); onSubmit() }} className="space-y-6 w-full">

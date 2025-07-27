@@ -10,8 +10,12 @@ function RedHeader() {
   const [visibleModal, setVisibleModal] = useState(false);
   const width = useWindowWidth();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, purchasedCourses, loading, error } = useAuth()
   const userName = user?.user_metadata?.full_name;
+
+  useEffect(() => {
+    console.log("Auth debug:", { user, purchasedCourses, loading, error })
+  }, [user, purchasedCourses, loading, error])
 
   return (
     <header className="fixed top-6 left-1/2 transform -translate-x-1/2 w-full max-w-[1100px] text-darkerBlack flex flex-col px-6 justify-center z-50">

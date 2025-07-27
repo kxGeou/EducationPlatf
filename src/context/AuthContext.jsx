@@ -1,88 +1,97 @@
 import { createContext, useContext, useEffect, useState, useCallback } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
 import supabase from '../util/supabaseClient'
 import toast from 'react-hot-toast'
+
 const AuthContext = createContext()
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null)
-  const [purchasedCourses, setPurchasedCourses] = useState(null)
+  const [purchasedCourses, setPurchasedCourses] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
-  const fetchUserData = useCallback(async (user) => {
+  const navigate = useNavigate()
+  const location = useLocation()
+
+  const fetchUserData = useCallback(async (userId) => {
     try {
       const { data, error } = await supabase
         .from('users')
         .select('purchased_courses')
-        .eq('id', user.id)
+        .eq('id', userId)
         .single()
 
       if (error) throw error
+
       setPurchasedCourses(data?.purchased_courses || [])
     } catch (err) {
-      console.error('Error fetching user data:', err)
+      console.error('Błąd pobierania danych użytkownika:', err)
+      setPurchasedCourses([])
       setError(err.message)
-      setPurchasedCourses(null)
     }
   }, [])
 
-  const initializeSession = useCallback(async () => {
-    setLoading(true)
-    try {
-      const {
-        data: { session },
-        error,
-      } = await supabase.auth.getSession()
+  const handleSession = useCallback(async (session) => {
+    const currentUser = session?.user ?? null
+    setUser(currentUser)
 
-      if (error) throw error
-
-      const currentUser = session?.user ?? null
-      setUser(currentUser)
-
-      if (currentUser) {
-        await fetchUserData(currentUser)
-      } else {
-        setPurchasedCourses(null)
-      }
-    } catch (err) {
-      console.error('Error initializing session:', err)
-      setError(err.message)
-    } finally {
-      setLoading(false)
+    if (currentUser) {
+      await fetchUserData(currentUser.id)
+    } else {
+      setPurchasedCourses([])
     }
   }, [fetchUserData])
 
   useEffect(() => {
-    initializeSession()
+    let initialized = false
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
-      const currentUser = session?.user ?? null
-      setUser(currentUser)
+    const init = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession()
+        if (error) throw error
 
-      if (currentUser) {
-        await fetchUserData(currentUser)
-      } else {
-        setPurchasedCourses(null)
+        await handleSession(session)
+      } catch (err) {
+        console.error('Błąd inicjalizacji sesji:', err)
+        setError(err.message)
+      } finally {
+        if (!initialized) {
+          setLoading(false)
+          initialized = true
+        }
       }
-    })
+    }
+
+    init()
+
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      async (_event, session) => {
+        await handleSession(session)
+        setLoading(false) // ← najważniejsze!
+      }
+    )
 
     return () => {
-      subscription.unsubscribe()
+      authListener.subscription.unsubscribe()
     }
-  }, [initializeSession, fetchUserData])
+  }, [handleSession])
+
+  useEffect(() => {
+    if (!loading && user && location.pathname.startsWith('/auth')) {
+      navigate('/')
+    }
+  }, [user, loading, location.pathname, navigate])
 
   const logout = async () => {
     try {
       await supabase.auth.signOut()
-    } catch (err) {
-      console.error('Logout error:', err)
-      setError(err.message)
-    } finally {
       setUser(null)
-      setPurchasedCourses(null)
-      toast.success("Wylogowano się")
+      setPurchasedCourses([])
+      toast.success('Wylogowano')
+      navigate("/");
+    } catch (err) {
+      toast.error('Błąd wylogowywania')
     }
   }
 

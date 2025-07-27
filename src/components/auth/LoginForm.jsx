@@ -51,7 +51,7 @@ export default function LoginForm() {
         loginError.message.toLowerCase().includes('invalid') ||
         loginError.status === 400
       ) {
-        toast.error('Nieprawidłowy email lub hasło.')
+        toast.error(loginError.message)
       } else {
         toast.error(`Błąd logowania: ${loginError.message}`)
       }
@@ -59,7 +59,6 @@ export default function LoginForm() {
     }
 
     toast.success('Zalogowano pomyślnie!')
-    navigate('/')
   } catch {
     toast.error('Wystąpił nieoczekiwany błąd. Spróbuj ponownie później.')
   } finally {
