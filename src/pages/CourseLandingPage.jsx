@@ -153,9 +153,8 @@ export default function CourseLandingPage() {
 
   return (
     <div className="w-full flex flex-col items-center">
-      {/* <LandingHeader></LandingHeader> */}
       <Header></Header>
-      <section className="bg-darkBlue flex justify-center text-white px-4 py-28 w-full ">
+      <section className="bg-darkBlue flex justify-center text-white py-28 w-full ">
         <div className="max-w-[1100px] w-full min-h-[10rem] flex justify-between items-start relative px-6">
           <div>
             <h1 className="text-3xl font-semibold mb-2 md:text-4xl">
@@ -163,13 +162,13 @@ export default function CourseLandingPage() {
             </h1>
             <p className="opacity-75 mb-6 md:text-lg">{course.description}</p>
 
-            <p className="text-white font-bold text-2xl mt-8 mb-2 lg:hidden">
-              {course.price_cents} zł
+            <p className="text-white font-semibold text-2xl mt-8 mb-2 lg:hidden">
+              {course.price_cents}zł <span className="ml-1 text-2xl opacity-50 font-normal line-through">220zł</span>
             </p>
             {!alreadyBought && (
               <button
                 onClick={handleBuy}
-                className="px-4 py-3 flex gap-3 items-center lg:hidden justify-center border font-bold border-white w-full text-white cursor-pointer rounded transition-all duration-300 hover:bg-white hover:text-darkBlue"
+                className="px-4 py-3 flex gap-3 items-center lg:hidden justify-center border font-bold border-white w-full text-white cursor-pointer rounded transition-all duration-300 hover:scale-[1.025] mt-3 "
               >
                 <ShoppingBasket size={18}></ShoppingBasket> Kup teraz
               </button>
@@ -186,20 +185,21 @@ export default function CourseLandingPage() {
                 prototyp
               </div>
 
-              <p className="text-black font-bold text-2xl mt-4 mb-2">
-                {course.price_cents} zł
+              <p className="text-darkBlue font-semibold text-2xl mt-8">
+                {course.price_cents}zł <span className="ml-1 text-2xl opacity-50 font-normal line-through">220zł</span>
               </p>
               {!alreadyBought && (
                 <button
                   onClick={handleBuy}
-                  className="px-4 py-3 flex gap-3 items-center justify-center border font-bold border-darkBlue w-full text-darkBlue cursor-pointer rounded transition-all duration-300 hover:bg-darkBlue hover:text-white"
+                  className="px-4 py-3 flex gap-3 items-center justify-center border font-bold bg-gradient-to-br from-primaryBlue to-darkBlue border-darkBlue w-full text-white cursor-pointer rounded-[8px] transition-all duration-300 hover:bg-white mt-2 hover:scale-[1.025]"
+                  title="Przycisk do zakupu kursu"
                 >
                   <ShoppingBasket size={18}></ShoppingBasket> Kup teraz
                 </button>
               )}
 
               {alreadyBought && (
-                <p className="flex cursor-not-allowed items-center justify-center border px-4 py-3 rounded border-darkBlue/50 w-full text-darkBlue/50 font-semibold">
+                <p className="flex cursor-not-allowed items-center justify-center border px-4 py-[10px] mt-2 rounded border-darkBlue/50 w-full text-darkBlue/50 font-semibold">
                   Posiadasz ten kurs
                 </p>
               )}
@@ -213,6 +213,8 @@ export default function CourseLandingPage() {
       </section>
 
       <main className="w-full max-w-[1100px] px-6">
+
+
         <section className="border-[0.75px] p-4 mt-16 border-gray-400 md:py-6 rounded-xl w-full max-w-[650px]">
           <h2 className="text-xl font-bold md:text-2xl">Czego się nauczysz</h2>
           <ul className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-3 items-start mt-2 md:mt-4">
@@ -221,11 +223,15 @@ export default function CourseLandingPage() {
                 className="flex gap-3 items-start text-gray-700 text-sm"
                 key={index}
               >
-                <Check size={18} className="text-secondaryGreen"></Check> {l}
+                <Check size={18} className="text-secondaryBlue"></Check> {l}
               </li>
             ))}
           </ul>
         </section>
+
+
+
+
 
         <section className="flex flex-col my-16 relative ">
           <h2 className="text-xl font-bold mb-4 md:text-2xl">
@@ -257,8 +263,8 @@ export default function CourseLandingPage() {
             </span>
           </ul>
 
-          <div className="absolute -right-10 -top-30 hidden lg:block">
-              <img src="../robocik.svg" className="w-[24rem]"/>
+          <div className="absolute -right-16 -top-30 hidden lg:block">
+              <img src="../robocik.svg" className="w-[28rem]"/>
             </div>
         </section>
 

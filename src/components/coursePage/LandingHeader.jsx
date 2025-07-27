@@ -1,11 +1,9 @@
 import { Menu, User } from 'lucide-react'
 import React from 'react'
-import useWindowWidth from '../../hooks/useWindowWidth'
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
 function LandingHeader() {
-    const width = useWindowWidth();
     const { user } = useAuth();
     const navigate = useNavigate();
     

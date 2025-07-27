@@ -9,6 +9,8 @@ import supabase from '../util/supabaseClient'
 export default function MyCourses() {
   const [userDataModal, setUserDataModal] = useState(false)
   const navigate = useNavigate();
+  const [pageChange, setPageChange] = useState(true);
+
     const fetchUser = async () => {
       const { error } = await supabase.auth.getUser();
       if (error) {
@@ -21,11 +23,12 @@ export default function MyCourses() {
     }, []);
   
   return (
-    <div className='flex justify-center bg-slate-200 relative'>
-      <div className='w-full'>
+    <div className='flex justify-center bg-slate-200 w-full'>
+  <div className='flex justify-center bg-slate-200 relative w-full max-w-[1400px]'>
+      <div className='w-full '>
         <div className='min-h-screen'>
-        <UserHeader userDataModal={userDataModal} setUserDataModal={setUserDataModal}></UserHeader>
-        <CourseList></CourseList>
+        <UserHeader pageChange={pageChange} setPageChange={setPageChange} userDataModal={userDataModal} setUserDataModal={setUserDataModal}></UserHeader>
+        <CourseList pageChange={pageChange}></CourseList>
         </div>
         <Footer padding={""}></Footer>
       </div>
@@ -34,6 +37,6 @@ export default function MyCourses() {
         <UserData userDataModal={userDataModal} setUserDataModal={setUserDataModal}></UserData>
       }
     </div>
-  
+  </div>
   )
 }
