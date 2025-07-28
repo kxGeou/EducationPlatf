@@ -145,7 +145,7 @@ function userHeader({
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
                   transition={{ duration: 0.3 }}
-                  className="absolute top-12 w-full -right-4 mt-3 px-5 py-6 rounded-[12px] shadow-xl bg-white z-50 space-y-6"
+                  className={`${userDataModal && "hidden"} absolute top-12 w-full -right-4 mt-3 px-5 py-6 rounded-[12px] shadow-xl bg-white z-50 space-y-6`}
                 >
                   <div
                     onClick={() => setUserDataModal(!userDataModal)}
