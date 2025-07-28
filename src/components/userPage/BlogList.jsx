@@ -1,31 +1,27 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import useWindowWidth from '../../hooks/useWindowWidth';
-import { ChevronRight, FileQuestion } from 'lucide-react';
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import { ChevronRight, FileQuestion } from "lucide-react";
 
-const BlogNav = () => {
+const BlogList = () => {
   const navigate = useNavigate();
-  const width = useWindowWidth();
 
   const navItems = [
     {
       direct: "/firstBlog",
-      title: "Jak radzić sobie ze stresem"
+      title: "Jak radzić sobie ze stresem",
     },
     {
       direct: "/secondBlog",
-      title: "Zarządzanie emocjami w pracy"
+      title: "Zarządzanie emocjami w pracy",
     },
     {
       direct: "/thirdBlog",
-      title: "Techniki relaksacyjne na co dzień"
+      title: "Techniki relaksacyjne na co dzień",
     },
   ];
 
-  if (width <= 1200) return null;
-
   return (
-    <nav className="absolute top-18 my-4 left-0 bg-white shadow-lg rounded-2xl max-h-screen w-80 px-6 py-5 ">
+    <nav className="w-full max-w-[300px] bg-white shadow-lg rounded-2xl px-6 py-5 sticky top-6">
       <h2 className="flex items-center gap-2 text-lg font-semibold text-primaryBlue mb-4">
         Materiały pomocnicze <FileQuestion size={20} />
       </h2>
@@ -46,4 +42,4 @@ const BlogNav = () => {
   );
 };
 
-export default BlogNav;
+export default BlogList;

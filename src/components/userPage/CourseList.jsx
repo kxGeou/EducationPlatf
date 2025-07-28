@@ -4,6 +4,7 @@ import Error from "../systemLayouts/Error";
 import Loading from "../systemLayouts/Loading";
 import BlogList from "./BlogList";
 import { motion } from "framer-motion";
+import { Book } from "lucide-react";
 import { useState, useMemo, useCallback, memo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -26,18 +27,10 @@ const videoResources = [
     title: "Kurs Java dla początkujących",
     description: "Wszystkie przydatne informacje są zawarte w tym kursie",
   },
-  {
-    title: "Kurs Java dla początkujących",
-    description: "Wszystkie przydatne informacje są zawarte w tym kursie",
-  },
-  {
-    title: "Kurs Java dla początkujących",
-    description: "Wszystkie przydatne informacje są zawarte w tym kursie",
-  },
 ];
 
 const ResourceVideo = memo(({ videoTitle, videoDescription }) => (
-  <div className="w-full  bg-white rounded-xl shadow-lg transition-all duration-300 hover:scale-105">
+  <div className="w-full bg-white rounded-xl shadow-lg transition-all duration-300 hover:scale-105">
     <div className="px-4 py-6">
       <p className="font-bold text-lg">{videoTitle}</p>
       <span className="text-md opacity-50">{videoDescription}</span>
@@ -46,7 +39,7 @@ const ResourceVideo = memo(({ videoTitle, videoDescription }) => (
 ));
 
 const CourseItem = memo(({ course, onClick }) => (
-  <div className="flex justify-center md:justify-between items-center gap-16 px-4">
+  <div className="flex justify-center md:justify-between items-center gap-16 px-4 md:px-0 md:ml-6">
     <div className="md:flex flex-col items-start gap-3 w-[50%] hidden">
       <h3 className="font-bold text-4xl">{course.section_title}</h3>
       <p className="text-md opacity-75">{course.section_description}</p>
@@ -124,51 +117,39 @@ function CourseList({ pageChange }) {
 
   return (
     <div className="flex flex-col items-center mt-4">
-      {/* <div className="mb-10 flex items-center w-full max-w-[300px] font-semibold">
-        <p
-          className={`w-[50%] border border-gray-300 py-2 flex justify-center ${
-            pageChange ? "bg-white" : "bg-transparent"
-          } cursor-pointer`}
-          onClick={() => setPageChange(true)}
-        >
-          📚 Twoje Kursy
-        </p>
-        <p
-          className={`w-[50%] border border-gray-300 py-2 flex justify-center ${
-            !pageChange ? "bg-white" : "bg-transparent"
-          } cursor-pointer`}
-          onClick={() => setPageChange(false)}
-        >
-          🗂️ Zasoby
-        </p>
-      </div> */}
+      <div className="flex flex-col lg:flex-row w-full max-w-[1400px] gap-6 px-4 ">
+        <div className="hidden lg:block w-full max-w-[300px]">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.4 }}
+          >
+            <BlogList />
+          </motion.div>
+        </div>
 
-      <div className="flex justify-end w-full items-end">
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.4 }}
-        >
-          <BlogList />
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.4 }}
-        >
-          <div className="flex flex-col items-center">
-            {pageChange ? (
-              <ul className="w-full max-w-[1100px] flex flex-col gap-16">
-                {courseList}
-              </ul>
-            ) : (
-              <div className="w-full max-w-[1025px] grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {videoList}
-              </div>
-            )}
-          </div>
-        </motion.div>
+        <div className="flex-1">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.4 }}
+          >
+            <div className="flex flex-col items-center">
+              {pageChange ? (
+                <ul className="w-full flex flex-col gap-16">{courseList}</ul>
+              ) : (
+                <div className="flex flex-col items-start">
+                  <h3 className="text-lg opacity-50 font-semibold text-blackText mb-2 flex items-center gap-2">
+                    Zasoby do nauki <Book size={20} />
+                  </h3>
+                  <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {videoList}
+                  </div>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        </div>
       </div>
     </div>
   );

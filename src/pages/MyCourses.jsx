@@ -23,8 +23,8 @@ export default function MyCourses() {
     }, []);
   
   return (
-    <div className='flex justify-center bg-slate-200 w-full'>
-  <div className='flex justify-center bg-slate-200 relative w-full max-w-[1400px]'>
+    <div className='flex justify-center bg-slate-300 w-full'>
+  <div className='flex justify-center bg-slate-300 relative w-full max-w-[1400px]'>
       <div className='w-full '>
         <div className='min-h-screen'>
         <UserHeader pageChange={pageChange} setPageChange={setPageChange} userDataModal={userDataModal} setUserDataModal={setUserDataModal}></UserHeader>
