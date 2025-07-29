@@ -14,6 +14,7 @@ import TestResources from './pages/TestResources.jsx'
 
 import { useEffect } from 'react'
 import { useAuthStore } from './store/authStore.js'; 
+import ScrollToTop from './scripts/scrollToTop.jsx'
 
 export default function App() {
   const init = useAuthStore(state => state.init)
@@ -31,6 +32,7 @@ export default function App() {
   return (
     <>
       <Toaster position="top-right" reverseOrder={false} />
+      <ScrollToTop></ScrollToTop>
       <Routes>
         <Route path='/' element={<Home />} />
         <Route path='/authentication' element={<AuthPage />} />

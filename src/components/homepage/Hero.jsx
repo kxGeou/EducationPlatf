@@ -17,10 +17,9 @@ function Hero() {
   }, [inView, controls]);
 
   const heroVariants = {
-    hidden: { opacity: 0, x: -20 },
+    hidden: { opacity: 0 },
     visible: {
       opacity: 1,
-      x: 0,
       transition: {
         duration: 0.8,
         ease: "easeOut"
@@ -34,21 +33,21 @@ function Hero() {
       initial="hidden"
       animate={controls}
       variants={heroVariants}
-      className="flex flex-col gap-5 z-8 w-full px-6 mt-32"
+      className="flex flex-col gap-5 z-8 w-full px-6 mt-32 md:mt-42"
     >
-      <div className="flex items-center justify-between gap-20">
-        <div className="flex flex-col gap-3 lg:gap-6">
+      <div className="flex items-center justify-between gap-12">
+        <div className="flex flex-col">
           <h2
-            className="font-bold text-4xl text-darkerBlack lg:text-6xl  leading-[45px] w-full max-w-[400px] lg:leading-[65px] md:max-w-[750px] lg:max-w-[700px] lg:font-extrabold"
+            className="font-bold text-4xl text-darkerBlack lg:text-7xl md:text-5xl  leading-[45px] w-full max-w-[400px] lg:leading-[75px] md:max-w-[750px] lg:max-w-[600px] lg:font-extrabold mb-4"
           >
-            Zdaj maturę z informatyki bez stresu — z nami to naprawdę proste!
+            Zdaj maturę z informatyki bez stresu
           </h2>
 
-          <Description textColor={"text-textBlack"}>
-          Nauka informatyki nie musi być trudna. Nasze kursy online prowadzą Cię krok po kroku, dzięki czemu opanujesz wszystko, co potrzebne na maturę — bez nudy i bez przepalania czasu. Gwarantujemy, że zrozumiesz nawet najtrudniejsze tematy.
+          <Description textColor={"text-blackText mb-6"}>
+          Nauka informatyki nie musi być trudna. Nasze kursy online prowadzą Cię krok po kroku, dzięki czemu opanujesz wszystko, co potrzebne na maturę — bez nudy i bez przepalania czasu.
           </Description>
+          <button className="bg-primaryGreen cursor-pointer transition-all duration-300 hover:scale-[1.025] hover:bg-secondaryGreen w-[75%] py-2 text-white rounded-[12px]">Zobacz kursy</button>
         </div>
-
         <div className="w-[50%] h-[17rem] rounded-[12px] shadow-lg bg-blackText text-white justify-center items-center hidden lg:flex">
           Prototyp
         </div>

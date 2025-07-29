@@ -13,6 +13,12 @@ const registerSchema = z
     password: z.string().min(6),
     confirmPassword: z.string(),
     full_name: z.string().min(2),
+    acceptTerms: z.literal(true, {
+      errorMap: () => ({ message: 'Musisz zaakceptować regulamin' }),
+    }),
+    acceptPrivacy: z.literal(true, {
+      errorMap: () => ({ message: 'Musisz wyrazić zgodę na przetwarzanie danych' }),
+    }),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: 'Hasła muszą być takie same',
@@ -22,6 +28,7 @@ const registerSchema = z
     message: 'Hasło jest zbyt słabe',
     path: ['password'],
   })
+
 
 const strengthLabels = [
   'Bardzo słabe',
@@ -133,6 +140,27 @@ export default function RegisterForm() {
         className="w-full p-2 border border-gray-300 rounded"
       />
       <PasswordStrength password={password} />
+<div className="flex items-center gap-2">
+  <input
+    type="checkbox"
+    {...register('acceptTerms')}
+    id="acceptTerms"
+  />
+  <label htmlFor="acceptTerms" className='flex gap-1'>
+    Akceptuję <a href="/regulamin" className="underline text-primaryBlue font-semibold">regulamin</a>
+  </label>
+</div>
+
+<div className="flex items-center gap-2">
+  <input
+    type="checkbox"
+    {...register('acceptPrivacy')}
+    id="acceptPrivacy"
+  />
+  <label htmlFor="acceptPrivacy">
+    Wyrażam zgodę na przetwarzanie danych osobowych
+  </label>
+</div>
 
       <button
         type="submit"

@@ -1,4 +1,4 @@
-import { X } from 'lucide-react'
+import { X, Mail, BookOpen, LogOut, ShieldCheck } from 'lucide-react'
 import React from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Avatar from 'boring-avatars'
@@ -20,75 +20,92 @@ function UserData({ userDataModal, setUserDataModal }) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className='fixed backdrop:blur-2xl w-full h-full bg-black/20 backdrop-blur-sm flex justify-center items-center px-6 md:px-0'
+          className="fixed z-50 inset-0 bg-black/30 backdrop-blur-sm flex justify-center items-center p-4"
         >
           <motion.div
-            initial={{ y: 0, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: 0, opacity: 0 }}
-            transition={{ duration: 0.3, ease: 'easeOut' }}
-            className='w-full lg:w-[50%] md:w-[75%]  h-[75%] bg-white rounded-[12px] p-6 flex flex-col'
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{  opacity: 0 }}
+            transition={{ duration: 0.25, ease: 'easeOut' }}
+            className="w-full max-w-md bg-white rounded-2xl shadow-xl p-6 flex flex-col gap-6"
           >
-            <div className='w-full flex justify-between'>
-              <span></span>
-              <X
-                className='cursor-pointer'
-                onClick={() => setUserDataModal(false)}
-              />
+            <div className="flex justify-between mb-2 items-start">
+              <div>
+                <h2 className="text-xl font-bold text-gray-800">Dane użytkownika</h2>
+                <p className="text-sm text-gray-500">Twoje informacje i status konta</p>
+              </div>
+              <X className="cursor-pointer text-gray-500 hover:text-black" onClick={() => setUserDataModal(false)} />
             </div>
 
-            <div>
-              <div className='flex flex-col gap-6'>
-                <Avatar
-                  name={user?.user_metadata?.full_name || "Użytkownik"}
-                  colors={["#0056d6", "#669c35", "#ffffff", "#74a7fe", "#cce8b5"]}
-                  variant="beam"
-                  size={80}
-                />
-
-                <div className='flex flex-col gap-2'>
-                  <p className='flex items-center gap-1 text-md text-gray-500'>
-                    <span className='text-darkerBlack font-semibold'>
-                      {user?.user_metadata?.email_verified ? (
-                        <span className='text-green-400'>Zweryfikowany</span>
-                      ) : (
-                        <span className='text-red-500'>Nie zweryfikowany</span>
-                      )}
-                    </span>
-                  </p>
-
-                  <p className='flex items-center gap-1 text-md text-gray-500'>
-                    Email:
-                    <span className='text-darkerBlack font-semibold'>
-                      {user?.email || "Brak danych"}
-                    </span>
-                  </p>
-
-                  <p className='flex items-center gap-1 text-md text-gray-500'>
-                    Nazwa użytkownika:
-                    <span className='text-darkerBlack font-semibold'>
-                      {user?.user_metadata?.full_name || "Brak danych"}
-                    </span>
-                  </p>
-
-                  <p className='flex items-center gap-1 text-md text-gray-500'>
-                    Kupionych kursów:
-                    <span className='text-darkerBlack font-semibold'>
-                      {courses ? courses.length : 0}
-                    </span>
-                  </p>
-
-                  <button
-                    onClick={() => {
-                      logout()
-                      setUserDataModal(false)
-                    }}
-                    className='bg-red-400 mt-4 cursor-pointer text-white w-fit px-4 py-2 rounded-lg'
-                  >
-                    Wyloguj się
-                  </button>
-                </div>
+            <div className="flex items-center gap-4 border-b border-blackText/25 pb-4">
+              <Avatar
+                name={user?.user_metadata?.full_name || 'Użytkownik'}
+                colors={['#0056d6', '#669c35', '#ffffff', '#74a7fe', '#cce8b5']}
+                variant="beam"
+                size={64}
+              />
+              <div className="flex flex-col">
+                <span className="text-lg font-semibold text-gray-800">
+                  {user?.user_metadata?.full_name || 'Nieznany użytkownik'}
+                </span>
+                <span className="text-sm text-gray-500">{user?.email || 'Brak e-maila'}</span>
               </div>
+            </div>
+
+            <div className="flex flex-col gap-3 text-sm text-gray-600">
+              <div className="flex items-center justify-between">
+                <span className="flex items-center gap-2">
+                  <Mail size={16} />
+                  Email:
+                </span>
+                <span className="font-medium text-gray-800">{user?.email || 'Brak'}</span>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <span className="flex items-center gap-2">
+                  <BookOpen size={16} />
+                  Kursy:
+                </span>
+                {coursesLoading ? (
+                  <span className="italic text-gray-400">Ładowanie...</span>
+                ) : error ? (
+                  <span className="text-red-500">Błąd</span>
+                ) : (
+                  <span className="font-medium text-gray-800">{courses?.length || 0}</span>
+                )}
+              </div>
+
+              <div className="flex items-center justify-between">
+                <span className="flex items-center gap-2">
+                  <ShieldCheck
+                    size={16}
+                    className={user?.user_metadata?.email_verified ? 'text-green-500' : 'text-red-500'}
+                  />
+                  Status:
+                </span>
+                <span
+                  className={
+                    user?.user_metadata?.email_verified
+                      ? 'text-green-600 font-medium'
+                      : 'text-red-500 font-medium'
+                  }
+                >
+                  {user?.user_metadata?.email_verified ? 'Zweryfikowany' : 'Niezweryfikowany'}
+                </span>
+              </div>
+            </div>
+
+            <div className="pt-6 border-t border-blackText/25  flex justify-end">
+              <button
+                onClick={() => {
+                  logout()
+                  setUserDataModal(false)
+                }}
+                className="flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm transition"
+              >
+                <LogOut size={16} />
+                Wyloguj się
+              </button>
             </div>
           </motion.div>
         </motion.div>

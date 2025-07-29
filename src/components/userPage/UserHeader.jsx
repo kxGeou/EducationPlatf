@@ -37,7 +37,7 @@ function UserHeader({ userDataModal, setUserDataModal, pageChange, setPageChange
       className="px-4"
     >
       <header
-        className={`z-40 sticky top-0 bg-white text-blackText my-3 rounded-[12px] border-b border-gray-300 w-full flex justify-center py-2 px-4 lg:px-6 transition-all ${
+        className={`z-40 bg-white text-blackText my-3 rounded-[12px] border-b border-gray-300 w-full flex justify-center py-2 px-4 lg:px-6 transition-all ${
           isScrolled ? "shadow-md" : ""
         }`}
       >

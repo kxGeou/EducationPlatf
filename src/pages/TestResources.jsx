@@ -12,7 +12,7 @@ function TestResources() {
                 <Header></Header>
                 <Hero></Hero>
  
-                <h2 className='flex items-center gap-2 mt-28 mb-6 text-xl text-darkBlue opacity-75'><Book></Book> Arkusze maturalne</h2>
+                <h2 className='flex items-center gap-2 mt-28 mb-6 text-lg md:text-xl text-darkBlue opacity-75'><Book size={20}></Book> Arkusze maturalne</h2>
                 <div className='flex flex-col gap-18 mb-32'>
                 {Resources.map((r, index) => (
                     <LessonBlock Resources={r} key={index}></LessonBlock>

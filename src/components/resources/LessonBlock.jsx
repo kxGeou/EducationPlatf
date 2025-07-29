@@ -110,18 +110,21 @@ function DropdownButton({ title, options, color }) {
     <div className="relative">
       <button
         onClick={toggleDropdown}
-        className="cursor-pointer transition-all duration-300 hover:scale-[1.05] text-white flex items-center justify-center px-8 py-3 rounded-[12px]"
+        className="cursor-pointer w-full transition-all duration-300 hover:scale-[1.05] text-white flex items-center justify-center px-8 py-2 rounded-[12px]"
         style={{ background: color }}
       >
         {title}
       </button>
       {open && (
-        <div className="absolute z-20 mt-2 w-full bg-white border rounded-[12px] shadow-lg">
+        <div className="absolute z-20 mt-2 w-full rounded-[12px] shadow-lg" 
+        style={{ background: color }}
+        
+        > 
           {options.map((opt, idx) => (
             <button
               key={idx}
               onClick={() => handleSelect(opt.pdfUrl)}
-              className="block w-full px-4 py-2 text-left hover:bg-gray-100 rounded-[12px] text-sm text-black"
+              className="block w-full p-4 text-left hover:bg-black/20 cursor-pointer rounded-[12px] text-sm text-white"
             >
               {opt.label}
             </button>

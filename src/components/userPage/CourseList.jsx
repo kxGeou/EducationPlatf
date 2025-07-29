@@ -123,7 +123,7 @@ function CourseList({ pageChange }) {
 
   return (
     <div className="flex flex-col items-center mt-4">
-      <div className="flex flex-col lg:flex-row w-full max-w-[1400px] gap-6 px-4 ">
+      <div className="flex flex-col lg:flex-row w-full max-w-[1400px] gap-28 px-4 ">
         <div className="hidden lg:block w-full max-w-[300px]">
           <motion.div
             initial={{ opacity: 0 }}
