@@ -30,7 +30,7 @@ function App() {
       </div>
       <Hero></Hero>
       <p className="flex gap-2 items-center w-full px-6 mt-20 mb-6 text-gray-400">
-        <BookMarked size={18} className="text-gray-400"></BookMarked>Dostępne kursy
+        <BookMarked size={18} className="text-gray-400"></BookMarked>Moduły, które zapewnią Ci zdany egzamin
       </p>
       <CourseListHero></CourseListHero>
       

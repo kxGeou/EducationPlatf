@@ -10,17 +10,19 @@ function CourseListHero() {
       icon: Excel,
     },
     {
-      label: "Teoria",
-      icon: Forms,
-    },
-    {
       label: "Access",
       icon: Access,
     },
-    {
+     {
       label: "Python",
       icon: Python,
     },
+    {
+      label: "Teoria",
+      icon: Forms,
+    },
+    
+   
   ];
 
   return (

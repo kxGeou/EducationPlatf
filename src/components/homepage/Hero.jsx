@@ -37,17 +37,15 @@ function Hero() {
       className="flex flex-col gap-5 z-8 w-full px-6 mt-32"
     >
       <div className="flex items-center justify-between gap-20">
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-3 lg:gap-6">
           <h2
-            className="font-bold text-4xl leading-[40px] text-darkerBlack md:text-7xl lg:leading-[100px] lg:text-8xl md:leading-[80px] w-full max-w-[400px] md:max-w-[750px] lg:max-w-[700px] lg:font-extrabold"
+            className="font-bold text-4xl text-darkerBlack lg:text-6xl  leading-[45px] w-full max-w-[400px] lg:leading-[65px] md:max-w-[750px] lg:max-w-[700px] lg:font-extrabold"
           >
-            Lorem ipsum dolor sit amet consectetur
+            Zdaj maturę z informatyki bez stresu — z nami to naprawdę proste!
           </h2>
 
           <Description textColor={"text-textBlack"}>
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Explicabo
-            dolorem rerum corrupti enim dicta, eius doloribus deleniti tempore
-            quisquam, asperiores itaque saepe at similique aliquid.
+          Nauka informatyki nie musi być trudna. Nasze kursy online prowadzą Cię krok po kroku, dzięki czemu opanujesz wszystko, co potrzebne na maturę — bez nudy i bez przepalania czasu. Gwarantujemy, że zrozumiesz nawet najtrudniejsze tematy.
           </Description>
         </div>
 
