@@ -1,35 +1,20 @@
 import useWindowWidth from "../../hooks/useWindowWidth";
-import supabase from "../../util/supabaseClient";
 import Avatar from "boring-avatars";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, Menu, X } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuthStore } from "../../store/authStore"; 
 
-function userHeader({
-  userDataModal,
-  setUserDataModal,
-  pageChange,
-  setPageChange,
-}) {
-  const [userEmail, setUserEmail] = useState(null);
-  const width = useWindowWidth();
-  const navigate = useNavigate();
+function UserHeader({ userDataModal, setUserDataModal, pageChange, setPageChange }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const width = useWindowWidth();
+  const navigate = useNavigate();
+
+  const user = useAuthStore(state => state.user);
 
   useEffect(() => {
-    const fetchUser = async () => {
-      const { data, error } = await supabase.auth.getUser();
-      if (error) {
-        console.log("Error fetching user", error);
-        return;
-      }
-      setUserEmail(data.user.user_metadata.full_name);
-    };
-
-    fetchUser();
-
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 10);
     };
@@ -39,18 +24,9 @@ function userHeader({
   }, []);
 
   const navItems = [
-    {
-      direct: "/firstBlog",
-      title: "Jak radzić sobie ze stresem",
-    },
-    {
-      direct: "/secondBlog",
-      title: "Zarządzanie emocjami w pracy",
-    },
-    {
-      direct: "/thirdBlog",
-      title: "Techniki relaksacyjne na co dzień",
-    },
+    { direct: "/firstBlog", title: "Jak radzić sobie ze stresem" },
+    { direct: "/secondBlog", title: "Zarządzanie emocjami w pracy" },
+    { direct: "/thirdBlog", title: "Techniki relaksacyjne na co dzień" },
   ];
 
   return (
@@ -104,9 +80,9 @@ function userHeader({
               aria-label="Otwórz dane użytkownika"
             >
               <div className="flex gap-2 items-center">
-                <span className="opacity-75">{userEmail || "Użytkownik"}</span>
+                <span className="opacity-75">{user?.user_metadata?.full_name || "Użytkownik"}</span>
                 <Avatar
-                  name={userEmail || "Użytkownik"}
+                  name={user?.user_metadata?.full_name || "Użytkownik"}
                   colors={[
                     "#0056d6",
                     "#669c35",
@@ -156,7 +132,7 @@ function userHeader({
                     </h3>
                     <div className="flex gap-3 items-center">
                       <Avatar
-                        name={userEmail || "Użytkownik"}
+                        name={user?.user_metadata?.full_name || "Użytkownik"}
                         colors={[
                           "#0056d6",
                           "#669c35",
@@ -169,9 +145,8 @@ function userHeader({
                       />
                       <div>
                         <p className="text-sm font-semibold">
-                          {userEmail || "Użytkownik"}
+                          {user?.user_metadata?.full_name || "Użytkownik"}
                         </p>
-                       
                       </div>
                     </div>
                   </div>
@@ -236,4 +211,4 @@ function userHeader({
   );
 }
 
-export default userHeader;
+export default UserHeader;

@@ -4,7 +4,6 @@ import Footer from "../components/homepage/Footer";
 import Header from "../components/homepage/Header";
 import Error from "../components/systemLayouts/Error";
 import Loading from "../components/systemLayouts/Loading";
-import { useAuth } from "../context/AuthContext";
 import supabase from "../util/supabaseClient";
 import Hls from "hls.js";
 import {
@@ -21,10 +20,11 @@ import {
 } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useAuthStore } from "../store/authStore";
 
 export default function CourseLandingPage() {
   const { id } = useParams();
-  const { user } = useAuth();
+  const user = useAuthStore((state) => state.user);
   const navigate = useNavigate();
   const [course, setCourse] = useState(null);
   const [firstVideo, setFirstVideo] = useState(null);
@@ -85,7 +85,6 @@ export default function CourseLandingPage() {
         .limit(4);
 
       setOtherCourses(otherCoursesData || []);
-
       setLoading(false);
       hasFetchedRef.current = true;
     };
@@ -141,8 +140,8 @@ export default function CourseLandingPage() {
     }
   };
 
-  if (loading) return <Loading></Loading>;
-  if (!course) return <Error></Error>;
+  if (loading) return <Loading />;
+  if (!course) return <Error />;
 
   const learn = [
     "Programować w wybranym języku",
@@ -153,7 +152,7 @@ export default function CourseLandingPage() {
 
   return (
     <div className="w-full flex flex-col items-center">
-      <Header></Header>
+      <Header />
       <section className="bg-darkBlue flex justify-center text-white py-28 w-full ">
         <div className="max-w-[1100px] w-full min-h-[10rem] flex justify-between items-start relative px-6">
           <div>
@@ -161,111 +160,96 @@ export default function CourseLandingPage() {
               {course.title}
             </h1>
             <p className="opacity-75 mb-6 md:text-lg">{course.description}</p>
-
             <p className="text-white font-semibold text-2xl mt-8 mb-2 lg:hidden">
-              {course.price_cents}zł <span className="ml-1 text-2xl opacity-50 font-normal line-through">220zł</span>
+              {course.price_cents}zł{" "}
+              <span className="ml-1 text-2xl opacity-50 font-normal line-through">
+                220zł
+              </span>
             </p>
             {!alreadyBought && (
               <button
                 onClick={handleBuy}
                 className="px-4 py-3 flex gap-3 items-center lg:hidden justify-center border font-bold border-white w-full text-white cursor-pointer rounded transition-all duration-300 hover:scale-[1.025] mt-3 "
               >
-                <ShoppingBasket size={18}></ShoppingBasket> Kup teraz
+                <ShoppingBasket size={18} />
+                Kup teraz
               </button>
             )}
-
             {alreadyBought && (
               <p className="flex lg:hidden cursor-not-allowed items-center justify-center border px-4 py-3 rounded border-white/50 w-full text-white/50 font-semibold">
                 Posiadasz ten kurs
               </p>
             )}
           </div>
-            <aside className="lg:block hidden bg-white right-6 absolute w-[20rem] shadow-lg rounded-lg p-3">
-              <div className="bg-darkBlue flex items-center h-40 w-full justify-center">
-                prototyp
-              </div>
 
-              <p className="text-darkBlue font-semibold text-2xl mt-8">
-                {course.price_cents}zł <span className="ml-1 text-2xl opacity-50 font-normal line-through">220zł</span>
+          <aside className="lg:block hidden bg-white right-6 absolute w-[20rem] shadow-lg rounded-lg p-3">
+            <div className="bg-darkBlue flex items-center h-40 w-full justify-center">
+              prototyp
+            </div>
+            <p className="text-darkBlue font-semibold text-2xl mt-8">
+              {course.price_cents}zł{" "}
+              <span className="ml-1 text-2xl opacity-50 font-normal line-through">
+                220zł
+              </span>
+            </p>
+            {!alreadyBought && (
+              <button
+                onClick={handleBuy}
+                className="px-4 py-3 flex gap-3 items-center justify-center border font-bold bg-gradient-to-br from-primaryBlue to-darkBlue border-darkBlue w-full text-white cursor-pointer rounded-[8px] transition-all duration-300 hover:bg-white mt-2 hover:scale-[1.025]"
+              >
+                <ShoppingBasket size={18} />
+                Kup teraz
+              </button>
+            )}
+            {alreadyBought && (
+              <p className="flex cursor-not-allowed items-center justify-center border px-4 py-[10px] mt-2 rounded border-darkBlue/50 w-full text-darkBlue/50 font-semibold">
+                Posiadasz ten kurs
               </p>
-              {!alreadyBought && (
-                <button
-                  onClick={handleBuy}
-                  className="px-4 py-3 flex gap-3 items-center justify-center border font-bold bg-gradient-to-br from-primaryBlue to-darkBlue border-darkBlue w-full text-white cursor-pointer rounded-[8px] transition-all duration-300 hover:bg-white mt-2 hover:scale-[1.025]"
-                  title="Przycisk do zakupu kursu"
-                >
-                  <ShoppingBasket size={18}></ShoppingBasket> Kup teraz
-                </button>
-              )}
-
-              {alreadyBought && (
-                <p className="flex cursor-not-allowed items-center justify-center border px-4 py-[10px] mt-2 rounded border-darkBlue/50 w-full text-darkBlue/50 font-semibold">
-                  Posiadasz ten kurs
-                </p>
-              )}
-              <div className="text-gray-600 text-sm mt-6 flex flex-col gap-1 items-start">
-                <span>Roczny dostęp do kursu</span>
-                <span>Gwarancja profesjonalnej obsługi</span>
-              </div>
-            </aside>
-            
+            )}
+            <div className="text-gray-600 text-sm mt-6 flex flex-col gap-1 items-start">
+              <span>Roczny dostęp do kursu</span>
+              <span>Gwarancja profesjonalnej obsługi</span>
+            </div>
+          </aside>
         </div>
       </section>
 
       <main className="w-full max-w-[1100px] px-6">
-
-
         <section className="border-[0.75px] p-4 mt-16 border-gray-400 md:py-6 rounded-xl w-full max-w-[650px]">
           <h2 className="text-xl font-bold md:text-2xl">Czego się nauczysz</h2>
           <ul className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-3 items-start mt-2 md:mt-4">
             {learn.map((l, index) => (
-              <li
-                className="flex gap-3 items-start text-gray-700 text-sm"
-                key={index}
-              >
-                <Check size={18} className="text-secondaryBlue"></Check> {l}
+              <li className="flex gap-3 items-start text-gray-700 text-sm" key={index}>
+                <Check size={18} className="text-secondaryBlue" />
+                {l}
               </li>
             ))}
           </ul>
         </section>
 
-
-
-
-
         <section className="flex flex-col my-16 relative ">
-          <h2 className="text-xl font-bold mb-4 md:text-2xl">
-            Ten kurs obejmuje:
-          </h2>
-
+          <h2 className="text-xl font-bold mb-4 md:text-2xl">Ten kurs obejmuje:</h2>
           <ul className="flex flex-col gap-2 md:gap-3">
             <span className="text-gray-800 flex items-center gap-2">
-              <Video size={18} className="text-secondaryBlue"></Video>
-              12 godz. treści video
+              <Video size={18} className="text-secondaryBlue" /> 12 godz. treści video
             </span>
             <span className="text-gray-800 flex items-center gap-2 ">
-              <ScreenShareIcon
-                size={18}
-                className="text-secondaryBlue"
-              ></ScreenShareIcon>
+              <ScreenShareIcon size={18} className="text-secondaryBlue" />
               Dostęp na urządzeniach mobilnych i desktopowych
             </span>
             <span className="text-gray-800 flex items-center gap-2 ">
-              <TrophyIcon size={18} className="text-secondaryBlue"></TrophyIcon>
+              <TrophyIcon size={18} className="text-secondaryBlue" />
               Certyfikat po kursie
             </span>
             <span className="text-gray-800 flex items-center gap-2 ">
-              <ArrowDown01Icon
-                size={18}
-                className="text-secondaryBlue"
-              ></ArrowDown01Icon>
+              <ArrowDown01Icon size={18} className="text-secondaryBlue" />
               {videos.length} Filmów Video
             </span>
           </ul>
 
           <div className="absolute -right-16 -top-30 hidden lg:block">
-              <img src="../robocik.svg" className="w-[28rem]"/>
-            </div>
+            <img src="../robocik.svg" className="w-[28rem]" />
+          </div>
         </section>
 
         <section className="flex flex-col my-16">
@@ -288,31 +272,21 @@ export default function CourseLandingPage() {
                   alt="mockup image"
                   className="max-h-50 w-full rounded-t-[12px] mb-3"
                 />
-
                 <div className="flex items-center justify-center gap-2 absolute top-3 left-4 bg-secondaryGreen/75 backdrop-blur-md border border-white/20 text-white text-xs px-3 py-1 rounded-[8px] opacity-0 -translate-x-10 group-hover:-translate-x-1 group-hover:opacity-100 transition-all duration-300 z-10 shadow-sm">
                   Zobacz szczegóły <Lightbulb size={15} />
                 </div>
-
                 <div className="px-4 flex flex-col z-10">
-                  <h2 className="text-xl font-semibold text-blackText">
-                    {title}
-                  </h2>
+                  <h2 className="text-xl font-semibold text-blackText">{title}</h2>
                   <p className="text-blackText/50 text-sm">{description}</p>
                 </div>
-
                 <div className="flex flex-col items-start gap-1 w-full px-4 mt-3 z-10">
                   <span className="flex gap-2 items-center">
                     <p className="text-lg text-blackText">
-                      {(course.price_cents
-                        ? course.price_cents
-                        : course.price) + " zł"}
+                      {(course.price_cents ? course.price_cents : course.price) + " zł"}
                     </p>
-                    <p className="text-md text-blackText/50 line-through">
-                      220 zł
-                    </p>
+                    <p className="text-md text-blackText/50 line-through">220 zł</p>
                   </span>
                 </div>
-
                 <div className="absolute bottom-0 left-0 h-1 w-full bg-gradient-to-r from-blue-400 via-indigo-400 to-green-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left z-0"></div>
               </div>
             ))}
@@ -320,7 +294,7 @@ export default function CourseLandingPage() {
         </section>
       </main>
 
-      <Footer></Footer>
+      <Footer />
     </div>
   );
 }
@@ -342,9 +316,7 @@ function HlsPlayer({ src }) {
     return () => hls?.destroy();
   }, [src]);
 
-  return (
-    <video ref={videoRef} controls className="w-full h-full bg-black rounded" />
-  );
+  return <video ref={videoRef} controls className="w-full h-full bg-black rounded" />;
 }
 
 function CourseSections({ videos, firstVideoId }) {
@@ -371,20 +343,14 @@ function CourseSections({ videos, firstVideoId }) {
 
   return (
     <div className="rounded-xl ">
-    {Object.entries(groupedVideos).map(([section, vids], idx) => (
-          <div
-            key={section}
-            className="rounded-xl overflow-hidden border border-gray-300 mb-2"
+      {Object.entries(groupedVideos).map(([section, vids]) => (
+        <div key={section} className="rounded-xl overflow-hidden border border-gray-300 mb-2">
+          <button
+            onClick={() => toggleSection(section)}
+            className="w-full text-left font-semibold text-md flex justify-between items-center px-4 py-4 bg-gray-100/90"
           >
-            <button
-              onClick={() => toggleSection(section)}
-              className="w-full text-left font-semibold text-md flex justify-between items-center px-4 py-4 bg-gray-100/90"
-            >
-
             {section}
-            <span>
-              {openSections[section] ? <ChevronDown /> : <ChevronRight />}
-            </span>
+            <span>{openSections[section] ? <ChevronDown /> : <ChevronRight />}</span>
           </button>
 
           {openSections[section] && (
@@ -400,7 +366,7 @@ function CourseSections({ videos, firstVideoId }) {
                   onClick={() => handleVideoClick(video)}
                 >
                   <span className="flex gap-4 items-center">
-                    <MonitorPlay size={18} className="font-thin"></MonitorPlay>
+                    <MonitorPlay size={18} className="font-thin" />
                     {video.title}
                   </span>
                   {video.videoId === firstVideoId && (

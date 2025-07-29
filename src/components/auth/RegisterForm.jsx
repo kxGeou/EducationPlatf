@@ -2,10 +2,10 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import zxcvbn from 'zxcvbn'
-import supabase from '../../util/supabaseClient'
 import { useState } from 'react'
 import { toast } from 'react-hot-toast'
 import { useNavigate } from 'react-router-dom'
+import { useAuthStore } from '../../store/authStore'
 
 const registerSchema = z
   .object({
@@ -40,12 +40,12 @@ const strengthColors = [
 ]
 
 function PasswordStrength({ password }) {
-  const pwd = password || '';
-  const result = zxcvbn(pwd);
-  const score = result.score;
-  const widthPercent = ((score + 1) / 5) * 100;
+  const pwd = password || ''
+  const result = zxcvbn(pwd)
+  const score = result.score
+  const widthPercent = ((score + 1) / 5) * 100
 
-  if (!pwd) return null; 
+  if (!pwd) return null
 
   return (
     <div className="mt-2">
@@ -58,22 +58,16 @@ function PasswordStrength({ password }) {
           }}
         />
       </div>
-      <p
-        className="mt-1 text-sm font-medium"
-        style={{ color: strengthColors[score] }}
-      >
+      <p className="mt-1 text-sm font-medium" style={{ color: strengthColors[score] }}>
         {strengthLabels[score]}
       </p>
     </div>
-  );
+  )
 }
-
-
 
 export default function RegisterForm() {
   const {
     register,
-    handleSubmit,
     getValues,
     trigger,
     watch,
@@ -83,55 +77,34 @@ export default function RegisterForm() {
   const [loading, setLoading] = useState(false)
   const password = watch('password')
 
-  
-const onSubmit = async () => {
-  const isValid = await trigger()
-  if (!isValid) {
-    const result = registerSchema.safeParse(getValues())
-    if (!result.success) {
-      result.error.errors.forEach((err) => toast.error(err.message))
-    }
-    return
-  }
+  const registerUser = useAuthStore((state) => state.register)
 
-  setLoading(true)
-  const { email, password, full_name } = getValues()
-
-  try {
-   const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-  email,
-  password,
-  options: {
-    data: { full_name } 
-  }
-})
-
-
-    if (signUpError) {
-      toast.error(signUpError.message)
-      setLoading(false)
+  const onSubmit = async () => {
+    const isValid = await trigger()
+    if (!isValid) {
+      const result = registerSchema.safeParse(getValues())
+      if (!result.success) {
+        result.error.errors.forEach((err) => toast.error(err.message))
+      }
       return
     }
 
-    if (!signUpData.user) {
-      toast.error('Nie udało się utworzyć użytkownika.')
-      setLoading(false)
-      return
-    }
+    setLoading(true)
+    const { email, password, full_name } = getValues()
 
-    toast.success('Rejestracja zakończona! Sprawdź maila, aby potwierdzić konto.')
-
-  } catch (error) {
-    toast.error('Wystąpił błąd. Spróbuj ponownie.')
-  } finally {
+    const success = await registerUser({ email, password, full_name })
     setLoading(false)
+
   }
-}
-
-
 
   return (
-    <form onSubmit={(e) => { e.preventDefault(); onSubmit() }} className="space-y-6 w-full">
+    <form
+      onSubmit={(e) => {
+        e.preventDefault()
+        onSubmit()
+      }}
+      className="space-y-6 w-full"
+    >
       <input
         type="email"
         {...register('email')}

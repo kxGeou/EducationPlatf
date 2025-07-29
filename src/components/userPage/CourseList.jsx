@@ -1,11 +1,11 @@
-import { useAuth } from "../../context/AuthContext";
-import { useCourses } from "../../hooks/useCourses";
+import { useAuthStore } from "../../store/authStore";
+import { useCourseStore } from "../../store/courseStore"; 
 import Error from "../systemLayouts/Error";
 import Loading from "../systemLayouts/Loading";
 import BlogList from "./BlogList";
 import { motion } from "framer-motion";
 import { Book } from "lucide-react";
-import { useState, useMemo, useCallback, memo, useEffect } from "react";
+import { useMemo, useCallback, memo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 const tierStyles = {
@@ -76,13 +76,19 @@ const CourseItem = memo(({ course, onClick }) => (
 ));
 
 function CourseList({ pageChange }) {
-  const { user, loading: authLoading } = useAuth();
-  const { courses, loading: coursesLoading, error } = useCourses();
+  const user = useAuthStore((state) => state.user);
+  const authLoading = useAuthStore((state) => state.loading);
+
+  const { courses, loading: coursesLoading, error, fetchCourses } = useCourseStore();
   const navigate = useNavigate();
 
   useEffect(() => {
     if (!authLoading && !user) navigate("/");
   }, [authLoading, user, navigate]);
+
+  useEffect(() => {
+    fetchCourses(); 
+  }, [fetchCourses]);
 
   const handleNavigate = useCallback(
     (id) => {

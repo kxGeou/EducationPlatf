@@ -1,105 +1,74 @@
-import UserHeader from "../components/userPage/UserHeader";
-import { useAuth } from "../context/AuthContext";
-import supabase from "../util/supabaseClient";
-import Hls from "hls.js";
-import { useEffect, useState, useRef } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import Loading from '../components/systemLayouts/Loading';
-import Error from '../components/systemLayouts/Error';
-export default function CoursePage() {
-  const { id } = useParams();
-  const navigate = useNavigate();
-  const { user, loading: authLoading } = useAuth();
+import UserHeader from "../components/userPage/UserHeader"
+import { useEffect, useState, useRef } from "react"
+import { useParams, useNavigate } from "react-router-dom"
+import Loading from "../components/systemLayouts/Loading"
+import Error from "../components/systemLayouts/Error"
+import { useAuthStore } from "../store/authStore"
+import { useSingleCourseStore } from "../store/singleCourseStore"
+import Hls from "hls.js"
 
-  const [course, setCourse] = useState(null);
-  const [videos, setVideos] = useState([]);
-  const [currentVideo, setCurrentVideo] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [accessDenied, setAccessDenied] = useState(false);
-  const [openSections, setOpenSections] = useState({});
-  const [userDataModal, setUserDataModal] = useState(true);
+export default function CoursePage() {
+  const { id } = useParams()
+  const navigate = useNavigate()
+  const { user, loading: authLoading } = useAuthStore()
+  const {
+    fetchCourseById,
+    course,
+    videos,
+    loading,
+    error,
+    accessDenied
+  } = useSingleCourseStore()
+
+  const [currentVideo, setCurrentVideo] = useState(null)
+  const [openSections, setOpenSections] = useState({})
+  const [userDataModal, setUserDataModal] = useState(true)
 
   useEffect(() => {
-    if (authLoading) return;
-    if (!user) {
-      navigate("/authentication");
-      return;
+    if (!authLoading && !user) navigate("/authentication")
+    if (user) fetchCourseById(id)
+  }, [authLoading, user, id])
+
+  useEffect(() => {
+    if (videos.length > 0) {
+      setCurrentVideo(videos[0])
     }
-
-    const fetchCourse = async () => {
-      setLoading(true);
-
-      const { data: userData } = await supabase
-        .from("users")
-        .select("purchased_courses")
-        .eq("id", user.id)
-        .single();
-
-      if (!userData?.purchased_courses?.includes(id)) {
-        setAccessDenied(true);
-        setLoading(false);
-        return;
-      }
-
-      const { data: courseData } = await supabase
-        .from("courses")
-        .select("id, title, description")
-        .eq("id", id)
-        .single();
-
-      setCourse(courseData);
-
-      const { data: videosData } = await supabase
-        .from("video_base")
-        .select("videoId, title, directUrl, course_id, section_title, order")
-        .eq("course_id", id)
-        .order("section_title", { ascending: true })
-        .order("order", { ascending: true });
-
-      setVideos(videosData);
-      setCurrentVideo(videosData?.[0] || null);
-      setLoading(false);
-    };
-
-    fetchCourse();
-  }, [id, user, authLoading, navigate]);
+  }, [videos])
 
   const groupVideosBySection = (videos) => {
     return videos.reduce((acc, video) => {
-      const section = video.section_title || "Bez działu";
-      if (!acc[section]) acc[section] = [];
-      acc[section].push(video);
-      return acc;
-    }, {});
-  };
+      const section = video.section_title || "Bez działu"
+      if (!acc[section]) acc[section] = []
+      acc[section].push(video)
+      return acc
+    }, {})
+  }
 
   const toggleSection = (section) => {
     setOpenSections((prev) => ({
       ...prev,
       [section]: !prev[section],
-    }));
-  };
+    }))
+  }
 
   const HlsPlayer = ({ src, title }) => {
-    const videoRef = useRef(null);
+    const videoRef = useRef(null)
 
     useEffect(() => {
-      let hls;
+      let hls
       if (videoRef.current) {
         if (videoRef.current.canPlayType("application/vnd.apple.mpegurl")) {
-          videoRef.current.src = src;
+          videoRef.current.src = src
         } else if (Hls.isSupported()) {
-          hls = new Hls();
-          hls.loadSource(src);
-          hls.attachMedia(videoRef.current);
+          hls = new Hls()
+          hls.loadSource(src)
+          hls.attachMedia(videoRef.current)
         }
       }
       return () => {
-        if (hls) {
-          hls.destroy();
-        }
-      };
-    }, [src]);
+        if (hls) hls.destroy()
+      }
+    }, [src])
 
     return (
       <video
@@ -109,17 +78,16 @@ export default function CoursePage() {
         title={title}
         style={{ objectFit: "contain" }}
       />
-    );
-  };
+    )
+  }
 
-  if (authLoading || loading) return <Loading></Loading>;
-  if (accessDenied)
-    return <Error></Error>;
-  if (!course) return <Error></Error>;
+  if (authLoading || loading) return <Loading />
+  if (accessDenied || error) return <Error />
+  if (!course) return <Error />
   if (videos.length === 0)
-    return <p className="p-6">Brak wideo w tym kursie.</p>;
+    return <p className="p-6">Brak wideo w tym kursie.</p>
 
-  const groupedVideos = groupVideosBySection(videos);
+  const groupedVideos = groupVideosBySection(videos)
 
   return (
     <div className="min-h-screen bg-slate-100">
@@ -144,15 +112,15 @@ export default function CoursePage() {
                   {vids.map((video, i) => {
                     const absoluteIndex = videos.findIndex(
                       (v) => v.videoId === video.videoId
-                    );
-                    const isCurrent = currentVideo?.videoId === video.videoId;
+                    )
+                    const isCurrent = currentVideo?.videoId === video.videoId
                     const isFree =
                       video?.isFree ||
                       absoluteIndex === 0 ||
                       absoluteIndex === 1 ||
-                      absoluteIndex === 3;
+                      absoluteIndex === 3
                     const duration =
-                      video.duration || Math.floor(Math.random() * 10 + 1);
+                      video.duration || Math.floor(Math.random() * 10 + 1)
 
                     return (
                       <li
@@ -182,7 +150,7 @@ export default function CoursePage() {
                           )}
                         </div>
                       </li>
-                    );
+                    )
                   })}
                 </ul>
               </div>
@@ -193,7 +161,7 @@ export default function CoursePage() {
         <main className="flex flex-col w-full items-start p-6">
           {currentVideo ? (
             <div className="flex flex-col w-full items-start justify-start ">
-              <h3 className="text-2xl font-bold mb-4  w-full ">
+              <h3 className="text-2xl font-bold mb-4 w-full ">
                 {currentVideo.title}
               </h3>
               <div className="aspect-video w-full max-w-[1300px] rounded overflow-hidden shadow">
@@ -211,5 +179,5 @@ export default function CoursePage() {
         </main>
       </div>
     </div>
-  );
+  )
 }
