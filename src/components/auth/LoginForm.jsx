@@ -21,6 +21,7 @@ export default function LoginForm() {
   const navigate = useNavigate()
   const [loading, setLoading] = useState(false)
   const loginUser = useAuthStore((state) => state.login) 
+  const user = useAuthStore((state) => state.user);
 
   const onSubmit = async () => {
     const valid = await trigger()
@@ -44,6 +45,10 @@ export default function LoginForm() {
     if (success) {
       navigate('/')
     }
+  }
+
+  if(user) {
+    navigate("/")
   }
 
   return (

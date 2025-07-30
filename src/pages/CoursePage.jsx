@@ -10,7 +10,7 @@ import Hls from "hls.js"
 export default function CoursePage() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { user, loading: authLoading } = useAuthStore()
+  const { user, loading: authLoading, initialized } = useAuthStore()
   const {
     fetchCourseById,
     course,
@@ -25,9 +25,14 @@ export default function CoursePage() {
   const [userDataModal, setUserDataModal] = useState(true)
 
   useEffect(() => {
-    if (!authLoading && !user) navigate("/authentication")
-    if (user) fetchCourseById(id)
-  }, [authLoading, user, id])
+    if (!initialized) return 
+
+    if (!user) {
+      navigate("/authentication")
+    } else {
+      fetchCourseById(id)
+    }
+  }, [initialized, user, id])
 
   useEffect(() => {
     if (videos.length > 0) {
@@ -35,14 +40,13 @@ export default function CoursePage() {
     }
   }, [videos])
 
-  const groupVideosBySection = (videos) => {
-    return videos.reduce((acc, video) => {
+  const groupVideosBySection = (videos) =>
+    videos.reduce((acc, video) => {
       const section = video.section_title || "Bez działu"
       if (!acc[section]) acc[section] = []
       acc[section].push(video)
       return acc
     }, {})
-  }
 
   const toggleSection = (section) => {
     setOpenSections((prev) => ({
@@ -81,9 +85,8 @@ export default function CoursePage() {
     )
   }
 
-  if (authLoading || loading) return <Loading />
-  if (accessDenied || error) return <Error />
-  if (!course) return <Error />
+  if (!initialized || authLoading || loading) return <Loading />
+  if (accessDenied || error || !course) return <Error />
   if (videos.length === 0)
     return <p className="p-6">Brak wideo w tym kursie.</p>
 
@@ -102,14 +105,14 @@ export default function CoursePage() {
           <p className="text-md text-gray-500 mb-4">{course.description}</p>
 
           {Object.entries(groupedVideos).map(
-            ([section, vids], sectionIndex) => (
+            ([section, vids]) => (
               <div key={section} className="mb-6">
                 <h3 className="text-lg font-semibold text-gray-800 mb-2">
                   {section}
                 </h3>
 
                 <ul className="space-y-2">
-                  {vids.map((video, i) => {
+                  {vids.map((video) => {
                     const absoluteIndex = videos.findIndex(
                       (v) => v.videoId === video.videoId
                     )

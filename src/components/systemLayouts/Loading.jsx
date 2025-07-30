@@ -1,8 +1,8 @@
 import React from 'react'
 
-function Loading() {
+function Loading({isDark}) {
   return (
-    <div className='w-full h-screen flex items-center justify-center'>
+    <div data-theme={isDark ? "dark" : "light"} className='w-full h-screen flex items-center justify-center dark:bg-blackText'>
         <img src="../loading.svg" alt="loading" className='w-20'/>
     </div>
   )

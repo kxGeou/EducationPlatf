@@ -17,7 +17,7 @@ function useIsMobile() {
 function LessonBlock({ Resources }) {
   return (
     <motion.div
-      className="w-full shadow-lg rounded-[12px] bg-white text-darkBlue"
+      className="w-full shadow-lg rounded-[12px] bg-white text-darkBlue dark:bg-DarkblackText bg:text-white"
       initial={{ opacity: 0, y: 0 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
@@ -29,7 +29,7 @@ function LessonBlock({ Resources }) {
         }}
       ></div>
       <div className="p-6">
-        <h3 className="text-2xl font-semibold">{Resources.title}</h3>
+        <h3 className="text-2xl font-semibold dark:text-white">{Resources.title}</h3>
         {Resources.resource.map((r, index) => (
           <ReSection
             ReSection={r}
@@ -51,7 +51,7 @@ function ReSection({ ReSection, Color }) {
 
   return (
     <motion.div
-      className="w-full mt-8 flex md:flex-row md:gap-6 md:items-center flex-col"
+      className="w-full mt-8 flex md:flex-row md:gap-6 md:items-center flex-col dark:text-white"
       initial={{ opacity: 0, y: 0 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: 0.1 }}

@@ -8,10 +8,10 @@ import AboutBlogs from '../components/blog/AboutBlogs';
 import ImageSection from '../components/blog/ImageSection';
 
 
-function BlogMainPage() {
+function BlogMainPage({isDark, setIsDark}) {
   return (
-    <div className='flex flex-col items-center min-h-screen bg-gradient-to-br to-35% from-secondaryGreen to-white'>
-      <Header />
+    <div data-theme={isDark ? "dark" : "light"} className='flex flex-col items-center min-h-screen bg-gradient-to-br to-35% from-secondaryGreen to-white dark:from-blackText dark:to-blackText'>
+      <Header isDark={isDark} setIsDark={setIsDark}/>
       
       <div className='w-full max-w-[1100px] mt-26 lg:mt-38'>
         <HeroBlog />
@@ -24,8 +24,11 @@ function BlogMainPage() {
         <ImageSection />
       </div>
 
-      <div className='w-full max-w-[1100px]'>
-        <Footer />
+       <div className="flex flex-col items-center justify-start w-full bg-white dark:bg-DarkblackText dark:border-DarkblackBorder border-t border-gray-300 mt-26">
+      <div className="flex w-full max-w-[1100px]">
+       <Footer ></Footer>
+       
+      </div>
       </div>
     </div>
   )

@@ -15,7 +15,7 @@
     );
   background-size: 300% 300%;
   animation: gradient-move 12s ease-in-out infinite alternate;
-  z-index: -1;
+  z-index: 2;
 }
 
 @keyframes gradient-move {

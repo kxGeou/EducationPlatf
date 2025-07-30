@@ -30,7 +30,7 @@ export default function Courses() {
 
   return (
     <div className="flex flex-col w-full px-6 mt-24">
-      <h2 className="mb-6 flex gap-2 items-center text-gray-400 text-lg font-normal">
+      <h2 className="mb-6 flex gap-2 items-center text-gray-400 dark:text-white/50 text-lg font-normal">
         <ShoppingBag size={18} />
         Kursy do zakupu
       </h2>
@@ -46,12 +46,12 @@ export default function Courses() {
           ? Array.from({ length: 4 }).map((_, i) => (
               <div
                 key={i}
-                className="w-full h-64 bg-gray-100 rounded-xl shadow animate-pulse"
+                className="w-full h-64 bg-gray-100 dark:bg-gray-500 rounded-xl shadow animate-pulse"
               >
                 <div className="h-full w-full p-4 space-y-4">
-                  <div className="w-3/4 h-4 bg-gray-300 rounded" />
-                  <div className="w-1/2 h-4 bg-gray-300 rounded" />
-                  <div className="w-full h-24 bg-gray-300 rounded mt-4" />
+                  <div className="w-3/4 h-4 bg-gray-300 dark:bg-gray-400 rounded" />
+                  <div className="w-1/2 h-4 bg-gray-300 dark:bg-gray-400 rounded" />
+                  <div className="w-full h-24 bg-gray-300 dark:bg-gray-400 rounded mt-4" />
                 </div>
               </div>
             ))

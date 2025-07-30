@@ -10,7 +10,7 @@ export default function CourseCard({ course }) {
 
   return (
     <div
-      className="relative shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-[1.01] flex flex-col items-start pb-4 cursor-pointer rounded-[12px] overflow-hidden group"
+      className="relative shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-[1.01] flex flex-col items-start pb-4 cursor-pointer rounded-[12px] overflow-hidden group dark:bg-DarkblackBorder"
       onClick={handleClick}
     >
       <img
@@ -24,20 +24,20 @@ export default function CourseCard({ course }) {
       </div>
 
       <div className="px-4 flex flex-col ">
-        <h2 className="text-xl font-semibold text-blackText">{course.title}</h2>
-        <p className="text-blackText/50 text-sm">{course.description}</p>
+        <h2 className="text-xl font-semibold text-blackText dark:text-white">{course.title}</h2>
+        <p className="text-blackText/50 dark:text-white/75 text-sm">{course.description}</p>
       </div>
 
       <div className="flex flex-col items-start gap-1 w-full px-4 mt-3">
         <span className="flex gap-2 items-center">
-          <p className="text-lg text-blackText">
+          <p className="text-lg text-blackText dark:text-white">
             {(course.price_cents ? course.price_cents : course.price) + ' zł'}
           </p>
-          <p className="text-md text-blackText/50 line-through">220 zł</p>
+          <p className="text-md text-blackText/5 dark:text-white/50 line-through">220 zł</p>
         </span>
       </div>
 
-      <div className="absolute bottom-0 left-0 h-1 w-full bg-gradient-to-r from-blue-400 via-indigo-400 to-green-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left z-0"></div>
+      <div className="absolute bottom-0 left-0 h-1 w-full bg-gradient-to-r from-blue-400 dark:from-blue-700 dark:via-indigo-700 dark:to-green-700 via-indigo-400 to-green-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left z-0"></div>
     </div>
   );
 }

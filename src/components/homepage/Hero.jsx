@@ -38,17 +38,17 @@ function Hero() {
       <div className="flex items-center justify-between gap-12">
         <div className="flex flex-col">
           <h2
-            className="font-bold text-4xl text-darkerBlack lg:text-7xl md:text-5xl  leading-[45px] w-full max-w-[400px] lg:leading-[75px] md:max-w-[750px] lg:max-w-[600px] lg:font-extrabold mb-4"
+            className="font-bold text-4xl text-darkerBlack dark:text-white lg:text-7xl md:text-5xl  leading-[45px] w-full max-w-[400px] lg:leading-[75px] md:max-w-[750px] lg:max-w-[600px] lg:font-extrabold mb-4"
           >
             Zdaj maturę z informatyki bez stresu
           </h2>
 
-          <Description textColor={"text-blackText mb-6"}>
+          <Description textColor={"text-blackText mb-6 dark:text-white"}>
           Nauka informatyki nie musi być trudna. Nasze kursy online prowadzą Cię krok po kroku, dzięki czemu opanujesz wszystko, co potrzebne na maturę — bez nudy i bez przepalania czasu.
           </Description>
-          <button className="bg-primaryGreen cursor-pointer transition-all duration-300 hover:scale-[1.025] hover:bg-secondaryGreen w-[75%] py-2 text-white rounded-[12px]">Zobacz kursy</button>
+          <button className="bg-primaryGreen dark:bg-primaryBlue dark:hover:bg-secondaryBlue cursor-pointer transition-all duration-300 hover:scale-[1.025] hover:bg-secondaryGreen w-[75%] py-3 text-white rounded-[12px]">Zobacz kursy</button>
         </div>
-        <div className="w-[50%] h-[17rem] rounded-[12px] shadow-lg bg-blackText text-white justify-center items-center hidden lg:flex">
+        <div className="w-[50%] h-[17rem] rounded-[12px] shadow-lg bg-blackText dark:bg-DarkblackText text-white justify-center items-center hidden lg:flex">
           Prototyp
         </div>
       </div>

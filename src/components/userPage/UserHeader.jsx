@@ -5,6 +5,9 @@ import { ChevronDown, Menu, X } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../../store/authStore"; 
+import DesktopLogo from "../../assets/logoDesk.png";
+import MobileDesktop from "../../assets/logoMobile.png";
+
 
 function UserHeader({ userDataModal, setUserDataModal, pageChange, setPageChange }) {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -29,6 +32,8 @@ function UserHeader({ userDataModal, setUserDataModal, pageChange, setPageChange
     { direct: "/thirdBlog", title: "Techniki relaksacyjne na co dzień" },
   ];
 
+  if(!user) return null;
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -43,12 +48,13 @@ function UserHeader({ userDataModal, setUserDataModal, pageChange, setPageChange
       >
         {width >= 750 ? (
           <div className="w-full max-w-[1600px] flex justify-between items-center px-6 lg:px-0">
-            <div className="flex items-center gap-4">
-              <button
+            <div className="flex items-center gap-6">
+              <img
+              src={width > 600 ? DesktopLogo : MobileDesktop}
                 aria-label="Przejdź do strony głównej"
                 onClick={() => navigate("/")}
-                className="font-semibold w-8 h-8 cursor-pointer rounded-full bg-primaryBlue"
-              ></button>
+                className="font-semibold w-36 cursor-pointer"
+              ></img>
 
               <nav>
                 <ul className="flex items-center gap-4">
@@ -98,11 +104,13 @@ function UserHeader({ userDataModal, setUserDataModal, pageChange, setPageChange
           </div>
         ) : (
           <div className="w-full max-w-[1600px] flex justify-between items-center relative">
-            <button
-              onClick={() => navigate("/")}
-              aria-label="Przejdź do strony głównej"
-              className="font-semibold w-7 h-7 rounded-full bg-primaryBlue"
-            ></button>
+           <img
+              src={width > 600 ? DesktopLogo : MobileDesktop}
+                aria-label="Przejdź do strony głównej"
+                onClick={() => navigate("/")}
+                className="font-semibold w-36 cursor-pointer"
+              ></img>
+
 
             <div
               className="text-darkerBlack cursor-pointer p-2 rounded-lg hover:bg-gray-100 transition"

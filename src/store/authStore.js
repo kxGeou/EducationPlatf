@@ -7,6 +7,7 @@ export const useAuthStore = create((set, get) => ({
   purchasedCourses: [],
   loading: false,
   error: null,
+  initialized: false, // <--- dodane
 
   fetchUserData: async (userId) => {
     try {
@@ -41,7 +42,7 @@ export const useAuthStore = create((set, get) => ({
     } catch (error) {
       set({ error: error.message })
     } finally {
-      set({ loading: false })
+      set({ loading: false, initialized: true }) // <--- tutaj
     }
 
     supabase.auth.onAuthStateChange(async (_event, session) => {
@@ -51,7 +52,7 @@ export const useAuthStore = create((set, get) => ({
       } else {
         set({ user: null, purchasedCourses: [] })
       }
-      set({ loading: false })
+      set({ loading: false, initialized: true }) // <--- i tutaj
     })
   },
 

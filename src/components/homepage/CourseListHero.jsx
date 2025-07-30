@@ -29,9 +29,9 @@ function CourseListHero() {
     <section className="w-full">
       <ul className="grid grid-cols-2 grid-rows-2 lg:grid-cols-4 lg:grid-rows-1 w-full gap-4 px-6">
         {courses.map((courses, index) => (
-            <li key={index} className="bg-gray-100/50 border border-gray-200 rounded-[12px] flex justify-center items-center py-2 gap-2 flex-col transition-all hover:bg-gray-300/30 cursor-pointer ">
+            <li key={index} className="bg-gray-100/50 border border-gray-200 rounded-[12px] flex justify-center items-center py-2 gap-2 flex-col transition-all hover:bg-gray-300/30 cursor-pointer dark:bg-DarkblackText dark:border-DarkblackBorder dark:hover:bg-DarkblackBorder">
                 <img src={courses.icon} alt="#" className="w-10 lg:w-13"/>
-                <p className="text-blackText">{courses.label}</p>
+                <p className="text-blackText dark:text-white">{courses.label}</p>
             </li>
         ))}
       </ul>

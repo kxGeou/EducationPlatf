@@ -38,17 +38,17 @@ function BlogList() {
   return (
     <section className='px-6 mt-36 w-full'>
       <div className='flex items-center justify-between mb-4'>
-        <SectionHeading>Lista blogów</SectionHeading>
+        <SectionHeading textColor={"dark:text-secondaryGreen"}>Lista blogów</SectionHeading>
         <div className='flex gap-2'>
           <button
             onClick={() => scroll(-320)}
-            className='bg-secondaryBlue/25 text-secondaryBlue border border-secondaryBlue/10 hover:bg-secondaryBlue/35 transition-all duration-200 shadow p-2 cursor-pointer rounded-full'
+            className='bg-secondaryBlue/25 text-secondaryBlue dark:bg-secondaryBlue/50 dark:text-blackText border border-secondaryBlue/10 hover:bg-secondaryBlue/35 transition-all duration-200 shadow p-2 cursor-pointer rounded-full'
           >
             <ChevronLeft size={20} />
           </button>
           <button
             onClick={() => scroll(320)}
-            className='bg-secondaryBlue/25 text-secondaryBlue border border-secondaryBlue/10 hover:bg-secondaryBlue/35 transition-all duration-200 shadow p-2 cursor-pointer rounded-full'
+            className='bg-secondaryBlue/25 text-secondaryBlue dark:bg-secondaryBlue/50 dark:text-blackText border border-secondaryBlue/10 hover:bg-secondaryBlue/35 transition-all duration-200 shadow p-2 cursor-pointer rounded-full'
           >
             <ChevronRight size={20} />
           </button>

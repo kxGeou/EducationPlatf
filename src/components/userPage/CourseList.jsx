@@ -82,9 +82,6 @@ function CourseList({ pageChange }) {
   const { courses, loading: coursesLoading, error, fetchCourses } = useCourseStore();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (!authLoading && !user) navigate("/");
-  }, [authLoading, user, navigate]);
 
   useEffect(() => {
     fetchCourses(); 
@@ -96,6 +93,10 @@ function CourseList({ pageChange }) {
     },
     [navigate]
   );
+
+  if(!user) {
+    navigate("/authentication")
+  }
 
   const courseList = useMemo(
     () =>
