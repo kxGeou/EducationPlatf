@@ -38,7 +38,14 @@ function RedHeader({setIsDark, isDark}) {
           {width > 850 && (
             <ul className="flex gap-8 items-center text-white">
               <li
-                onClick={() => setIsDark(!isDark)}
+                onClick={() => {
+                setIsDark((prev) => {
+                  const newValue = !prev;
+                  localStorage.setItem("theme", newValue ? "dark" : "light");
+                  return newValue;
+                });
+              }}
+
                 className="cursor-pointer p-2 hover:text-gray-300 transition-all"
                 title="Przełącz tryb jasny/ciemny"
               >
@@ -85,7 +92,7 @@ function RedHeader({setIsDark, isDark}) {
           {width <= 800 && (
             <span className="flex items-center gap-2">  <span
                 onClick={() => setIsDark(!isDark)}
-                className="cursor-pointer p-2 hover:text-gray-300 text-white hover:text-gray-400  transition-all"
+                className="cursor-pointer p-2  text-white hover:text-gray-400  transition-all"
                 title="Przełącz tryb jasny/ciemny"
               >
                 {isDark ? <Sun size={26} /> : <Moon size={26} />}

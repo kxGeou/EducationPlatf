@@ -10,7 +10,7 @@ import ImageSection from '../components/blog/ImageSection';
 
 function BlogMainPage({isDark, setIsDark}) {
   return (
-    <div data-theme={isDark ? "dark" : "light"} className='flex flex-col items-center min-h-screen bg-gradient-to-br to-35% from-secondaryGreen to-white dark:from-blackText dark:to-blackText'>
+    <div data-theme={isDark ? "dark" : "light"} className='flex flex-col items-center min-h-screen bg-gradient-to-br to-35% from-secondaryGreen to-white dark:from-primaryBlue dark:to-23% dark:to-blackText'>
       <Header isDark={isDark} setIsDark={setIsDark}/>
       
       <div className='w-full max-w-[1100px] mt-26 lg:mt-38'>

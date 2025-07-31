@@ -10,7 +10,7 @@ function TestResources({ isDark, setIsDark }) {
   return (
     <div
       data-theme={isDark ? "dark" : "light"}
-      className="flex flex-col bg-gradient-to-br to-50% from-secondaryBlue/50 to-gray-100 dark:from-blackText dark:to-blackText"
+      className="flex flex-col bg-gradient-to-br to-50% from-secondaryBlue/50 to-gray-100 dark:from-primaryBlue dark:to-23% dark:to-blackText"
     >
       <main className="min-h-screen flex flex-col max-w-[1100px] w-full mx-auto px-6">
         <Header setIsDark={setIsDark} isDark={isDark}></Header>

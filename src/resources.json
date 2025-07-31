@@ -1,6 +1,6 @@
 [
   {
-    "title": "Formuła 2023 – maj, poziom rozszerzony",
+    "title": "Formuła 2023 – matura majowa, poziom rozszerzony",
     "colors": ["#7a0b23", "#d44866"],
     "resource": [
       {
@@ -69,7 +69,7 @@
     ]
   },
   {
-    "title": "Formuła 2023 – czerwiec, poziom rozszerzony",
+    "title": "Formuła 2023 – matura czerwcowa, poziom rozszerzony",
     "colors": ["#10635e", "#52b3ad"],
     "resource": [
       {
@@ -96,7 +96,7 @@
     ]
   },
   {
-    "title": "Formuła 2015 – maj, poziom rozszerzony",
+    "title": "Formuła 2015 – matura majowa, poziom rozszerzony",
     "colors": ["#4e0387", "#9542d4"],
     "resource": [
       {
@@ -372,7 +372,7 @@
     ]
   },
   {
-    "title": "Formuła 2015 – czerwiec, poziom rozszerzony",
+    "title": "Formuła 2015 – matura czerwcowa, poziom rozszerzony",
     "colors": ["#01316b", "#458ade"],
     "resource": [
       {
@@ -648,7 +648,7 @@
     ]
   },
   {
-    "title": "Stara matura – maj, poziom rozszerzony",
+    "title": "Stara matura – matura majowa, poziom rozszerzony",
     "colors": ["#824300", "#bf7f3b"],
     "resource": [
       {
@@ -984,7 +984,7 @@
     ]
   },
   {
-    "title": "Stara matura – maj, poziom podstawowy",
+    "title": "Stara matura – matura majowa, poziom podstawowy",
     "colors": ["#154d1c", "#07b31e"],
     "resource": [
       {

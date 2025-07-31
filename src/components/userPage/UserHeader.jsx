@@ -1,21 +1,27 @@
-import useWindowWidth from "../../hooks/useWindowWidth";
-import Avatar from "boring-avatars";
-import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDown, Menu, X } from "lucide-react";
-import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useAuthStore } from "../../store/authStore"; 
 import DesktopLogo from "../../assets/logoDesk.png";
 import MobileDesktop from "../../assets/logoMobile.png";
+import useWindowWidth from "../../hooks/useWindowWidth";
+import { useAuthStore } from "../../store/authStore";
+import Avatar from "boring-avatars";
+import { motion, AnimatePresence } from "framer-motion";
+import { ChevronDown, Menu, Moon, Sun, X } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
-
-function UserHeader({ userDataModal, setUserDataModal, pageChange, setPageChange }) {
+function UserHeader({
+  userDataModal,
+  setUserDataModal,
+  pageChange,
+  setPageChange,
+  isDark,
+  setIsDark,
+}) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const width = useWindowWidth();
   const navigate = useNavigate();
 
-  const user = useAuthStore(state => state.user);
+  const user = useAuthStore((state) => state.user);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -32,7 +38,7 @@ function UserHeader({ userDataModal, setUserDataModal, pageChange, setPageChange
     { direct: "/thirdBlog", title: "Techniki relaksacyjne na co dzień" },
   ];
 
-  if(!user) return null;
+  if (!user) return null;
 
   return (
     <motion.div
@@ -42,7 +48,7 @@ function UserHeader({ userDataModal, setUserDataModal, pageChange, setPageChange
       className="px-4"
     >
       <header
-        className={`z-40 bg-white text-blackText my-3 rounded-[12px] border-b border-gray-300 w-full flex justify-center py-2 px-4 lg:px-6 transition-all ${
+        className={`z-40 bg-white text-blackText  rounded-[12px] rounded-t-[0px] border-b border-gray-300 w-full flex justify-center py-2 px-4 lg:px-6 transition-all dark:bg-DarkblackText dark:border-transparent dark:text-white ${
           isScrolled ? "shadow-md" : ""
         }`}
       >
@@ -50,7 +56,7 @@ function UserHeader({ userDataModal, setUserDataModal, pageChange, setPageChange
           <div className="w-full max-w-[1600px] flex justify-between items-center px-6 lg:px-0">
             <div className="flex items-center gap-6">
               <img
-              src={width > 600 ? DesktopLogo : MobileDesktop}
+                src={width > 600 ? DesktopLogo : MobileDesktop}
                 aria-label="Przejdź do strony głównej"
                 onClick={() => navigate("/")}
                 className="font-semibold w-36 cursor-pointer"
@@ -60,7 +66,9 @@ function UserHeader({ userDataModal, setUserDataModal, pageChange, setPageChange
                 <ul className="flex items-center gap-4">
                   <li
                     className={`${
-                      pageChange ? "text-primaryGreen" : "text-darkBlue"
+                      pageChange
+                        ? "text-primaryGreen"
+                        : "text-darkBlue dark:text-white"
                     } cursor-pointer transition-all hover:text-secondaryGreen`}
                     onClick={() => setPageChange(true)}
                   >
@@ -68,11 +76,29 @@ function UserHeader({ userDataModal, setUserDataModal, pageChange, setPageChange
                   </li>
                   <li
                     className={`${
-                      pageChange ? "text-darkBlue" : "text-primaryGreen"
+                      pageChange
+                        ? "text-darkBlue dark:text-white"
+                        : "text-primaryGreen"
                     } cursor-pointer transition-all hover:text-secondaryGreen`}
                     onClick={() => setPageChange(false)}
                   >
                     Zasoby
+                  </li>
+                  <li
+                    onClick={() => {
+                      setIsDark((prev) => {
+                        const newValue = !prev;
+                        localStorage.setItem(
+                          "theme",
+                          newValue ? "dark" : "light"
+                        );
+                        return newValue;
+                      });
+                    }}
+                    className="cursor-pointer p-2 hover:text-gray-300 transition-all"
+                    title="Przełącz tryb jasny/ciemny"
+                  >
+                    {isDark ? <Sun size={20} /> : <Moon size={20} />}
                   </li>
                 </ul>
               </nav>
@@ -86,7 +112,9 @@ function UserHeader({ userDataModal, setUserDataModal, pageChange, setPageChange
               aria-label="Otwórz dane użytkownika"
             >
               <div className="flex gap-2 items-center">
-                <span className="opacity-75">{user?.user_metadata?.full_name || "Użytkownik"}</span>
+                <span className="opacity-75">
+                  {user?.user_metadata?.full_name || "Użytkownik"}
+                </span>
                 <Avatar
                   name={user?.user_metadata?.full_name || "Użytkownik"}
                   colors={[
@@ -104,22 +132,41 @@ function UserHeader({ userDataModal, setUserDataModal, pageChange, setPageChange
           </div>
         ) : (
           <div className="w-full max-w-[1600px] flex justify-between items-center relative">
-           <img
+            <img
               src={width > 600 ? DesktopLogo : MobileDesktop}
-                aria-label="Przejdź do strony głównej"
-                onClick={() => navigate("/")}
-                className="font-semibold w-36 cursor-pointer"
-              ></img>
+              aria-label="Przejdź do strony głównej"
+              onClick={() => navigate("/")}
+              className="font-semibold w-36 cursor-pointer"
+            ></img>
 
-
-            <div
-              className="text-darkerBlack cursor-pointer p-2 rounded-lg hover:bg-gray-100 transition"
-              role="button"
-              tabIndex={0}
-              aria-label="Przełącz menu mobilne"
-              onClick={() => setMobileOpen((prev) => !prev)}
-            >
-              {mobileOpen ? <X size={26} /> : <Menu size={26} />}
+            <div className="flex items-center gap-2">
+              <div
+                onClick={() => {
+                  setIsDark((prev) => {
+                    const newValue = !prev;
+                    localStorage.setItem("theme", newValue ? "dark" : "light");
+                    return newValue;
+                  });
+                }}
+                className="cursor-pointer p-2 hover:text-gray-300
+                transition-all"
+                title="Przełącz tryb jasny/ciemny"
+              >
+                {isDark ? <Sun size={20} /> : <Moon size={20} />}
+              </div>
+              <div
+                className="text-darkerBlack cursor-pointer p-2 rounded-lg dark:hover:bg-DarkblackBorder hover:bg-gray-100 transition"
+                role="button"
+                tabIndex={0}
+                aria-label="Przełącz menu mobilne"
+                onClick={() => setMobileOpen((prev) => !prev)}
+              >
+                {mobileOpen ? (
+                  <X size={26} className="dark:text-white" />
+                ) : (
+                  <Menu size={26} className="dark:text-white" />
+                )}
+              </div>
             </div>
 
             <AnimatePresence>
@@ -129,13 +176,15 @@ function UserHeader({ userDataModal, setUserDataModal, pageChange, setPageChange
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
                   transition={{ duration: 0.3 }}
-                  className={`${userDataModal && "hidden"} absolute top-12 w-full -right-4 mt-3 px-5 py-6 rounded-[12px] shadow-xl bg-white z-50 space-y-6`}
+                  className={`${
+                    userDataModal && "hidden"
+                  } absolute top-12 w-full -right-4 mt-3 px-5 py-6 rounded-[12px] shadow-xl bg-white dark:bg-DarkblackBorder z-50 space-y-6`}
                 >
                   <div
                     onClick={() => setUserDataModal(!userDataModal)}
                     className="cursor-pointer"
                   >
-                    <h3 className="text-xs font-semibold text-gray-400 mb-1">
+                    <h3 className="text-xs font-semibold text-gray-400 mb-2">
                       PROFIL
                     </h3>
                     <div className="flex gap-3 items-center">
@@ -166,7 +215,9 @@ function UserHeader({ userDataModal, setUserDataModal, pageChange, setPageChange
                     <ul className="flex flex-col gap-3">
                       <li
                         className={`${
-                          pageChange ? "text-primaryGreen" : "text-darkBlue"
+                          pageChange
+                            ? "text-primaryGreen"
+                            : "text-darkBlue dark:text-white"
                         } cursor-pointer font-medium`}
                         onClick={() => {
                           setPageChange(true);
@@ -177,7 +228,9 @@ function UserHeader({ userDataModal, setUserDataModal, pageChange, setPageChange
                       </li>
                       <li
                         className={`${
-                          pageChange ? "text-darkBlue" : "text-primaryGreen"
+                          pageChange
+                            ? "text-darkBlue dark:text-white"
+                            : "text-primaryGreen"
                         } cursor-pointer font-medium`}
                         onClick={() => {
                           setPageChange(false);

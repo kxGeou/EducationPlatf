@@ -30,7 +30,7 @@ const videoResources = [
 ];
 
 const ResourceVideo = memo(({ videoTitle, videoDescription }) => (
-  <div className="w-full bg-white rounded-xl shadow-lg transition-all duration-300 hover:scale-105">
+  <div className="w-full bg-white dark:bg-DarkblackBorder cursor-pointer rounded-xl shadow-lg transition-all duration-300 hover:scale-105">
     <div className="px-4 py-6">
       <p className="font-bold text-lg">{videoTitle}</p>
       <span className="text-md opacity-50">{videoDescription}</span>
@@ -45,7 +45,7 @@ const CourseItem = memo(({ course, onClick }) => (
       <p className="text-md opacity-75">{course.section_description}</p>
     </div>
     <li
-      className="my-2 w-full max-w-[400px] shadow-lg cursor-pointer hover:scale-102 hover:shadow-xl rounded-xl pb-4 bg-white transition-all duration-300"
+      className="my-2 w-full max-w-[400px] shadow-lg cursor-pointer hover:scale-102 hover:shadow-xl rounded-xl pb-4 bg-white transition-all duration-300 dark:bg-DarkblackBorder"
       onClick={() => onClick(course.id)}
     >
       <img
@@ -53,7 +53,7 @@ const CourseItem = memo(({ course, onClick }) => (
         alt="course img"
         className="w-full h-40 rounded-t-xl"
       />
-      <div className="px-4 flex flex-col items-start pt-4">
+      <div className="px-4 flex flex-col items-start pt-4 ">
         <h2 className="font-bold text-lg">{course.title}</h2>
         <p>{course.description}</p>
         <div className="flex gap-3 items-center w-full mt-4">
@@ -135,7 +135,7 @@ function CourseList({ pageChange }) {
           </motion.div>
         </div>
 
-        <div className="flex-1">
+        <div className="flex-1 bg-white dark:bg-DarkblackText dark:text-white px-6 py-4 rounded-[12px] shadow-lg ">
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -143,11 +143,11 @@ function CourseList({ pageChange }) {
           >
             <div className="flex flex-col items-center">
               {pageChange ? (
-                <ul className="w-full flex flex-col gap-16">{courseList}</ul>
+                <ul className="w-full flex flex-col gap-16 ">{courseList}</ul>
               ) : (
                 <div className="flex flex-col items-start">
-                  <h3 className="text-lg opacity-50 font-semibold text-blackText mb-2 flex items-center gap-2">
-                    Zasoby do nauki <Book size={20} />
+                  <h3 className="text-lg opacity-50 font-semibold text-blackText dark:text-white mb-2 flex items-center gap-2">
+                    Zasoby do nauki <Book size={16} />
                   </h3>
                   <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {videoList}

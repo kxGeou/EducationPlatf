@@ -64,7 +64,7 @@ export default function LoginForm() {
         <input
           type="email"
           {...register('email')}
-          className="w-full p-2 border border-gray-300 rounded bg-gray-50 sm:bg-transparent"
+          className="w-full p-2 border border-gray-300 dark:border-DarkblackBorder dark:bg-DarkblackBorder/50 rounded bg-gray-50 sm:bg-transparent"
           placeholder="Wprowadź swój email"
         />
       </div>
@@ -74,7 +74,7 @@ export default function LoginForm() {
         <input
           type="password"
           {...register('password')}
-          className="w-full p-2 border border-gray-300 rounded bg-gray-50 sm:bg-transparent"
+          className="w-full p-2 border border-gray-300 rounded bg-gray-50 sm:bg-transparent dark:border-DarkblackBorder dark:bg-DarkblackBorder/50"
           placeholder="Podaj swoje hasło"
         />
       </div>
@@ -82,10 +82,17 @@ export default function LoginForm() {
       <button
         type="submit"
         disabled={loading}
-        className="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700 transition mt-4"
+        className="w-full bg-primaryBlue dark:bg-primaryGreen dark:hover:bg-secondaryGreen text-white p-2 rounded hover:bg-secondaryBlue transition mt-4"
       >
         {loading ? 'Logowanie...' : 'Zaloguj się'}
+        
       </button>
+      <p className="text-sm text-center mt-2">
+  <a href="/update-password" className="text-primaryBlue hover:underline">
+    Zapomniałeś hasła?
+  </a>
+</p>
+
     </form>
   )
 }

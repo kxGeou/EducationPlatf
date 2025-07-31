@@ -7,7 +7,7 @@ import { useAuthStore } from "../store/authStore"
 import { useSingleCourseStore } from "../store/singleCourseStore"
 import Hls from "hls.js"
 
-export default function CoursePage() {
+export default function CoursePage({isDark, setIsDark}) {
   const { id } = useParams()
   const navigate = useNavigate()
   const { user, loading: authLoading, initialized } = useAuthStore()
@@ -93,21 +93,23 @@ export default function CoursePage() {
   const groupedVideos = groupVideosBySection(videos)
 
   return (
-    <div className="min-h-screen bg-slate-100">
+    <div data-theme={isDark ? "dark" : "light"} className="min-h-screen bg-slate-100 dark:bg-blackText dark:text-white">
       <UserHeader
         userDataModal={userDataModal}
         setUserDataModal={setUserDataModal}
+        isDark={isDark}
+        setIsDark={setIsDark}
       />
 
       <div className="flex flex-col-reverse md:flex-row min-h-[calc(100vh-4rem)]">
-        <aside className="w-full md:w-1/3 lg:w-1/4 bg-white p-4 overflow-y-auto max-h-[50vh] md:max-h-none lg:m-4 rounded-[12px] shadow-lg">
+        <aside className="w-full md:w-1/3 lg:w-1/4 bg-white dark:bg-DarkblackText p-4 overflow-y-auto max-h-[50vh] md:max-h-none lg:m-4 rounded-[12px] shadow-lg">
           <h2 className="text-2xl font-bold mb-1">{course.title}</h2>
           <p className="text-md text-gray-500 mb-4">{course.description}</p>
 
           {Object.entries(groupedVideos).map(
             ([section, vids]) => (
               <div key={section} className="mb-6">
-                <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                <h3 className="text-lg font-semibold text-gray-800 dark:text-white/75 mb-2">
                   {section}
                 </h3>
 
@@ -131,12 +133,12 @@ export default function CoursePage() {
                         onClick={() => setCurrentVideo(video)}
                         className={`flex items-center justify-between p-2 rounded-lg cursor-pointer ${
                           isCurrent
-                            ? "bg-blue-100 font-semibold"
-                            : "hover:bg-gray-100"
+                            ? "bg-blue-100 font-semibold dark:bg-DarkblackBorder"
+                            : "hover:bg-gray-100 dark:hover:bg-blackText  "
                         }`}
                       >
                         <div className="flex items-center space-x-2">
-                          <span className="w-6 h-6 rounded-full bg-blue-500 text-white text-sm flex items-center justify-center">
+                          <span className="w-6 h-6 rounded-full bg-primaryBlue dark:bg-primaryGreen text-white text-sm flex items-center justify-center">
                             {absoluteIndex}
                           </span>
                           <span className="text-sm">{video.title}</span>

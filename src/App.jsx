@@ -14,13 +14,17 @@ import TestResources from './pages/TestResources.jsx'
 import { useEffect, useState } from 'react'
 import { useAuthStore } from './store/authStore.js'; 
 import ScrollToTop from './scripts/scrollToTop.jsx'
+import PasswordResetForm from './components/auth/PasswordResetForm.jsx'
+import NewPassword from './components/auth/NewPassword.jsx'
 
 export default function App() {
   const init = useAuthStore(state => state.init)
   const loading = useAuthStore(state => state.loading)
   const user = useAuthStore(state => state.user)
-  const [isDark, setIsDark] = useState(false);
-
+  const [isDark, setIsDark] = useState(() => {
+    const theme = localStorage.getItem("theme");
+    return theme === "dark" ? true : false;
+  });
   useEffect(() => {
     init()
   }, [init])
@@ -35,10 +39,12 @@ export default function App() {
       <ScrollToTop></ScrollToTop>
       <Routes>
         <Route path='/' element={<Home isDark={isDark} setIsDark={setIsDark} />} />
-        <Route path='/authentication' element={<AuthPage />} />
+        <Route path='/authentication' element={<AuthPage isDark={isDark} setIsDark={setIsDark} />} />
         <Route path='/success' element={<Success />} />
+        <Route path='/update-password' element={<PasswordResetForm />} />
+        <Route path='/reset-password' element={<NewPassword />} />
         <Route path='/user_page' element={<MyCourses  isDark={isDark} setIsDark={setIsDark}/>} />
-        <Route path='/course/:id' element={<CoursePage />} />
+        <Route path='/course/:id' element={<CoursePage  isDark={isDark} setIsDark={setIsDark}/>} />
         <Route path='/kurs/:id' element={<CourseLandingPage isDark={isDark} setIsDark={setIsDark}/>} />
         <Route path='/loading' element={<Loading isDark={isDark}/>} />
         <Route path='/error' element={<Error isDark={isDark} />} />

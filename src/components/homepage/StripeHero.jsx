@@ -90,10 +90,10 @@ export default function StripeHero() {
   }, [charIndex, lineIndex, startTyping]);
 
   return (
-    <div ref={ref} className="bg-gradient-to-br from-darkBlue to-indigo-900 text-white w-full mt-26 pt-12">
+    <div ref={ref} className="bg-gradient-to-br from-darkBlue to-indigo-900 dark:from-DarkblackText dark:to-blackText text-white w-full mt-26 pt-12">
       <div className="flex flex-col md:flex-row justify-between max-w-[1100px] px-6 mx-auto items-center gap-12">
         <div className="w-full md:mb-12">
-          <SectionHeading textColor={"text-green-500"}>Designed for developers</SectionHeading>
+          <SectionHeading textColor={"text-primaryGreen"}>Designed for developers</SectionHeading>
           <Heading2 margin={"mb-2"} textColor={"text-white"}>
             Ship faster with powerful and easy-to-use APIs
           </Heading2>
@@ -102,17 +102,17 @@ export default function StripeHero() {
             gateways, payments reils, and financial lostitutions that make up the global economic
             landscape so that your teams can build.
           </p>
-          <button className="bg-green-500 hover:bg-green-400 cursor-pointer text-white font-semibold px-4 py-2 rounded-md">
+          <button className="bg-primaryGreen hover:bg-secondaryGreen cursor-pointer text-white font-semibold px-4 py-2 rounded-md">
             Read the docs »
           </button>
         </div>
 
-        <div className="bg-blue-950 text-green-200 h-72 font-mono w-full text-sm rounded-lg shadow-lg mt-8 md:mt-0 p-4 md:w-1/2  overflow-hidden mb-12 md:mb-0">
+        <div className="bg-blue-950 dark:bg-DarkblackBorder text-green-200 h-72 font-mono w-full text-sm rounded-lg shadow-lg mt-8 md:mt-0 p-4 md:w-1/2  overflow-hidden mb-12 md:mb-0">
           <pre className="whitespace-pre-wrap ">{displayedCode}</pre>
         </div>
       </div>
 
-      <div className="bg-blue-900 text-white py-12 px-6 w-full flex justify-center">
+      <div className="bg-primaryBlue dark:bg-DarkblackBorder text-white py-12 px-6 w-full flex justify-center">
         <div className="max-w-[1100px] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
           {features.map((feature, idx) => (
             <FeatureCard key={idx} {...feature} />

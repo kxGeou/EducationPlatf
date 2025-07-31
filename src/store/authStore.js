@@ -7,8 +7,8 @@ export const useAuthStore = create((set, get) => ({
   purchasedCourses: [],
   loading: false,
   error: null,
-  initialized: false, // <--- dodane
-
+  initialized: false, 
+setUser: (user) => set({ user }),
   fetchUserData: async (userId) => {
     try {
       const { data, error } = await supabase
