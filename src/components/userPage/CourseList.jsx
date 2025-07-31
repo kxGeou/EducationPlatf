@@ -124,7 +124,7 @@ function CourseList({ pageChange }) {
 
   return (
     <div className="flex flex-col items-center mt-4">
-      <div className="flex flex-col lg:flex-row w-full max-w-[1400px] gap-28 px-4 ">
+      <div className="flex flex-col lg:flex-row w-full max-w-[1400px] gap-4 px-4 ">
         <div className="hidden lg:block w-full max-w-[300px]">
           <motion.div
             initial={{ opacity: 0 }}
@@ -143,7 +143,7 @@ function CourseList({ pageChange }) {
           >
             <div className="flex flex-col items-center">
               {pageChange ? (
-                <ul className="w-full flex flex-col gap-16 ">{courseList}</ul>
+                <ul className="w-full flex flex-col gap-16 max-h-[80vh] overflow-y-scroll">{courseList}</ul>
               ) : (
                 <div className="flex flex-col items-start">
                   <h3 className="text-lg opacity-50 font-semibold text-blackText dark:text-white mb-2 flex items-center gap-2">

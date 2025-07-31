@@ -22,7 +22,7 @@ function Home({isDark, setIsDark}) {
       
       <div  className="flex flex-col items-center justify-start w-full max-w-[1100px] min-h-screen ">
 
-     <div className="corner-gradient dark:hidden" />
+     <div className={`${isDark ? "dark-corner-gradient" : "corner-gradient"}`} />
 
 
       <div className="relative flex items-center justify-center z-10 w-full max-w-[1100px] px-6">

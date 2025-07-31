@@ -21,7 +21,7 @@ const BlogList = () => {
   ];
 
   return (
-    <nav className="w-full max-w-[300px] bg-white dark:bg-DarkblackBorder dark:text-white shadow-lg rounded-2xl px-6 py-5 sticky top-6">
+    <nav className="w-full max-w-[300px] min-h-[90vh] bg-white dark:bg-DarkblackBorder dark:text-white shadow-lg rounded-2xl px-6 py-5 sticky top-6">
       <h2 className="flex items-center gap-2 text-lg font-semibold text-primaryBlue dark:text-primaryGreen mb-4">
         Materiały pomocnicze <FileQuestion size={20} />
       </h2>

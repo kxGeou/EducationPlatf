@@ -110,7 +110,7 @@ function DropdownButton({ title, options, color }) {
     <div className="relative">
       <button
         onClick={toggleDropdown}
-        className="cursor-pointer w-full transition-all duration-300 hover:scale-[1.05] text-white flex items-center justify-center px-8 py-2 rounded-[12px]"
+        className="cursor-pointer w-full transition-all duration-300 hover:scale-[1.05] text-white flex items-center justify-center px-8 py-3 rounded-[12px]"
         style={{ background: color }}
       >
         {title}
