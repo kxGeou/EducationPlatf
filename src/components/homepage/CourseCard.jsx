@@ -10,34 +10,42 @@ export default function CourseCard({ course }) {
 
   return (
     <div
-      className="relative shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-[1.01] flex flex-col items-start pb-4 cursor-pointer rounded-[12px] overflow-hidden group dark:bg-DarkblackBorder"
       onClick={handleClick}
+      className="group relative flex flex-col md:flex-row cursor-pointer rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 bg-white dark:bg-DarkblackBorder hover:scale-[1.010]"
     >
       <img
         src="react2.png"
-        alt="mockup image"
-        className="max-h-50 w-full rounded-t-[12px] mb-3"
+        alt={`Obrazek kursu ${course.title}`}
+        className="w-full md:w-72 h-48 md:h-auto object-cover md:rounded-l-2xl rounded-t-2xl md:rounded-t-none"
       />
 
-      <div className="flex items-center justify-center gap-2 absolute top-3 left-4 bg-secondaryGreen/75 backdrop-blur-md border border-white/20 text-white text-xs px-3 py-1 rounded-[8px] opacity-0 -translate-x-10 group-hover:-translate-x-1 group-hover:opacity-100 transition-all duration-300 z-10 shadow-sm">
-        Zobacz szczegóły <Lightbulb size={15} />
-      </div>
-
-      <div className="px-4 flex flex-col ">
-        <h2 className="text-xl font-semibold text-blackText dark:text-white">{course.title}</h2>
-        <p className="text-blackText/50 dark:text-white/75 text-sm">{course.description}</p>
-      </div>
-
-      <div className="flex flex-col items-start gap-1 w-full px-4 mt-3">
-        <span className="flex gap-2 items-center">
-          <p className="text-lg text-blackText dark:text-white">
-            {(course.price_cents ? course.price_cents : course.price) + ' zł'}
+      <div className="flex flex-col justify-between flex-1 p-4 gap-3">
+        <div>
+          <h2 className="text-2xl font-semibold text-blackText dark:text-white mb-1">
+            {course.title}
+          </h2>
+          <p className="text-sm text-blackText/60 dark:text-white/70 line-clamp-3">
+            {course.description}
           </p>
-          <p className="text-md text-blackText/5 dark:text-white/50 line-through">220 zł</p>
-        </span>
+        </div>
+
+        <div className="mt-2 flex flex-col gap-1">
+          <span className="flex items-center gap-2">
+            <p className="text-lg font-bold text-blackText dark:text-white">
+              {(course.price_cents ?? course.price) + ' zł'}
+            </p>
+            <p className="text-sm text-blackText/40 dark:text-white/50 line-through">
+              220 zł
+            </p>
+          </span>
+        </div>
       </div>
 
-      <div className="absolute bottom-0 left-0 h-1 w-full bg-gradient-to-r from-blue-400 dark:from-blue-700 dark:via-indigo-700 dark:to-green-700 via-indigo-400 to-green-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left z-0"></div>
+      <div className="absolute top-3 left-4 bg-secondaryGreen/80 text-white text-xs px-3 py-1 rounded-lg border border-white/20 backdrop-blur-sm flex items-center gap-2 opacity-0 -translate-x-4 group-hover:translate-x-0 group-hover:opacity-100 transition-all duration-300 shadow-md">
+        Zobacz szczegóły <Lightbulb size={16} />
+      </div>
+
+      <div className="absolute bottom-0 left-0 h-1 w-full bg-gradient-to-r from-blue-500 via-indigo-500 to-green-500 dark:from-blue-700 dark:via-indigo-700 dark:to-green-700 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
     </div>
   );
 }

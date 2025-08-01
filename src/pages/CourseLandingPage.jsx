@@ -156,10 +156,10 @@ export default function CourseLandingPage({isDark, setIsDark}) {
       <section className="bg-darkBlue dark:bg-DarkblackText flex justify-center text-white py-28 w-full ">
         <div className="max-w-[1100px] w-full min-h-[10rem] flex justify-between items-start relative px-6">
           <div>
-            <h1 className="text-3xl font-semibold mb-2 md:text-4xl">
+            <h1 className="text-3xl font-semibold mb-2 md:text-4xl w-full max-w-[600px]">
               {course.title}
             </h1>
-            <p className="opacity-75 mb-6 md:text-lg">{course.description}</p>
+            <p className="opacity-75 mb-6 md:text-lg w-full max-w-[600px]">{course.description}</p>
             <p className="text-white font-semibold text-2xl mt-8 mb-2 lg:hidden">
               {course.price_cents}zł{" "}
               <span className="ml-1 text-2xl opacity-50 font-normal line-through">

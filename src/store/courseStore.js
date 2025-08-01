@@ -33,4 +33,24 @@ export const useCourseStore = create((set, get) => ({
       set({ loading: false })
     }
   },
+
+  fetchAllCourses: async () => {
+    set({ loading: true, error: null })
+
+    try {
+      const { data, error } = await supabase
+        .from('courses')
+        .select('*')
+
+      if (error) throw error
+
+      set({ courses: data })
+    } catch (err) {
+      console.error('Błąd ładowania wszystkich kursów:', err.message)
+      toast.error('Nie udało się załadować wszystkich kursów')
+      set({ error: err.message, courses: [] })
+    } finally {
+      set({ loading: false })
+    }
+  },
 }))

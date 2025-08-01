@@ -55,7 +55,7 @@ const CourseItem = memo(({ course, onClick }) => (
       />
       <div className="px-4 flex flex-col items-start pt-4 ">
         <h2 className="font-bold text-lg">{course.title}</h2>
-        <p>{course.description}</p>
+        <p className="opacity-50  line-clamp-2">{course.description}</p>
         <div className="flex gap-3 items-center w-full mt-4">
           <span className="bg-blue-400 text-white px-2 py-1 rounded-lg text-sm">
             {course.time_to_complete}
