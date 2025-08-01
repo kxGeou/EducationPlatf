@@ -2,7 +2,6 @@ import DesktopLogo from "../../assets/logoDesk.png";
 import MobileDesktop from "../../assets/logoMobile.png";
 import useWindowWidth from "../../hooks/useWindowWidth";
 import { useAuthStore } from "../../store/authStore";
-import { useCourseStore } from "../../store/courseStore";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, User, X, Sun, Moon, ChevronDown } from "lucide-react";
 import React, { useState, useEffect } from "react";
@@ -16,13 +15,21 @@ function RedHeader({ setIsDark, isDark }) {
 
   const user = useAuthStore((state) => state.user);
   const userName = user?.user_metadata?.full_name;
-  const courses = useCourseStore((state) => state.courses);
-  const fetchAllCourses = useCourseStore((state) => state.fetchAllCourses);
-
-  useEffect(() => {
-    fetchAllCourses();
-  }, [fetchAllCourses]);
-
+  const courses = [
+    {
+      id : "42096b48-f979-46a2-8785-eb9ade8d5614", 
+      title : "Matura z Informatyki"
+    },
+    {
+      id : "ddcfaafe-b6f3-4f82-8a87-5a344033a525", 
+      title : "Egzamin INF.02"
+    },
+    {
+      id : "fa2b94ff-6dea-48a1-a26e-d4ce9c75b7ed", 
+      title : "Egzamin INF.03"
+    },
+  ]
+  
   return (
     <header className="fixed top-6 left-1/2 transform -translate-x-1/2 w-full max-w-[1100px] text-darkerBlack flex flex-col px-6 justify-center z-50">
       <div className="bg-slate-950/35 border dark:bg-slate-600/50 border-slate-500/25 backdrop-blur-md w-full py-[9px] px-3 rounded-[12px] flex justify-between items-center shadow-lg">

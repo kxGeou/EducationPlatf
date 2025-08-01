@@ -9,7 +9,6 @@ import { useInView } from "react-intersection-observer";
 function About() {
   const controls = useAnimation();
   const [ref, inView] = useInView({ triggerOnce: true, threshold: 0.2 });
-
   useEffect(() => {
     if (inView) {
       controls.start("visible");
@@ -35,7 +34,7 @@ function About() {
       variants={sectionVariants}
       className="w-full mt-26  px-6 py-8 flex flex-col md:flex-row md:justify-between md:mb-16 items-center"
     >
-      <div className="lg:flex md:flex-col md:w-[400px]">
+      <div className="lg:flex md:flex-col md:w-[500px]">
         <SectionHeading
           textColor={"text-secondaryBlue dark:text-secondaryGreen"}
         >
@@ -46,7 +45,7 @@ function About() {
             margin={"mb-2"}
             textColor={"text-blackText dark:text-white"}
           >
-            Informatyka to nasza pasja – Twoje egzaminy to nasz cel
+            Informatyka to nasza pasja Twoje egzaminy to nasz cel
           </Heading2>
           <Description textColor={"text-blackText dark:text-white"}>
             Od ponad 5 lat pomagamy uczniom świetnie zdać egzaminy z informatyki.

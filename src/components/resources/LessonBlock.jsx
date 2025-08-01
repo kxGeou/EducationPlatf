@@ -15,6 +15,8 @@ function useIsMobile() {
 }
 
 function LessonBlock({ Resources }) {
+  const [activeDropdown, setActiveDropdown] = useState(null);
+
   return (
     <motion.div
       className="w-full shadow-lg rounded-[12px] bg-white text-darkBlue dark:bg-DarkblackText bg:text-white"
@@ -32,9 +34,11 @@ function LessonBlock({ Resources }) {
         <h3 className="text-2xl font-semibold dark:text-white">{Resources.title}</h3>
         {Resources.resource.map((r, index) => (
           <ReSection
-            ReSection={r}
             key={index}
+            ReSection={r}
             Color={Resources.colors[0]}
+            activeDropdown={activeDropdown}
+            setActiveDropdown={setActiveDropdown}
           />
         ))}
       </div>
@@ -42,7 +46,7 @@ function LessonBlock({ Resources }) {
   );
 }
 
-function ReSection({ ReSection, Color }) {
+function ReSection({ ReSection, Color, activeDropdown, setActiveDropdown }) {
   const isMobile = useIsMobile();
 
   const handleClick = (pdfUrl) => {
@@ -61,7 +65,15 @@ function ReSection({ ReSection, Color }) {
         <div className="flex flex-col gap-4">
           {ReSection.section.map((s, index) =>
             s.subSections ? (
-              <DropdownButton key={index} title={s.title} options={s.subSections} color={Color} />
+              <DropdownButton
+                key={index}
+                title={s.title}
+                options={s.subSections}
+                color={Color}
+                dropdownKey={`${ReSection.resTitle}-${s.title}-${index}`}
+                activeDropdown={activeDropdown}
+                setActiveDropdown={setActiveDropdown}
+              />
             ) : (
               <button
                 key={index}
@@ -78,7 +90,15 @@ function ReSection({ ReSection, Color }) {
         <div className="flex items-center gap-6 flex-wrap">
           {ReSection.section.map((s, index) =>
             s.subSections ? (
-              <DropdownButton key={index} title={s.title} options={s.subSections} color={Color} />
+              <DropdownButton
+                key={index}
+                title={s.title}
+                options={s.subSections}
+                color={Color}
+                dropdownKey={`${ReSection.resTitle}-${s.title}-${index}`}
+                activeDropdown={activeDropdown}
+                setActiveDropdown={setActiveDropdown}
+              />
             ) : (
               <button
                 key={index}
@@ -96,14 +116,16 @@ function ReSection({ ReSection, Color }) {
   );
 }
 
-function DropdownButton({ title, options, color }) {
-  const [open, setOpen] = useState(false);
+function DropdownButton({ title, options, color, dropdownKey, activeDropdown, setActiveDropdown }) {
+  const isOpen = activeDropdown === dropdownKey;
 
-  const toggleDropdown = () => setOpen(!open);
+  const toggleDropdown = () => {
+    setActiveDropdown(isOpen ? null : dropdownKey);
+  };
 
   const handleSelect = (pdfUrl) => {
     window.open(pdfUrl, "_blank");
-    setOpen(false);
+    setActiveDropdown(null);
   };
 
   return (
@@ -115,11 +137,11 @@ function DropdownButton({ title, options, color }) {
       >
         {title}
       </button>
-      {open && (
-        <div className="absolute z-20 mt-2 w-full rounded-[12px] shadow-lg" 
-        style={{ background: color }}
-        
-        > 
+      {isOpen && (
+        <div
+          className="absolute z-20 mt-2 w-full rounded-[12px] shadow-lg"
+          style={{ background: color }}
+        >
           {options.map((opt, idx) => (
             <button
               key={idx}
