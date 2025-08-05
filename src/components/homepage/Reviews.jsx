@@ -53,7 +53,7 @@ function Reviews() {
             ))}
         </ul>
 
-        <button className='cursor-pointer w-full bg-darkBlue dark:bg-primaryGreen hover:scale-102 text-white py-2 rounded-[12px] mt-8 max-w-[50%] transition-all md:mt-12 duration-300'>Więcej opini..</button>
+        <button className='cursor-pointer w-full bg-darkBlue dark:text-blackText dark:bg-primaryGreen hover:scale-102 text-white py-2 rounded-[12px] mt-8 max-w-[50%] transition-all md:mt-12 duration-300'>Więcej opini..</button>
     </section>
   )
 }

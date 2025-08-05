@@ -12,7 +12,7 @@ function UserData({ userDataModal, setUserDataModal }) {
   const courses = useCourseStore(state => state.courses)
   const coursesLoading = useCourseStore(state => state.loading)
   const error = useCourseStore(state => state.error)
-
+console.log(courses)
   return (
     <AnimatePresence>
       {userDataModal && (

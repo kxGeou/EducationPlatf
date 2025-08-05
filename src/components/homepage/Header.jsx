@@ -33,14 +33,15 @@ function RedHeader({ setIsDark, isDark }) {
   return (
     <header className="fixed top-6 left-1/2 transform -translate-x-1/2 w-full max-w-[1100px] text-darkerBlack flex flex-col px-6 justify-center z-50">
       <div className="bg-slate-950/35 border dark:bg-slate-600/50 border-slate-500/25 backdrop-blur-md w-full py-[9px] px-3 rounded-[12px] flex justify-between items-center shadow-lg">
+        <a href="/">
         <img
           src={width > 850 ? DesktopLogo : MobileDesktop}
           className="w-36 cursor-pointer"
-          onClick={() => navigate("/")}
+          // onClick={() => navigate("/")}
           title="Logo platformy"
           alt="Logo platformy"
         />
-
+</a>
         <div>
           {width > 850 ? (
             <ul className="flex gap-8 items-center text-white">
@@ -76,17 +77,18 @@ function RedHeader({ setIsDark, isDark }) {
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -10 }}
                       transition={{ duration: 0.2 }}
-                      className="absolute left-0 mt-4 py-2 w-48 bg-slate-950/50 border dark:bg-slate-600/50 border-slate-500/25 backdrop-blur-md text-white shadow-lg rounded-lg overflow-hidden z-50"
+                      className="absolute flex flex-col left-0 mt-4 py-2 w-48 bg-slate-950/50 border dark:bg-slate-600/50 border-slate-500/25 backdrop-blur-md text-white shadow-lg rounded-lg overflow-hidden z-50"
                     >
                       {courses.length > 0 ? (
                         courses.map((course) => (
-                          <li
+                          <a
                             key={course.id}
-                            onClick={() => navigate(`/kurs/${course.id}`)}
+                            // onClick={() => navigate(`/kurs/${course.id}`)}
+                            href={`/kurs/${course.id}`}
                             className="px-4 py-2 hover:bg-slate-700 cursor-pointer"
                           >
                             {course.title}
-                          </li>
+                          </a>
                         ))
                       ) : (
                         <li className="px-4 py-2 text-sm text-gray-400">
@@ -115,6 +117,7 @@ function RedHeader({ setIsDark, isDark }) {
               {userName ? (
                 <li
                   className="flex items-center gap-3 bg-gradient-to-r to-primaryGreen from-secondaryGreen px-4 cursor-pointer py-[5px] rounded-[8px] hover:scale-[1.025]"
+                  // href="/user_page"
                   onClick={() => navigate("/user_page")}
                 >
                   {userName}
@@ -187,8 +190,9 @@ function RedHeader({ setIsDark, isDark }) {
                           onClick={() => {
                             setVisibleModal(false);
                             setCourseDropdownOpen(false);
-                            navigate(`/kurs/${course.id}`);
+                            // navigate(`/kurs/${course.id}`);
                           }}
+                          href={`/kurs/${course.id}`}
                           className="cursor-pointer hover:text-gray-400"
                         >
                           {course.title}
@@ -216,8 +220,9 @@ function RedHeader({ setIsDark, isDark }) {
                 {userName ? (
                   <li
                     className="flex items-center gap-3 w-full bg-gradient-to-r to-primaryGreen from-secondaryGreen px-4 cursor-pointer py-[5px] rounded-[8px] hover:scale-[1.025]"
+                    // href="/user_page"
                     onClick={() => navigate("/user_page")}
-                  >
+                >
                     {userName}
                     <User size={18} />
                   </li>

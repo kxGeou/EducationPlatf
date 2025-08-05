@@ -3,7 +3,7 @@ import supabase from '../util/supabaseClient'
 import { useAuthStore } from './authStore'
 import toast from 'react-hot-toast'
 
-export const useSingleCourseStore = create((set, get) => ({
+export const useSingleCourseStore = create((set) => ({
   course: null,
   videos: [],
   loading: true,
@@ -11,20 +11,19 @@ export const useSingleCourseStore = create((set, get) => ({
   accessDenied: false,
 
   fetchCourseById: async (courseId) => {
+    const { user, purchasedCourses, initialized } = useAuthStore.getState()
+
+    if (!initialized || !user) {
+      set({ accessDenied: true, loading: false })
+      return
+    }
+
+    if (!purchasedCourses.includes(courseId)) {
+      set({ accessDenied: true, loading: false })
+      return
+    }
+
     set({ loading: true, course: null, videos: [], error: null, accessDenied: false })
-
-    const user = useAuthStore.getState().user
-    const purchased = useAuthStore.getState().purchasedCourses
-
-    if (!user) {
-      set({ accessDenied: true, loading: false })
-      return
-    }
-
-    if (!purchased.includes(courseId)) {
-      set({ accessDenied: true, loading: false })
-      return
-    }
 
     try {
       const { data: courseData, error: courseError } = await supabase
@@ -44,12 +43,7 @@ export const useSingleCourseStore = create((set, get) => ({
 
       if (videosError) throw videosError
 
-      set({
-        course: courseData,
-        videos: videosData,
-        accessDenied: false,
-        error: null
-      })
+      set({ course: courseData, videos: videosData, error: null, accessDenied: false })
     } catch (err) {
       set({ course: null, videos: [], error: err.message })
       toast.error('Nie udało się załadować kursu')

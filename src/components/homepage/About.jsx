@@ -45,7 +45,7 @@ function About() {
             margin={"mb-2"}
             textColor={"text-blackText dark:text-white"}
           >
-            Informatyka to nasza pasja Twoje egzaminy to nasz cel
+            Informatyka to nasza <span className="text-primaryGreen">pasja</span>  Twoje egzaminy to nasz cel
           </Heading2>
           <Description textColor={"text-blackText dark:text-white"}>
             Od ponad 5 lat pomagamy uczniom świetnie zdać egzaminy z informatyki.
@@ -55,7 +55,7 @@ function About() {
           </Description>
         </div>
       </div>
-      <div className="w-full h-40 md:h-60 lg:h-70 md:w-[45%] mt-8 md:mt-0 rounded-[12px] bg-blackText dark:bg-DarkblackBorder text-white flex justify-center items-center">
+      <div className="w-full h-40 md:h-60 lg:h-70 md:w-[45%] mt-8 md:mt-0 rounded-[12px] bg-blackText dark:bg-DarkblackBorder text-white flex justify-center items-center shadow-lg">
         Prototyp
       </div>
     </motion.section>

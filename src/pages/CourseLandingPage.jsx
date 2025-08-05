@@ -262,7 +262,7 @@ export default function CourseLandingPage({isDark, setIsDark}) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {otherCourses.length === 0 && <p>Brak innych kursów.</p>}
             {otherCourses.map(({ id: cId, title, description }) => (
-              <div
+              <a
                 key={cId}
                 className="relative shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-[1.01] flex flex-col items-start pb-4 cursor-pointer rounded-[12px] overflow-hidden group dark:bg-DarkblackText"
                 onClick={() => navigate(`/`)}
@@ -288,7 +288,7 @@ export default function CourseLandingPage({isDark, setIsDark}) {
                   </span>
                 </div>
                 <div className="absolute bottom-0 left-0 h-1 w-full bg-gradient-to-r from-blue-400 via-indigo-400 to-green-500 dark:from-blue-700 dark:via-indigo-700 dark:to-green-700 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left z-0"></div>
-              </div>
+              </a>
             ))}
           </div>
         </section>

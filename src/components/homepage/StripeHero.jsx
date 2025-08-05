@@ -102,7 +102,7 @@ export default function StripeHero() {
             gateways, payments reils, and financial lostitutions that make up the global economic
             landscape so that your teams can build.
           </p>
-          <button className="bg-primaryGreen hover:bg-secondaryGreen cursor-pointer text-white font-semibold px-4 py-2 rounded-md">
+          <button className="bg-primaryGreen dark:text-blackText hover:bg-secondaryGreen cursor-pointer text-white font-semibold px-4 py-2 rounded-md">
             Read the docs »
           </button>
         </div>

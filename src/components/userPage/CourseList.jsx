@@ -39,13 +39,13 @@ const ResourceVideo = memo(({ videoTitle, videoDescription }) => (
 ));
 
 const CourseItem = memo(({ course, onClick }) => (
-  <div className="flex justify-center md:justify-between items-center gap-16 px-4 md:px-0 md:ml-6">
+  <div className="flex justify-center md:justify-between items-center gap-16 px-4 md:px-0 md:ml-6 md:pr-2 ">
     <div className="md:flex flex-col items-start gap-3 w-[50%] hidden">
       <h3 className="font-bold text-4xl">{course.section_title}</h3>
       <p className="text-md opacity-75">{course.section_description}</p>
     </div>
     <li
-      className="my-2 w-full max-w-[400px] shadow-lg cursor-pointer hover:scale-102 hover:shadow-xl rounded-xl pb-4 bg-white transition-all duration-300 dark:bg-DarkblackBorder"
+      className="my-2 w-full max-w-[400px] border border-gray-200 dark:border-transparent shadow-md cursor-pointer hover:scale-102 rounded-xl pb-4 bg-white transition-all duration-300 dark:bg-DarkblackBorder"
       onClick={() => onClick(course.id)}
     >
       <img
@@ -81,11 +81,13 @@ function CourseList({ pageChange }) {
 
   const { courses, loading: coursesLoading, error, fetchCourses } = useCourseStore();
   const navigate = useNavigate();
-
+   const { initialized } = useAuthStore()
 
   useEffect(() => {
-    fetchCourses(); 
-  }, [fetchCourses]);
+    if (initialized) {
+      fetchCourses()
+    }
+  }, [initialized])
 
   const handleNavigate = useCallback(
     (id) => {
@@ -143,7 +145,7 @@ function CourseList({ pageChange }) {
           >
             <div className="flex flex-col items-center">
               {pageChange ? (
-                <ul className="w-full flex flex-col gap-16 max-h-[80vh] overflow-y-scroll">{courseList}</ul>
+                <ul className="w-full flex flex-col gap-16 max-h-[80vh] ">{courseList}</ul>
               ) : (
                 <div className="flex flex-col items-start">
                   <h3 className="text-lg opacity-50 font-semibold text-blackText dark:text-white mb-2 flex items-center gap-2">

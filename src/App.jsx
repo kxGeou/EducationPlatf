@@ -16,7 +16,6 @@ import { useAuthStore } from './store/authStore.js';
 import ScrollToTop from './scripts/scrollToTop.jsx'
 import PasswordResetForm from './components/auth/PasswordResetForm.jsx'
 import NewPassword from './components/auth/NewPassword.jsx'
-
 export default function App() {
   const init = useAuthStore(state => state.init)
   const loading = useAuthStore(state => state.loading)
@@ -25,9 +24,10 @@ export default function App() {
     const theme = localStorage.getItem("theme");
     return theme === "dark" ? true : false;
   });
+
   useEffect(() => {
     init()
-  }, [init])
+  }, [])
 
   if (loading) {
     return <Loading /> 
