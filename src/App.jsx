@@ -10,12 +10,14 @@ import Loading from './components/systemLayouts/Loading.jsx'
 import Error from './components/systemLayouts/Error.jsx'
 import WrongPage from './components/systemLayouts/WrongPage.jsx'
 import BlogMainPage from './pages/BlogMainPage.jsx'
+import BlogPage from './pages/BlogPage.jsx'
 import TestResources from './pages/TestResources.jsx'
 import { useEffect, useState } from 'react'
 import { useAuthStore } from './store/authStore.js'; 
 import ScrollToTop from './scripts/scrollToTop.jsx'
 import PasswordResetForm from './components/auth/PasswordResetForm.jsx'
 import NewPassword from './components/auth/NewPassword.jsx'
+
 export default function App() {
   const init = useAuthStore(state => state.init)
   const loading = useAuthStore(state => state.loading)
@@ -36,7 +38,7 @@ export default function App() {
   return (
     <>
       <Toaster position="top-right" reverseOrder={false} />
-      <ScrollToTop></ScrollToTop>
+      <ScrollToTop />
       <Routes>
         <Route path='/' element={<Home isDark={isDark} setIsDark={setIsDark} />} />
         <Route path='/authentication' element={<AuthPage isDark={isDark} setIsDark={setIsDark} />} />
@@ -49,6 +51,7 @@ export default function App() {
         <Route path='/loading' element={<Loading isDark={isDark}/>} />
         <Route path='/error' element={<Error isDark={isDark} />} />
         <Route path='/blog' element={<BlogMainPage isDark={isDark} setIsDark={setIsDark} />} />
+        <Route path='/blog/:id' element={<BlogPage isDark={isDark} setIsDark={setIsDark} />} />
         <Route path='/zasoby' element={<TestResources isDark={isDark} setIsDark={setIsDark}/>} />
         <Route path='/*' element={<WrongPage isDark={isDark} />} />
       </Routes>

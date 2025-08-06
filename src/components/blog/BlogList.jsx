@@ -1,33 +1,28 @@
-import React, { useRef } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import SectionHeading from '../typography/SectionHeading';
 import BlogCard from './BlogCard';
-
-const talks = [
-  {
-    image: '../react2.png',
-    title: 'Opening keynote: The future of commerce',
-    description: 'The future of commerce is being written by businesses growing 7x faster than S&P 500 companies...',
-  },
-  {
-    image: '../react2.png',
-    title: 'A conversation with Mark Zuckerberg',
-    description: 'Meta CEO Mark Zuckerberg joins John Collison to talk about how advanced technologies are reshaping...',
-  },
-  {
-    image: '../react2.png',
-    title: 'A conversation with Sir Jony Ive KBE',
-    description: 'Jony Ive — Steve Jobs’s “spiritual partner” — joins Patrick Collison on stage for a conversation about design...',
-  },
-  {
-    image: '../react2.png',
-    title: 'A conversation with Sir Jony Ive KBE',
-    description: 'Jony Ive — Steve Jobs’s “spiritual partner” — joins Patrick Collison on stage for a conversation about design...',
-  },
-];
+import  supabase  from '../../util/supabaseClient';
 
 function BlogList() {
   const scrollRef = useRef(null);
+  const [posts, setPosts] = useState([]);
+
+  useEffect(() => {
+    const fetchPosts = async () => {
+      const { data, error } = await supabase
+        .from('posts')
+        .select('id, hero_title, hero_description, cover_image, created_at')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Błąd pobierania wpisów:', error);
+      } else {
+        setPosts(data);
+      }
+    };
+    fetchPosts();
+  }, []);
 
   const scroll = (offset) => {
     if (scrollRef.current) {
@@ -59,8 +54,14 @@ function BlogList() {
         ref={scrollRef}
         className='flex gap-7 overflow-x-scroll py-4 scrollbar-hide scroll-smooth'
       >
-        {talks.map((talk, idx) => (
-          <BlogCard key={idx} {...talk} />
+        {posts.map((post) => (
+          <BlogCard
+            key={post.id}
+            id={post.id}
+            image={post.cover_image}
+            title={post.hero_title}
+            description={post.hero_description.slice(0, 120) + '...'}
+          />
         ))}
       </div>
     </section>
