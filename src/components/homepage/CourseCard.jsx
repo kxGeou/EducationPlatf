@@ -34,7 +34,7 @@ export default function CourseCard({ course }) {
             <h3 className="text-lg font-semibold dark:text-white">
               Kurs Zawiera
             </h3>
-            <div className="grid grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 ">
               <div className=" p-2 rounded-[8px] bg-primaryGreen/100 shadow flex items-center justify-center font-semibold text-white dark:text-blackText">
                 4 działy
               </div>
@@ -53,15 +53,15 @@ export default function CourseCard({ course }) {
             <h3 className="text-lg font-semibold dark:text-white">
               Nauczysz się
             </h3>
-            <ul className="flex gap-4">
-              <li className="flex items-center gap-2 text-md dark:text-white/75 border-r pr-4 border-gray-300">
+            <ul className="flex flex-col md:flex-row gap-4 ">
+              <li className="flex items-center gap-2 text-md dark:text-white/75 md:border-r pr-4 md:border-gray-300">
                 <BadgeCheck
                   size={20}
                   className="text-primaryGreen"
                 ></BadgeCheck>{" "}
                 Programowania
               </li>
-              <li className="flex items-center gap-2 text-md dark:text-white/75 border-r pr-4 border-gray-300">
+              <li className="flex items-center gap-2 text-md dark:text-white/75 md:border-r pr-4 md:border-gray-300">
                 <BadgeCheck
                   size={20}
                   className="text-primaryGreen"

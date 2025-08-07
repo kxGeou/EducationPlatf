@@ -53,7 +53,7 @@ export default function BlogPage({ isDark, setIsDark }) {
           hero_description={post.hero_description}
           hero_image={post.cover_image}
         ></PostHeader>
-        <p className="flex gap-2 items-center w-full px-6 mt-20 mb-6 text-gray-400 dark:text-white/60">
+        <p className="flex gap-2 items-center w-full px-4 mt-20 mb-6 text-gray-400 dark:text-white/60">
           <BookMarked
             size={18}
             className="text-gray-400  dark:text-white/60"
@@ -76,7 +76,7 @@ export default function BlogPage({ isDark, setIsDark }) {
         </div>
 
         <div className="flex w-full max-w-[1100px]">
-          <Footer padding={"px-6"}></Footer>
+          <Footer padding={"px-4"}></Footer>
         </div>
       </div>
     </div>

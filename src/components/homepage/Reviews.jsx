@@ -52,7 +52,7 @@ export default function Reviews() {
   ];
 
   return (
-    <section className="px-6 flex flex-col justify-start items-center mt-26 max-w-[1100px]">
+    <section className="px-4 flex flex-col justify-start items-center mt-26 max-w-[1100px]">
       <div className="w-full">
         <h2 className="flex gap-2 items-center opacity-50 dark:opacity-100 mb-6 dark:text-white/75">
           <Star size={17} className="dark:text-white/75" />

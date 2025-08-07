@@ -29,8 +29,8 @@ function Home({isDark, setIsDark}) {
        <Header setIsDark={setIsDark} isDark={isDark}></Header>
       </div>
       <Hero></Hero>
-      <p className="flex gap-2 items-center w-full px-6 mt-20 mb-6 text-gray-400 dark:text-white/60">
-        <BookMarked size={18} className="text-gray-400  dark:text-white/60"></BookMarked>Moduły, które zapewnią Ci zdany egzamin
+      <p className="flex gap-2 items-center w-full px-4 mt-20 mb-6 text-gray-400 dark:text-white/60">
+        <BookMarked size={18} className="text-gray-400  dark:text-white/60"></BookMarked>Moduły dzięki którym zdasz egzamin
       </p>
       <CourseListHero></CourseListHero>
       
@@ -63,7 +63,7 @@ function Home({isDark, setIsDark}) {
       <StripeHero></StripeHero>
   
       <div className="flex w-full max-w-[1100px]">
-       <Footer padding={"px-6"}></Footer>
+       <Footer padding={"px-4"}></Footer>
        
       </div>
 

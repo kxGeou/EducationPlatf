@@ -91,7 +91,7 @@ export default function StripeHero() {
 
   return (
     <div ref={ref} className="bg-gradient-to-br from-darkBlue to-indigo-900 dark:from-DarkblackText dark:to-blackText text-white w-full mt-26 pt-12">
-      <div className="flex flex-col md:flex-row justify-between max-w-[1100px] px-6 mx-auto items-center gap-12">
+      <div className="flex flex-col md:flex-row justify-between max-w-[1100px] px-4 mx-auto items-center gap-12">
         <div className="w-full md:mb-12">
           <SectionHeading textColor={"text-primaryGreen"}>Designed for developers</SectionHeading>
           <Heading2 margin={"mb-2"} textColor={"text-white"}>
@@ -113,7 +113,7 @@ export default function StripeHero() {
       </div>
 
       <div className="bg-primaryBlue dark:bg-DarkblackBorder text-white py-12  w-full flex justify-center">
-        <div className="max-w-[1100px] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 px-6">
+        <div className="max-w-[1100px] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 px-4">
           {features.map((feature, idx) => (
             <FeatureCard key={idx} {...feature} />
           ))}

@@ -31,7 +31,7 @@ function RedHeader({ setIsDark, isDark }) {
   ]
   
   return (
-    <header className="fixed top-6 left-1/2 transform -translate-x-1/2 w-full max-w-[1100px] text-darkerBlack flex flex-col px-6 justify-center z-50">
+    <header className="fixed top-6 left-1/2 transform -translate-x-1/2 w-full max-w-[1100px] text-darkerBlack flex flex-col px-4 justify-center z-50">
       <div className="bg-slate-950/35 border dark:bg-slate-600/50 border-slate-500/25 backdrop-blur-md w-full py-[9px] px-3 rounded-[12px] flex justify-between items-center shadow-lg">
         <a href="/">
         <img
@@ -182,7 +182,7 @@ function RedHeader({ setIsDark, isDark }) {
                 </li>
 
                 {courseDropdownOpen && (
-                  <ul className="pl-4 flex flex-col gap-2 text-sm">
+                  <ul className="pl-4 flex flex-col gap-2 text-sm bg-slate-950/20 w-full py-3 rounded-[12px]">
                     {courses.length > 0 ? (
                       courses.map((course) => (
                         <li
@@ -190,10 +190,9 @@ function RedHeader({ setIsDark, isDark }) {
                           onClick={() => {
                             setVisibleModal(false);
                             setCourseDropdownOpen(false);
-                            // navigate(`/kurs/${course.id}`);
                           }}
                           href={`/kurs/${course.id}`}
-                          className="cursor-pointer hover:text-gray-400"
+                          className="cursor-pointer hover:text-gray-400 cursor-pointer"
                         >
                           {course.title}
                         </li>
@@ -220,7 +219,6 @@ function RedHeader({ setIsDark, isDark }) {
                 {userName ? (
                   <li
                     className="flex items-center gap-3 w-full bg-gradient-to-r to-primaryGreen from-secondaryGreen px-4 cursor-pointer py-[5px] rounded-[8px] hover:scale-[1.025]"
-                    // href="/user_page"
                     onClick={() => navigate("/user_page")}
                 >
                     {userName}

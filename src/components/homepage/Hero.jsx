@@ -33,7 +33,7 @@ function Hero() {
       initial="hidden"
       animate={controls}
       variants={heroVariants}
-      className="flex flex-col gap-5 z-8 w-full px-6 mt-32 md:mt-42"
+      className="flex flex-col gap-5 z-8 w-full px-4 mt-32 md:mt-42"
     >
       <div className="flex items-center justify-between gap-12">
         <div className="flex flex-col">

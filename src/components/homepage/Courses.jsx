@@ -29,7 +29,7 @@ export default function Courses() {
   }, [fetchCourses]);
 
   return (
-    <div className="flex flex-col w-full px-6 mt-24">
+    <div className="flex flex-col w-full px-4 mt-24">
       <h2 className="mb-6 flex gap-2 items-center text-gray-400 dark:text-white/50 text-lg font-normal">
         <ShoppingBag size={18} />
         Kursy do zakupu

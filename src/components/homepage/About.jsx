@@ -32,7 +32,7 @@ function About() {
       initial="hidden"
       animate={controls}
       variants={sectionVariants}
-      className="w-full mt-26  px-6 py-8 flex flex-col md:flex-row md:justify-between md:mb-16 items-center"
+      className="w-full mt-26  px-4 py-8 flex flex-col md:flex-row md:justify-between md:mb-16 items-center"
     >
       <div className="lg:flex md:flex-col md:w-[500px]">
         <SectionHeading

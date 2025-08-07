@@ -33,9 +33,9 @@ function Interactive() {
   ];
 
   return (
-    <section className="bg-darkBlue dark:bg-DarkblackText  text-white py-16 pb-12 w-full px-6 ">
+    <section className="bg-darkBlue dark:bg-DarkblackText  text-white py-16 pb-12 w-full px-4 ">
       <SectionHeading textColor={"text-primaryGreen"}>
-        Z nami matura z informatyki to formalność
+        Matura z informatyki? Z nami to formalność.
       </SectionHeading>
       <div className="mt-8 flex flex-col gap-4 md:w-full md:max-w-[400px]">
         <Heading2 margin={"mb-2"} textColor={"text-white"}>
