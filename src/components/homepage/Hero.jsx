@@ -48,10 +48,21 @@ function Hero() {
           </Description>
           <button className="bg-primaryGreen  cursor-pointer transition-all duration-300 hover:scale-[1.025] hover:bg-secondaryGreen w-[75%] py-3 text-white rounded-[12px] dark:text-blackText">Zobacz kursy</button>
         </div>
-        {/* <div className="w-[50%] h-[17rem] rounded-[12px] shadow-lg bg-blackText dark:bg-DarkblackText text-white justify-center items-center hidden lg:flex">
-          Prototyp
-        </div> */}
-        <img src={TV}  className="w-full max-w-[40%] hidden lg:flex "/>
+
+      <div className="relative w-full max-w-[40%] hidden lg:flex">
+  <img src={TV} alt="Telewizor" className="w-full h-auto" />
+
+  <div className="absolute top-[13%] left-[11%] w-[78%] aspect-video rounded-[12px]">
+    <iframe
+      src="https://www.youtube.com/embed/eN6olEkH2Fw"
+      title="YouTube video"
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+      allowFullScreen
+      className="w-full h-[14rem] rounded-[14px]"
+    ></iframe>
+  </div>
+</div>
+
       </div>
     </motion.div>
   );
