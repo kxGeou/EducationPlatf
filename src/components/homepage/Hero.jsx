@@ -4,7 +4,7 @@ import Description from "../typography/Description";
 import { ArrowRight } from "lucide-react";
 import { motion, useAnimation } from "framer-motion";
 import { useInView } from "react-intersection-observer";
-
+import TV from '../../assets/telewizor.svg';
 function Hero() {
   const width = useWindowWidth();
   const controls = useAnimation();
@@ -48,9 +48,10 @@ function Hero() {
           </Description>
           <button className="bg-primaryGreen  cursor-pointer transition-all duration-300 hover:scale-[1.025] hover:bg-secondaryGreen w-[75%] py-3 text-white rounded-[12px] dark:text-blackText">Zobacz kursy</button>
         </div>
-        <div className="w-[50%] h-[17rem] rounded-[12px] shadow-lg bg-blackText dark:bg-DarkblackText text-white justify-center items-center hidden lg:flex">
+        {/* <div className="w-[50%] h-[17rem] rounded-[12px] shadow-lg bg-blackText dark:bg-DarkblackText text-white justify-center items-center hidden lg:flex">
           Prototyp
-        </div>
+        </div> */}
+        <img src={TV}  className="w-full max-w-[40%] hidden lg:flex "/>
       </div>
     </motion.div>
   );

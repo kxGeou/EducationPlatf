@@ -1,4 +1,4 @@
-import DesktopLogo from "../../assets/logoDesk.png";
+import DesktopLogo from "../../assets/logo_biale.svg";
 import MobileDesktop from "../../assets/logoMobile.png";
 import useWindowWidth from "../../hooks/useWindowWidth";
 import { useAuthStore } from "../../store/authStore";
