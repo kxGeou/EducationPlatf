@@ -1,8 +1,10 @@
 import AboutPost from "../components/blog/blogPage/AboutPost";
+import ImageSectionPost from "../components/blog/blogPage/ImageSectionPost";
 import PostHeader from "../components/blog/blogPage/PostHeader";
+import TextSection from "../components/blog/blogPage/TextSection";
 import CourseListHero from "../components/homepage/CourseListHero";
-import RedHeader from "../components/homepage/Header";
 import Footer from "../components/homepage/Footer";
+import RedHeader from "../components/homepage/Header";
 import Error from "../components/systemLayouts/Error";
 import Loading from "../components/systemLayouts/Loading";
 import supabase from "../util/supabaseClient";
@@ -59,11 +61,23 @@ export default function BlogPage({ isDark, setIsDark }) {
           Sprawdź nasze kursy
         </p>
         <CourseListHero></CourseListHero>
-        <AboutPost first_image={post.first_image} first_header={post.first_header} first_description={post.first_description} second_image={post.second_image} second_header={post.second_header} second_description={post.second_description}></AboutPost>
-         <div className="flex w-full max-w-[1100px]">
-       <Footer padding={"px-6"}></Footer>
-       
-      </div>
+        <AboutPost
+          first_image={post.first_image}
+          first_header={post.first_header}
+          first_description={post.first_description}
+          second_image={post.second_image}
+          second_header={post.second_header}
+          second_description={post.second_description}
+        ></AboutPost>
+        <TextSection third_header={post.third_header} third_description={post.third_description}></TextSection>
+
+        <div className="w-full flex items-center justify-center px-4">
+          <ImageSectionPost></ImageSectionPost>
+        </div>
+
+        <div className="flex w-full max-w-[1100px]">
+          <Footer padding={"px-6"}></Footer>
+        </div>
       </div>
     </div>
   );

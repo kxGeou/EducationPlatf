@@ -4,12 +4,13 @@ import { useNavigate } from "react-router-dom";
 export default function CourseCard({ course }) {
   const navigate = useNavigate();
 
-
+  function handleClick() {
+    navigate(`/kurs/${course.id}`)
+  }
 
   return (
-    <a
-      // onClick={handleClick}
-      href={`/kurs/${course.id}`}
+    <div
+      onClick={handleClick}
       className="group relative flex flex-col md:flex-row cursor-pointer rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 bg-white dark:bg-DarkblackBorder hover:scale-[1.010]"
     >
       <img
@@ -28,13 +29,13 @@ export default function CourseCard({ course }) {
           </p>
         </div>
 
-        <div className="flex flex-col md:flex-row w-full justify-between gap-6 ">
-          <div className="w-full flex flex-col gap-4 pr-4 md:border-r md:border-gray-300">
+        <div className="flex flex-col  w-full justify-between gap-6 ">
+          <div className="w-full flex flex-col gap-4">
             <h3 className="text-lg font-semibold dark:text-white">
               Kurs Zawiera
             </h3>
-            <div className="grid grid-cols-2 grid-rows-2 gap-4">
-              <div className=" p-2 rounded-[8px] bg-primaryGreen flex items-center justify-center font-semibold text-white dark:text-blackText">
+            <div className="grid grid-cols-4 gap-4">
+              <div className=" p-2 rounded-[8px] bg-primaryGreen/100 shadow flex items-center justify-center font-semibold text-white dark:text-blackText">
                 4 działy
               </div>
               <div className=" p-2 rounded-[8px] bg-primaryGreen flex items-center justify-center font-semibold text-white dark:text-blackText">
@@ -52,15 +53,15 @@ export default function CourseCard({ course }) {
             <h3 className="text-lg font-semibold dark:text-white">
               Nauczysz się
             </h3>
-            <ul className="flex flex-col gap-2">
-              <li className="flex items-center gap-2 text-md dark:text-white/75">
+            <ul className="flex gap-4">
+              <li className="flex items-center gap-2 text-md dark:text-white/75 border-r pr-4 border-gray-300">
                 <BadgeCheck
                   size={20}
                   className="text-primaryGreen"
                 ></BadgeCheck>{" "}
                 Programowania
               </li>
-              <li className="flex items-center gap-2 text-md dark:text-white/75">
+              <li className="flex items-center gap-2 text-md dark:text-white/75 border-r pr-4 border-gray-300">
                 <BadgeCheck
                   size={20}
                   className="text-primaryGreen"
@@ -84,6 +85,6 @@ export default function CourseCard({ course }) {
       </div>
 
       <div className="absolute bottom-0 left-0 h-1 w-full bg-gradient-to-r from-blue-500 via-indigo-500 to-green-500 dark:from-blue-700 dark:via-indigo-700 dark:to-green-700 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
-    </a>
+    </div>
   );
 }

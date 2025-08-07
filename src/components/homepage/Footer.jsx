@@ -1,39 +1,51 @@
 import { Facebook, Instagram, Mail } from "lucide-react";
 
-function Footer({padding}) {
+function Footer({ padding = "" }) {
     return (
-        <footer className={`w-full text-black bg-white dark:bg-DarkblackText rounded-t-xl  mt-12 py-10 ${padding}`}>
-            <div className="max-w-[1100px] bg-white dark:bg-DarkblackText dark:text-white mx-auto grid grid-cols-1 px-6 sm:grid-cols-2 md:grid-cols-3 gap-8">
+        <footer className={`w-full bg-white dark:bg-DarkblackText text-black dark:text-white mt-20 pt-12 pb-8 ${padding}`}>
+            <div className="max-w-[1100px] mx-auto px-6 md:px-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
                 
-                <div>
-                    <h3 className="text-xl font-semibold mb-2 ">Kontakt</h3>
-                    <address className="not-italic flex flex-col gap-1 text-sm">
-                        <p className="opacity-50 cursor-pointer transition-all hover:opacity-100">323 323 213</p>
-                        <p className="opacity-50 cursor-pointer transition-all hover:opacity-100">user@gmail.com</p>
+                <div className="space-y-3">
+                    <h3 className="text-lg font-semibold tracking-tight">Kontakt</h3>
+                    <address className="not-italic text-sm space-y-1">
+                        <p className="opacity-60 hover:opacity-100 transition cursor-pointer">323 323 213</p>
+                        <p className="opacity-60 hover:opacity-100 transition cursor-pointer">user@gmail.com</p>
                     </address>
                 </div>
 
-                <div>
-                    <h3 className="text-xl font-semibold mb-2">Social Media</h3>
-                    <div className="flex flex-col gap-1 text-sm">
-                        <p className="flex gap-2 items-center opacity-50 cursor-pointer transition-all hover:opacity-100">
-                            <Instagram size={15} /> IT
-                        </p>
-                        <p className="flex gap-2 items-center opacity-50 cursor-pointer transition-all hover:opacity-100">
-                            <Facebook size={15} /> IT
-                        </p>
+                <div className="space-y-3">
+                    <h3 className="text-lg font-semibold tracking-tight">Social Media</h3>
+                    <div className="flex flex-col text-sm gap-2">
+                        <a
+                            href="#"
+                            aria-label="Instagram"
+                            className="flex items-center gap-2 opacity-60 hover:opacity-100 transition"
+                        >
+                            <Instagram size={16} /> Instagram
+                        </a>
+                        <a
+                            href="#"
+                            aria-label="Facebook"
+                            className="flex items-center gap-2 opacity-60 hover:opacity-100 transition"
+                        >
+                            <Facebook size={16} /> Facebook
+                        </a>
                     </div>
                 </div>
 
-                <div>
-                    <h3 className="text-xl font-semibold mb-2">Dokumentacja</h3>
-                    <div className="flex flex-col gap-1 text-sm">
-                        <p className="opacity-50 cursor-pointer transition-all hover:opacity-100">Regulamin</p>
-                        <p className="opacity-50 cursor-pointer transition-all hover:opacity-100">Cennik</p>
-                        <p className="opacity-50 cursor-pointer transition-all hover:opacity-100">Regulacje</p>
-                        <p className="opacity-50 cursor-pointer transition-all hover:opacity-100">Dokumenty</p>
-                    </div>
+                <div className="space-y-3">
+                    <h3 className="text-lg font-semibold tracking-tight">Dokumentacja</h3>
+                    <ul className="text-sm space-y-1">
+                        <li className="opacity-60 hover:opacity-100 transition cursor-pointer">Regulamin</li>
+                        <li className="opacity-60 hover:opacity-100 transition cursor-pointer">Cennik</li>
+                        <li className="opacity-60 hover:opacity-100 transition cursor-pointer">Regulacje</li>
+                        <li className="opacity-60 hover:opacity-100 transition cursor-pointer">Dokumenty</li>
+                    </ul>
                 </div>
+            </div>
+
+            <div className="mt-12 border-t border-gray-200 dark:border-gray-700 pt-6 text-center text-xs opacity-60">
+                © {new Date().getFullYear()} TwojaFirma. Wszelkie prawa zastrzeżone.
             </div>
         </footer>
     );

@@ -112,8 +112,8 @@ export default function StripeHero() {
         </div>
       </div>
 
-      <div className="bg-primaryBlue dark:bg-DarkblackBorder text-white py-12 px-6 w-full flex justify-center">
-        <div className="max-w-[1100px] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+      <div className="bg-primaryBlue dark:bg-DarkblackBorder text-white py-12  w-full flex justify-center">
+        <div className="max-w-[1100px] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 px-6">
           {features.map((feature, idx) => (
             <FeatureCard key={idx} {...feature} />
           ))}
