@@ -6,12 +6,12 @@ import SectionHeading from "../typography/SectionHeading";
 
 function Stats({ Title, Description }) {
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-2 bg-secondaryBlue/25 rounded-[12px] border border-secondaryBlue/50 p-4 shadow-md transition-all duration-300 hover:scale-[1.025]">
       <div className="flex gap-2">
-        <span className="w-[2px] bg-blue-300"></span>
+        {/* <span className="w-[2px] bg-blue-300"></span> */}
         <p className="text-m md:text-lg md:font-semibold">{Title}</p>
       </div>
-      <p className="opacity-75 text-sm ml-3 md:max-w-[200px] md:w-full">
+      <p className="opacity-75 text-sm  md:max-w-[200px] md:w-full">
         {Description}
       </p>
     </div>
@@ -33,7 +33,7 @@ function Interactive() {
   ];
 
   return (
-    <section className="bg-darkBlue dark:bg-DarkblackText  text-white py-16 pb-12 w-full px-4 ">
+    <section className="bg-darkBlue dark:bg-DarkblackText  text-white py-20 pb-12 w-full px-4 ">
       <SectionHeading textColor={"text-primaryGreen"}>
         Matura z informatyki? Z nami to formalność.
       </SectionHeading>
@@ -48,7 +48,7 @@ function Interactive() {
         </Description>
       </div>
 
-      <ul className="flex flex-col gap-6 mt-12 md:flex-row ">
+      <ul className="grid grid-cols-4 w-full mt-10 gap-6">
         {stats.map((s, index) => (
           <Stats
             Title={s.title}

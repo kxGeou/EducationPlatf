@@ -1,6 +1,6 @@
 import { BadgeCheck, Lightbulb } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-
+import Kurs from '../../assets/kartakurs.png';
 export default function CourseCard({ course }) {
   const navigate = useNavigate();
 
@@ -14,7 +14,9 @@ export default function CourseCard({ course }) {
       className="group relative flex flex-col md:flex-row cursor-pointer rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 bg-white dark:bg-DarkblackBorder hover:scale-[1.010]"
     >
       <img
-        src="react2.png"
+        // src={Kurs}
+        // src="react2.png"
+        src={`${course.image_url}`}
         alt={`Obrazek kursu ${course.title}`}
         className="w-full md:w-72 h-48 md:h-auto object-cover md:rounded-l-2xl rounded-t-2xl md:rounded-t-none"
       />

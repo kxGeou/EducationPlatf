@@ -5,7 +5,7 @@ import { motion, useAnimation } from "framer-motion";
 import React from "react";
 import { useEffect } from "react";
 import { useInView } from "react-intersection-observer";
-
+import Turek from '../../assets/RobotSiedzacyKrzes.svg';
 function About() {
   const controls = useAnimation();
   const [ref, inView] = useInView({ triggerOnce: true, threshold: 0.2 });
@@ -55,9 +55,7 @@ function About() {
           </Description>
         </div>
       </div>
-      <div className="w-full h-40 md:h-60 lg:h-70 md:w-[45%] mt-8 md:mt-0 rounded-[12px] bg-blackText dark:bg-DarkblackBorder text-white flex justify-center items-center shadow-lg">
-        Prototyp
-      </div>
+      <img src={Turek} className="w-[20%]  hidden md:flex"/>
     </motion.section>
   );
 }

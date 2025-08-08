@@ -1,13 +1,12 @@
 import Description from "../typography/Description";
 import Heading2 from "../typography/Heading2";
+import RobotLaptop from '../../assets/RobotLaptop.svg';
 
 function AboutPlatform() {
   return (
     <section className="w-full px-4 flex flex-col py-16 md:flex-row md:justify-between md:gap-20 lg:items-center">
-      <div className="bg-blackText shadow-lg dark:bg-DarkblackText w-full h-35 md:w-[50%] md:h-70 rounded-[12px] flex justify-center items-center text-white">
-        <p>Prototyp</p>
-      </div>
-
+     
+      <img src={RobotLaptop} className="w-[15%]"/>
       <div className="my-5 flex flex-col gap-1 md:justify-between">
         <div className="flex flex-col gap-2">
           <Heading2 margin={"mb-2"} textColor={"text-darkerBlack dark:text-white"}>
