@@ -7,7 +7,7 @@ import { Menu, User, X, Sun, Moon, ChevronDown } from "lucide-react";
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
-function RedHeader({ setIsDark, isDark }) {
+function Header({ setIsDark, isDark }) {
   const [visibleModal, setVisibleModal] = useState(false);
   const [courseDropdownOpen, setCourseDropdownOpen] = useState(false);
   const width = useWindowWidth();
@@ -37,7 +37,6 @@ function RedHeader({ setIsDark, isDark }) {
         <img
           src={width > 850 ? DesktopLogo : MobileDesktop}
           className="w-36 cursor-pointer"
-          // onClick={() => navigate("/")}
           title="Logo platformy"
           alt="Logo platformy"
         />
@@ -60,7 +59,7 @@ function RedHeader({ setIsDark, isDark }) {
               </li>
 
               <li className="cursor-pointer hover:text-gray-300">O nas</li>
-              <li className="cursor-pointer hover:text-gray-300">Osiągnięcia</li>
+              <li className="cursor-pointer hover:text-gray-300" onClick={() => navigate("/contact")}>Kontakt</li>
 
               <li
                 className="relative group cursor-pointer"
@@ -83,8 +82,8 @@ function RedHeader({ setIsDark, isDark }) {
                         courses.map((course) => (
                           <a
                             key={course.id}
-                            // onClick={() => navigate(`/kurs/${course.id}`)}
-                            href={`/kurs/${course.id}`}
+                            onClick={() => navigate(`/kurs/${course.id}`)}
+                            // href={`/kurs/${course.id}`}
                             className="px-4 py-2 hover:bg-slate-700 cursor-pointer"
                           >
                             {course.title}
@@ -172,7 +171,7 @@ function RedHeader({ setIsDark, isDark }) {
             <div className="bg-slate-950/35 border border-slate-500/25 backdrop-blur-lg rounded-[12px] px-6 py-4 text-white shadow-lg">
               <ul className="flex flex-col gap-3 items-start text-white">
                 <li className="cursor-pointer hover:text-gray-300">O nas</li>
-                <li className="cursor-pointer hover:text-gray-300">Osiągnięcia</li>
+                <li className="cursor-pointer hover:text-gray-300" onClick={() => navigate("/contact")}>Kontakt</li>
 
                 <li
                   onClick={() => setCourseDropdownOpen((prev) => !prev)}
@@ -192,7 +191,7 @@ function RedHeader({ setIsDark, isDark }) {
                             setCourseDropdownOpen(false);
                           }}
                           href={`/kurs/${course.id}`}
-                          className="cursor-pointer hover:text-gray-400 cursor-pointer"
+                          className="cursor-pointer hover:text-gray-400"
                         >
                           {course.title}
                         </li>
@@ -241,4 +240,4 @@ function RedHeader({ setIsDark, isDark }) {
   );
 }
 
-export default RedHeader;
+export default Header;

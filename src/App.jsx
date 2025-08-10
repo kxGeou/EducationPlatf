@@ -17,7 +17,8 @@ import { useAuthStore } from './store/authStore.js';
 import ScrollToTop from './scripts/scrollToTop.jsx'
 import PasswordResetForm from './components/auth/PasswordResetForm.jsx'
 import NewPassword from './components/auth/NewPassword.jsx'
-
+import ContactPage from './pages/ContactPage.jsx'
+import Regulations from './pages/Regulations.jsx'
 export default function App() {
   const init = useAuthStore(state => state.init)
   const loading = useAuthStore(state => state.loading)
@@ -46,6 +47,8 @@ export default function App() {
         <Route path='/update-password' element={<PasswordResetForm />} />
         <Route path='/reset-password' element={<NewPassword />} />
         <Route path='/user_page' element={<MyCourses  isDark={isDark} setIsDark={setIsDark}/>} />
+        <Route path='/contact' element={<ContactPage  isDark={isDark} setIsDark={setIsDark}/>} />
+        <Route path='/regulations' element={<Regulations  isDark={isDark} setIsDark={setIsDark}/>} />
         <Route path='/course/:id' element={<CoursePage  isDark={isDark} setIsDark={setIsDark}/>} />
         <Route path='/kurs/:id' element={<CourseLandingPage isDark={isDark} setIsDark={setIsDark}/>} />
         <Route path='/loading' element={<Loading isDark={isDark}/>} />
