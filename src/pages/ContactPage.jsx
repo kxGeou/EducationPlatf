@@ -1,13 +1,17 @@
 import ContactHero from "../components/contact/ContactHero";
 import Footer from "../components/homepage/Footer";
 import Header from "../components/homepage/Header";
-import emailjs from "emailjs-com";
-import { ArrowRight, LoaderCircle } from "lucide-react";
+import { LoaderCircle } from "lucide-react";
 import React, { useState } from "react";
 import toast from "react-hot-toast";
 import Gmail from '../assets/gmail.svg';
+import supabase from "../util/supabaseClient";
+
 function ContactPage({ isDark, setIsDark }) {
   const [formData, setFormData] = useState({
+    email: "",
+    name: "",
+    phone: "",
     message: "",
   });
 
@@ -18,30 +22,32 @@ function ContactPage({ isDark, setIsDark }) {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
-    emailjs
-      .send(
-        import.meta.env.VITE_EMAILJS_SERVICE_ID,
-        import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
+    const { email, name, phone, message } = formData;
+
+    try {
+      const { error } = await supabase.from("contact_messages").insert([
         {
-          message: formData.message,
+          email,
+          name,
+          phone: phone || null,
+          message,
         },
-        import.meta.env.VITE_EMAILJS_PUBLIC_KEY
-      )
-      .then(
-        () => {
-          toast.success("Wiadomość wysłana");
-          setFormData({ message: "" });
-          setLoading(false);
-        },
-        () => {
-          toast.error("Błąd podczas wysyłania, spróbuj ponownie.");
-          setLoading(false);
-        }
-      );
+      ]);
+
+      if (error) throw error;
+
+      toast.success("Wiadomość zapisana!");
+      setFormData({ email: "", name: "", phone: "", message: "" });
+    } catch (err) {
+      console.error(err);
+      toast.error("Błąd podczas zapisywania wiadomości.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -60,6 +66,35 @@ function ContactPage({ isDark, setIsDark }) {
           </h2>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+            <input
+              type="email"
+              name="email"
+              placeholder="Twój email..."
+              value={formData.email}
+              onChange={handleChange}
+              required
+              className="p-3 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-400"
+            />
+
+            <input
+              type="text"
+              name="name"
+              placeholder="Imię i nazwisko..."
+              value={formData.name}
+              onChange={handleChange}
+              required
+              className="p-3 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-400"
+            />
+
+            <input
+              type="tel"
+              name="phone"
+              placeholder="Numer telefonu (opcjonalnie)"
+              value={formData.phone}
+              onChange={handleChange}
+              className="p-3 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-400"
+            />
+
             <textarea
               name="message"
               placeholder="Treść wiadomości..."
@@ -69,6 +104,7 @@ function ContactPage({ isDark, setIsDark }) {
               rows="5"
               className="p-3 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-400"
             ></textarea>
+
             <div className="flex items-center gap-2">
               <button
                 type="submit"
@@ -89,7 +125,7 @@ function ContactPage({ isDark, setIsDark }) {
                 rel="noopener noreferrer"
                 className="flex gap-2 items-center text-blackText/75 bg-white border border-gray-200 shadow-md hover:scale-[1.025] font-semibold rounded-lg transition duration-300 justify-center px-4 py-4"
               >
-                <img src={Gmail} className="h-5"></img>
+                <img src={Gmail} className="h-5" alt="Gmail" />
               </a>
             </div>
           </form>

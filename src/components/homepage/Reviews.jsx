@@ -25,7 +25,7 @@ function Review({ user, description, rating }) {
         </div>
       </div>
 
-      <p className="mt-1 text-sm leading-relaxed break-words text-ellipsis overflow-hidden">
+      <p className="mt-1 text-sm leading-relaxed break-words text-ellipsis overflow-hidden italic">
         {description}
       </p>
     </div>
@@ -35,19 +35,19 @@ function Review({ user, description, rating }) {
 export default function Reviews() {
   const reviews = [
     {
-      user: "New User 3213",
-      rating: 3,
-      description: "Bardzo fajna aplikacja. Łatwa w obsłudze i szybka.",
-    },
-    {
-      user: "TechLover 88",
+      user: "Franek",
       rating: 5,
-      description: "Świetne doświadczenie! Na pewno będę polecać innym.",
+      description: "Zacząłem kurs 3 miesiące przed maturą, totalnie od zera. Serio, nie ogarniałem ani Excela, ani Pythona. Dzięki lekcjom wszystko było jasno wytłumaczone, krok po kroku. Matura poszła mi świetnie - 86%! Jestem mega wdzięczny, bo bez tego kursu bym się pogubił.",
     },
     {
-      user: "Client 9000",
-      rating: 4,
-      description: "Wszystko działa jak należy, ale mogłoby być ciut szybciej.Wszystko działa jak należy, ale mogłoby być ciut szybciej.Wszystko działa jak należy, ale mogłoby być ciut szybciej./.",
+      user: "Zofia ",
+      rating: 5,
+      description: "W szkole nic nie rozumiałam z inforatyki, a tutaj wszystko w końcu miało sens. Kurs do matury to złoto!",
+    },
+    {
+      user: "Robert",
+      rating: 5,
+      description: "Mega się cieszę, że trafiłem na ten kurs. Wszystko, co potrzebne na egzamin, było w jednym miejscu. Szczerze polecam!",
     },
   ];
 
