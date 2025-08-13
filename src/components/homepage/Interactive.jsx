@@ -48,7 +48,7 @@ function Interactive() {
         </Description>
       </div>
 
-      <ul className="grid grid-cols-4 w-full mt-10 gap-6">
+      <ul className="grid md:grid-cols-4 w-full mt-10 gap-6">
         {stats.map((s, index) => (
           <Stats
             Title={s.title}
