@@ -117,32 +117,38 @@ function ContactPage({ isDark, setIsDark }) {
 
   const [loading, setLoading] = useState(false);
 
-  const validateForm = () => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const phoneRegex = /^\+48\d{9}$/; 
+const validateForm = () => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const phoneRegex = /^\d{9}$/; // tylko 9 cyfr
+  const nameRegex = /^[A-Za-zÀ-ÿĄąĆćĘęŁłŃńÓóŚśŹźŻż\s]+$/; 
 
-    if (!emailRegex.test(formData.email)) {
-      toast.error("Podaj poprawny adres email.");
-      return false;
-    }
-    if (formData.name.trim().length < 3) {
-      toast.error("Imię i nazwisko musi mieć co najmniej 3 znaki.");
-      return false;
-    }
-    if (!formData.topic) {
-      toast.error("Wybierz temat wiadomości.");
-      return false;
-    }
-    if (formData.phone && !phoneRegex.test(formData.phone)) {
-      toast.error("Numer telefonu musi być w formacie +48XXXXXXXXX (9 cyfr).");
-      return false;
-    }
-    if (formData.message.trim().length < 10) {
-      toast.error("Treść wiadomości musi mieć co najmniej 10 znaków.");
-      return false;
-    }
-    return true;
-  };
+  if (!emailRegex.test(formData.email)) {
+    toast.error("Podaj poprawny adres email.");
+    return false;
+  }
+  if (formData.name.trim().length < 3) {
+    toast.error("Imię i nazwisko musi mieć co najmniej 3 znaki.");
+    return false;
+  }
+  if (!nameRegex.test(formData.name.trim())) {
+    toast.error("Imię i nazwisko może zawierać tylko litery i spacje.");
+    return false;
+  }
+  if (!formData.topic) {
+    toast.error("Wybierz temat wiadomości.");
+    return false;
+  }
+  if (formData.phone && !phoneRegex.test(formData.phone)) {
+    toast.error("Numer telefonu musi zawierać dokładnie 9 cyfr.");
+    return false;
+  }
+  if (formData.message.trim().length < 5) {
+    toast.error("Treść wiadomości musi mieć co najmniej 5 znaków.");
+    return false;
+  }
+  return true;
+};
+
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -225,7 +231,7 @@ function ContactPage({ isDark, setIsDark }) {
             <input
               type="tel"
               name="phone"
-              placeholder="Numer telefonu (opcjonalnie, format +48123456789)"
+              placeholder="Numer telefonu (opcjonalnie)"
               value={formData.phone}
               onChange={handleChange}
               className="p-3 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-DarkblackText dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-400"
