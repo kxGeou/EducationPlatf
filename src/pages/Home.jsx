@@ -12,11 +12,10 @@ import '../styles/Interactive.css'
 import Footer from "../components/homepage/Footer";
 import StripeHero from "../components/homepage/StripeHero";
 import Header from "../components/homepage/Header";
+import { useAuthStore } from "../store/authStore";
 
 function Home({isDark, setIsDark}) {
-
  
-  console.log(isDark)
   return (
     <main data-theme={isDark ? "dark" : "light"} className="flex flex-col items-center justify-center relative dark:bg-blackText">
       

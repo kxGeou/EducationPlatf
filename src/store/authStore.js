@@ -90,6 +90,7 @@ export const useAuthStore = create(
           console.error("Błąd zapisu postępu wideo:", err.message);
         }
       },
+
       saveFlashcardProgress: async (userId, flashcardId, status) => {
         try {
           const { data, error } = await supabase
@@ -137,10 +138,12 @@ export const useAuthStore = create(
 
         supabase.auth.onAuthStateChange(async (_event, session) => {
           if (session?.user) {
-            set({ user: session.user });
-            await get().fetchUserData(session.user.id);
-            await get().fetchUserProgress(session.user.id);
-            await get().fetchUserFlashcards(session.user.id);
+            setTimeout(async () => {
+              set({ user: session.user });
+              await get().fetchUserData(session.user.id);
+              await get().fetchUserProgress(session.user.id);
+              await get().fetchUserFlashcards(session.user.id);
+            }, 100); 
           } else {
             set({
               user: null,
