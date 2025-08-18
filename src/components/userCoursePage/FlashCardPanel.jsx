@@ -1,12 +1,19 @@
 import { useAuthStore } from "../../store/authStore";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowUpAZ, Check, ChevronLeft, X } from "lucide-react";
+import { ArrowUpAZ, Check, ChevronLeft, X, RotateCcw, Trophy, Frown } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import supabase from "../../util/supabaseClient";
+import confetti from "canvas-confetti";
 
 const flipVariants = {
   front: { rotateY: 0 },
   back: { rotateY: 180 },
+};
+
+const fadeVariants = {
+  initial: { opacity: 0, scale: 0.95 },
+  animate: { opacity: 1, scale: 1 },
+  exit: { opacity: 0, scale: 0.95 },
 };
 
 export default function FlashcardPanel({ courseId }) {
@@ -16,7 +23,7 @@ export default function FlashcardPanel({ courseId }) {
     saveFlashcardProgress,
     loading: authLoading,
   } = useAuthStore();
-  console.log(authLoading)
+
   const [categories, setCategories] = useState([]);
   const [flashcards, setFlashcards] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -26,6 +33,7 @@ export default function FlashcardPanel({ courseId }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [filterMode, setFilterMode] = useState("all");
   const [flipped, setFlipped] = useState(false);
+  const [sessionFinished, setSessionFinished] = useState(false);
 
   const fetchFlashcards = async () => {
     if (!user) return;
@@ -65,25 +73,33 @@ export default function FlashcardPanel({ courseId }) {
   }, [flashcards, userFlashcards, selectedCategory, filterMode]);
 
   useEffect(() => {
-    if (currentIndex >= filteredFlashcards.length) {
-      setCurrentIndex(0);
+    if (currentIndex >= filteredFlashcards.length && filteredFlashcards.length > 0) {
+      setSessionFinished(true);
+      confetti({ particleCount: 80, spread: 70, origin: { y: 0.7 } });
     }
-  }, [filteredFlashcards.length]);
+  }, [currentIndex, filteredFlashcards.length]);
 
   const currentCard =
-    filteredFlashcards.length > 0 ? filteredFlashcards[currentIndex] : null;
+    filteredFlashcards.length > 0 && currentIndex < filteredFlashcards.length
+      ? filteredFlashcards[currentIndex]
+      : null;
 
   const knownCount = Object.values(userFlashcards).filter(
     (v) => v === "known"
   ).length;
   const totalCount = flashcards.length;
+  const unknownCount = totalCount - knownCount;
 
   const markFlashcard = async (status, cardId) => {
     if (!user) return;
     await saveFlashcardProgress(user.id, cardId, status);
-    setCurrentIndex((i) =>
-      i + 1 < filteredFlashcards.length ? i + 1 : 0
-    );
+    setCurrentIndex((i) => i + 1);
+  };
+
+  const restartSession = () => {
+    setCurrentIndex(0);
+    setFlipped(false);
+    setSessionFinished(false);
   };
 
   return (
@@ -191,6 +207,48 @@ export default function FlashcardPanel({ courseId }) {
             </p>
           )}
         </div>
+      ) : sessionFinished ? (
+        <motion.div
+          key="end-screen"
+          variants={fadeVariants}
+          initial="initial"
+          animate="animate"
+          exit="exit"
+          className="flex flex-col items-center justify-center h-full gap-6 text-center"
+        >
+          <h2 className="text-2xl font-bold">Gratulacje 🎉</h2>
+          <p className="text-gray-600 dark:text-gray-300">
+            Ukończyłeś wszystkie fiszki w tej sesji!
+          </p>
+
+          <div className="flex gap-6 justify-center mt-4">
+            <div className="flex flex-col items-center bg-green-100 dark:bg-green-900/40 px-4 py-2 rounded-xl shadow">
+              <Trophy className="text-green-600 dark:text-green-400 mb-1" size={28} />
+              <span className="font-bold text-lg text-green-700 dark:text-green-300">{knownCount}</span>
+              <span className="text-sm text-green-600 dark:text-green-300">Opanowane</span>
+            </div>
+            <div className="flex flex-col items-center bg-red-100 dark:bg-red-900/40 px-4 py-2 rounded-xl shadow">
+              <Frown className="text-red-600 dark:text-red-400 mb-1" size={28} />
+              <span className="font-bold text-lg text-red-700 dark:text-red-300">{unknownCount}</span>
+              <span className="text-sm text-red-600 dark:text-red-300">Do nauki</span>
+            </div>
+          </div>
+
+          <div className="flex gap-4 mt-6">
+            <button
+              onClick={restartSession}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-secondaryBlue text-white cursor-pointer hover:bg-primaryBlue/90 transition"
+            >
+              <RotateCcw size={20} /> Zagraj od nowa
+            </button>
+            <button
+              onClick={() => setShowCard(false)}
+              className="px-4 py-2 rounded-xl bg-gray-200 dark:bg-blackText hover:dark:bg-DarkblackText cursor-pointer hover:bg-gray-300 transition"
+            >
+              Powrót do listy
+            </button>
+          </div>
+        </motion.div>
       ) : (
         <>
           <button
@@ -207,13 +265,14 @@ export default function FlashcardPanel({ courseId }) {
             {currentCard ? (
               <motion.div
                 key={currentCard.id}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
+                variants={fadeVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
                 className="flex flex-col items-center justify-center"
               >
                 <motion.div
-                  className="relative w-full max-w-xl h-64 md:h-72 bg-white dark:bg-blackText rounded-[16px] shadow-lg select-none flex justify-center items-center px-8 cursor-pointer"
+                  className="relative w-full max-w-xl h-64 md:h-72 bg-gradient-to-br from-secondaryBlue/10 to-primaryGreen/10 dark:from-blackText dark:to-DarkblackText rounded-[16px] shadow-lg select-none flex justify-center items-center px-8 cursor-pointer"
                   animate={flipped ? "back" : "front"}
                   variants={flipVariants}
                   transition={{ duration: 0.6 }}
@@ -254,10 +313,7 @@ export default function FlashcardPanel({ courseId }) {
 
                 {userFlashcards[currentCard.id] && (
                   <div className="text-xs mt-2 text-gray-500 italic text-center w-full max-w-xl">
-                    Status:{" "}
-                    {userFlashcards[currentCard.id] === "known"
-                      ? "✔ Potrafisz"
-                      : "✖ Nie potrafisz"}
+                    Status: {userFlashcards[currentCard.id] === "known" ? "✔ Potrafisz" : "✖ Nie potrafisz"}
                   </div>
                 )}
 
@@ -275,6 +331,13 @@ export default function FlashcardPanel({ courseId }) {
                     <Check size={20} /> Potrafię
                   </button>
                 </div>
+
+                <button
+                  onClick={() => setCurrentIndex((i) => i + 1)}
+                  className="mt-4 text-sm dark:text-gray-200  hover:underline"
+                >
+                  ⏭ Pomiń
+                </button>
               </motion.div>
             ) : (
               <p className="text-center text-gray-500 mt-10">

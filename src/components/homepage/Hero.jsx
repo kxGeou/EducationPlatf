@@ -40,7 +40,7 @@ function Hero() {
           <h2
             className="font-bold text-4xl text-darkerBlack dark:text-white lg:text-7xl md:text-5xl  leading-[45px] w-full max-w-[400px] lg:leading-[75px] md:max-w-[750px] lg:max-w-[600px] lg:font-extrabold mb-4"
           >
-            Zdaj maturę z informatyki bez stresu
+            Od zera do zdanej informatyki
           </h2>
 
           <Description textColor={"text-blackText mb-6 dark:text-white"}>

@@ -1,4 +1,3 @@
-import { useState } from "react";
 import "../styles/AuthPage.css";
 import CourseListHero from "../components/homepage/CourseListHero";
 import Hero from "../components//homepage/Hero";
@@ -12,7 +11,6 @@ import '../styles/Interactive.css'
 import Footer from "../components/homepage/Footer";
 import StripeHero from "../components/homepage/StripeHero";
 import Header from "../components/homepage/Header";
-import { useAuthStore } from "../store/authStore";
 
 function Home({isDark, setIsDark}) {
  
@@ -45,7 +43,7 @@ function Home({isDark, setIsDark}) {
       <div className="flex flex-col items-center justify-start w-full max-w-[1100px]">
 
       <Courses></Courses>
-
+ 
 
       
       </div>

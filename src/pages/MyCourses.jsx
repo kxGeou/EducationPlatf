@@ -27,7 +27,10 @@ export default function MyCourses({isDark, setIsDark}) {
             />
             <CourseList pageChange={pageChange} />
           </div>
-          <Footer padding="" />
+          <div className='md:px-4'>
+
+          <Footer padding="px-4 rounded-xl" />
+          </div>
         </div>
 
         {userDataModal && (

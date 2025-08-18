@@ -1,5 +1,6 @@
 import React from "react";
 import "../../styles/Interactive.css";
+import RobotStat from "../../assets/robotStat.svg";
 import Description from "../typography/Description";
 import Heading2 from "../typography/Heading2";
 import SectionHeading from "../typography/SectionHeading";
@@ -20,8 +21,16 @@ function Stats({ Title, Description }) {
 
 function Interactive() {
   const stats = [
-    { title: "92%", description: "Z naszych uczniów zdobywa ponad 80% na maturze z informatyki" },
-    { title: "5+ lat", description: "Doświadczenia w prowadzeniu korepetycji i kursów maturalnych" },
+    {
+      title: "92%",
+      description:
+        "Z naszych uczniów zdobywa ponad 80% na maturze z informatyki",
+    },
+    {
+      title: "5+ lat",
+      description:
+        "Doświadczenia w prowadzeniu korepetycji i kursów maturalnych",
+    },
     {
       title: "+700 uczniów",
       description: "Już przygotowanych przez nas do matury — i ciągle rośnie!",
@@ -29,34 +38,39 @@ function Interactive() {
     {
       title: "100%",
       description: "Dostosowania kursów do wymagań maturalnych CKE",
-    }
+    },
   ];
 
   return (
-    <section className="bg-darkBlue dark:bg-DarkblackText  text-white py-20 pb-12 w-full px-4 ">
-      <SectionHeading textColor={"text-primaryGreen"}>
-        Matura z informatyki? Z nami to formalność.
-      </SectionHeading>
-      <div className="mt-8 flex flex-col gap-4 md:w-full md:max-w-[400px]">
-        <Heading2 margin={"mb-2"} textColor={"text-white"}>
-          Statystyki, które mówią same za siebie
-        </Heading2>
-        <Description textColor={"text-white"}>
-          Nasze kursy przygotowały już setki uczniów do matury. Dzięki
-          przemyślanej strukturze, wsparciu nauczycieli i naciskowi na praktykę
-          — efekty mówią same za siebie.
-        </Description>
-      </div>
+    <section className="relative bg-darkBlue dark:bg-DarkblackText text-white py-20 pb-12 w-full px-4 overflow-hidden">
+      <img
+        src={RobotStat}
+        alt=""
+        className="absolute top-10 right-0 w-[450px] dark:opacity-75 pointer-events-none select-none opacity-10 md:opacity-100"
+      />
 
-      <ul className="grid md:grid-cols-4 w-full mt-10 gap-6">
-        {stats.map((s, index) => (
-          <Stats
-            Title={s.title}
-            Description={s.description}
-            key={index}
-          ></Stats>
-        ))}
-      </ul>
+      <div className="relative z-10">
+        <SectionHeading textColor={"text-primaryGreen"}>
+          Matura z informatyki ? Z nami to formalność.
+        </SectionHeading>
+
+        <div className="mt-8 flex flex-col gap-4 md:w-full md:max-w-[400px]">
+          <Heading2 margin={"mb-2"} textColor={"text-white"}>
+            Statystyki, które mówią same za siebie
+          </Heading2>
+          <Description textColor={"text-white"}>
+            Nasze kursy przygotowały już setki uczniów do matury. Dzięki
+            przemyślanej strukturze, wsparciu nauczycieli i naciskowi na
+            praktykę — efekty mówią same za siebie.
+          </Description>
+        </div>
+
+        <ul className="grid md:grid-cols-4 w-full mt-10 gap-6">
+          {stats.map((s, index) => (
+            <Stats Title={s.title} Description={s.description} key={index} />
+          ))}
+        </ul>
+      </div>
     </section>
   );
 }

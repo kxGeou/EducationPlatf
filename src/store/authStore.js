@@ -87,7 +87,8 @@ export const useAuthStore = create(
             userProgress: { ...state.userProgress, [videoId]: watched },
           }));
         } catch (err) {
-          console.error("Błąd zapisu postępu wideo:", err.message);
+          toast.error("Błąd zapisu postępu wideo:", err.message);
+          console.log(err.message)
         }
       },
 

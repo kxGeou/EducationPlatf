@@ -189,8 +189,10 @@ function Header({ setIsDark, isDark }) {
                           onClick={() => {
                             setVisibleModal(false);
                             setCourseDropdownOpen(false);
+                            navigate(`/kurs/${course.id}`)
                           }}
-                          href={`/kurs/${course.id}`}
+                          // href={`/kurs/${course.id}`}
+                          
                           className="cursor-pointer hover:text-gray-400"
                         >
                           {course.title}

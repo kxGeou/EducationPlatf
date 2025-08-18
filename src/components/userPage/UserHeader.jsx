@@ -1,5 +1,6 @@
 import DesktopLogo from "../../assets/logoDesk.png";
 import MobileDesktop from "../../assets/logoMobile.png";
+import LogoWhite from "../../assets/logo_biale.svg";
 import useWindowWidth from "../../hooks/useWindowWidth";
 import { useAuthStore } from "../../store/authStore";
 import Avatar from "boring-avatars";
@@ -55,12 +56,23 @@ function UserHeader({
         {width >= 750 ? (
           <div className="w-full max-w-[1600px] flex justify-between items-center px-6 lg:px-0">
             <div className="flex items-center gap-6">
+
+              {isDark ?
               <img
+                src={width > 600 ? LogoWhite : MobileDesktop}
+                aria-label="Przejdź do strony głównej"
+                onClick={() => navigate("/")}
+                className="font-semibold w-36 cursor-pointer"
+              ></img>
+              :
+               <img
                 src={width > 600 ? DesktopLogo : MobileDesktop}
                 aria-label="Przejdź do strony głównej"
                 onClick={() => navigate("/")}
                 className="font-semibold w-36 cursor-pointer"
               ></img>
+            }
+              
 
               <nav>
                 <ul className="flex items-center gap-4">

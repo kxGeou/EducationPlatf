@@ -32,7 +32,7 @@ export default function VideoPanel({
   return (
     <div className="w-full">
       {!selectedSection ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 grid-rows-2 w-full md:min-h-[96vh]">
+        <div className="grid md:grid-cols-4 grid-cols-0 grid-rows-4 md:grid-rows-1 gap-6 w-full md:min-h-[96vh]">
           {Object.keys(groupedVideos).map((section) => {
             const videosInSection = groupedVideos[section];
             const watchedCount = videosInSection.filter(

@@ -1,6 +1,6 @@
 import Description from "../typography/Description";
 import Heading2 from "../typography/Heading2";
-import RobotLaptop from '../../assets/RobotSiedzacy.svg';
+import RobotLaptop from '../../assets/RobotOpieraj.svg';
 
 function AboutPlatform() {
   return (
