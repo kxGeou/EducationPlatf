@@ -46,7 +46,7 @@ function Interactive() {
       <img
         src={RobotStat}
         alt=""
-        className="absolute top-10 right-0 w-[450px] dark:opacity-75 pointer-events-none select-none opacity-10 md:opacity-100"
+        className="absolute top-10 right-0 md:right-50 w-[450px] dark:md:opacity-100 pointer-events-none select-none opacity-10 md:opacity-100"
       />
 
       <div className="relative z-10">
@@ -65,7 +65,7 @@ function Interactive() {
           </Description>
         </div>
 
-        <ul className="grid md:grid-cols-4 w-full mt-10 gap-6">
+        <ul className="grid md:grid-cols-4 w-full mt-20 gap-6">
           {stats.map((s, index) => (
             <Stats Title={s.title} Description={s.description} key={index} />
           ))}

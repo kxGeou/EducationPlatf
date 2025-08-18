@@ -11,7 +11,7 @@ import '../styles/Interactive.css'
 import Footer from "../components/homepage/Footer";
 import StripeHero from "../components/homepage/StripeHero";
 import Header from "../components/homepage/Header";
-
+import HowWeLearn from '../components/homepage/HowWeLearn';
 function Home({isDark, setIsDark}) {
  
   return (
@@ -27,10 +27,11 @@ function Home({isDark, setIsDark}) {
       </div>
       <Hero></Hero>
       <p className="flex gap-2 items-center w-full px-4 mt-20 mb-6 text-gray-400 dark:text-white/60">
-        <BookMarked size={18} className="text-gray-400  dark:text-white/60"></BookMarked>Moduły dzięki którym zdasz egzamin
+        <BookMarked size={18} className="text-gray-400  dark:text-white/60"></BookMarked>Tak wygląda nauka z PasjonatamiIT
       </p>
-      <CourseListHero></CourseListHero>
+      <HowWeLearn></HowWeLearn>      
       
+
       <About></About>
       </div>
       <div className="flex flex-col items-center justify-start w-full bg-darkBlue dark:bg-DarkblackText banner mt-26">
