@@ -165,12 +165,15 @@ export default function CourseLandingPage({ isDark, setIsDark }) {
             </h1>
             <p className="text-lg opacity-80 max-w-[600px]">{course.description}</p>
             <div className="mt-8 flex items-center gap-6">
-              <p className="text-3xl font-semibold">
+              {!alreadyBought && 
+               <p className="text-3xl font-semibold">
                 {course.price_cents} zł{" "}
                 <span className="ml-2 text-xl opacity-60 line-through">
                   220 zł
                 </span>
               </p>
+              }
+             
               {!alreadyBought ? (
                 <button
                   onClick={handleBuy}
