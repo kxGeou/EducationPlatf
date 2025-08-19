@@ -38,7 +38,7 @@ function Hero() {
       <div className="flex items-center justify-between gap-12">
         <div className="flex flex-col">
           <h2
-            className="font-bold text-4xl text-darkerBlack dark:text-white lg:text-7xl md:text-5xl  leading-[45px] w-full max-w-[400px] lg:leading-[75px] md:max-w-[750px] lg:max-w-[600px] lg:font-extrabold mb-4"
+            className="font-bold text-5xl text-blackText dark:text-white lg:text-7xl md:text-5xl  leading-[55px] w-full max-w-[400px] lg:leading-[75px] md:max-w-[750px] lg:max-w-[600px] lg:font-extrabold mb-4"
           >
             Od zera do zdanej informatyki
           </h2>
