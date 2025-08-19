@@ -4,7 +4,7 @@ import RobotLaptop from '../../assets/RobotOpieraj.svg';
 
 function AboutPlatform() {
   return (
-    <section className="w-full px-4 flex flex-col py-16 md:flex-row md:justify-between md:gap-20 lg:items-center">
+    <section className="w-full px-4 flex flex-col py-16 md:flex-row md:justify-between items-center md:gap-20 ">
      
       <div className="my-5 flex flex-col gap-1 md:justify-between">
         <div className="flex flex-col gap-2">
@@ -20,7 +20,7 @@ Dostosujemy zajęcia do Twojego poziomu i celu - matura, egzamin zawodowy, popra
           Zapisz się już teraz
         </button>
       </div>
-      <img src={RobotLaptop} className="w-[40%]"/>
+      <img src={RobotLaptop} className="w-[60%] md:w-[40%]"/>
 
     </section>
   );
