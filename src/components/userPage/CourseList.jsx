@@ -46,7 +46,7 @@ const CourseItem = memo(({ course, onClick }) => (
     <img
       src={course.image_url}
       alt="course img"
-      className="w-full h-40 md:h-50 object-cover"
+      className="w-full h-40 md:h-75 object-cover"
     />
     <div className="px-4 py-3 flex flex-col flex-1 items-start">
       <h3 className="font-bold text-base md:text-lg mb-1 truncate w-full">{course.title}</h3>

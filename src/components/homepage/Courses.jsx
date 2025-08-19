@@ -41,7 +41,7 @@ export default function Courses() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 gap-12">
+      <div className="flex flex-col-reverse gap-12">
         {loading
           ? Array.from({ length: 4 }).map((_, i) => (
               <div

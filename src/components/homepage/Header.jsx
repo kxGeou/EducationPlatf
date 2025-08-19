@@ -76,14 +76,13 @@ function Header({ setIsDark, isDark }) {
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -10 }}
                       transition={{ duration: 0.2 }}
-                      className="absolute flex flex-col left-0 mt-4 py-2 w-48 bg-slate-950/50 border dark:bg-slate-600/50 border-slate-500/25 backdrop-blur-md text-white shadow-lg rounded-lg overflow-hidden z-50"
+                      className="absolute flex flex-col left-0 mt-4 py-2 w-48 bg-slate-700/75 border dark:bg-slate-500/75 border-slate-500/25 backdrop-blur-lg text-white shadow-lg rounded-lg overflow-hidden z-50"
                     >
                       {courses.length > 0 ? (
                         courses.map((course) => (
                           <a
                             key={course.id}
                             onClick={() => navigate(`/kurs/${course.id}`)}
-                            // href={`/kurs/${course.id}`}
                             className="px-4 py-2 hover:bg-slate-700 cursor-pointer"
                           >
                             {course.title}
@@ -191,7 +190,6 @@ function Header({ setIsDark, isDark }) {
                             setCourseDropdownOpen(false);
                             navigate(`/kurs/${course.id}`)
                           }}
-                          // href={`/kurs/${course.id}`}
                           
                           className="cursor-pointer hover:text-gray-400"
                         >

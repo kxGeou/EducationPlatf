@@ -6,6 +6,7 @@ import Error from "../components/systemLayouts/Error";
 import Loading from "../components/systemLayouts/Loading";
 import supabase from "../util/supabaseClient";
 import Hls from "hls.js";
+import Turek from '../assets/RobotSiedzącyTur.svg';
 import {
   ArrowDown01Icon,
   Check,
@@ -42,7 +43,7 @@ export default function CourseLandingPage({ isDark, setIsDark }) {
 
       const { data: courseData, error: courseError } = await supabase
         .from("courses")
-        .select("id, title, description, price_cents")
+        .select("id, title, description, price_cents, image_url")
         .eq("id", id)
         .single();
 
@@ -80,7 +81,7 @@ export default function CourseLandingPage({ isDark, setIsDark }) {
 
       const { data: otherCoursesData } = await supabase
         .from("courses")
-        .select("id, title, description, price_cents")
+        .select("id, title, description, price_cents, image_url")
         .neq("id", id)
         .limit(4);
 
@@ -140,6 +141,7 @@ export default function CourseLandingPage({ isDark, setIsDark }) {
     }
   };
 
+  console.log(course)
   if (loading) return <Loading isDark={isDark} />;
   if (!course) return <Error isDark={isDark} />;
 
@@ -149,6 +151,7 @@ export default function CourseLandingPage({ isDark, setIsDark }) {
     "Doświadczenie do dalszej przygody z programowaniem",
     "Zaznajomienie się z najnowszymi technologiami",
   ];
+
 
   return (
     <div
@@ -188,13 +191,14 @@ export default function CourseLandingPage({ isDark, setIsDark }) {
                 </span>
               )}
             </div>
-          </div>
+          </div>  
 
-          <div className="flex-1 hidden lg:flex justify-center">
-            <div className="bg-black/50 w-[22rem] h-[14rem] rounded-2xl flex items-center justify-center shadow-xl">
-              Podgląd kursu
-            </div>
-          </div>
+            <img
+              src={course.image_url}
+              alt={course.title}
+              className="mt-10 rounded-[12px] shadow-lg"
+            />
+
         </div>
       </section>
 
@@ -247,24 +251,35 @@ export default function CourseLandingPage({ isDark, setIsDark }) {
           <CourseSections videos={videos} firstVideoId={firstVideo?.videoId} />
         </section>
 
+        <section className="flex mt-20 md:my-30 justify-between items-center border border-gray-100 dark:bg-DarkblackBorder dark:border-0 dark:text-white p-12 rounded-[12px] shadow-md">
+          <div className="">
+            <h3 className="font-semibold text-3xl mb-2">Umów się na zajęcia!</h3>
+            <p className="text-md w-[400px] opacity-75 mb-4">Na naszej platformie istnieje opcja umówienia się na indywidualne zajęcia, przejdź do sekcji kontakt i wyślij do nas wiadomość</p>
+            <button className="bg-gradient-to-r from-DarkblackText cursor-pointer transiton-all shadow-md duration-300 hover:shadow-lg hover:scale-[1.02] to-DarkblackBorder text-white rounded-[12px] dark:from-secondaryGreen dark:to-primaryGreen py-3 w-full" onClick={() => navigate("/contact")}>Skontaktuj sie z nami</button>
+          </div>
+
+          <img src={Turek} className="w-[20%] hidden md:flex"/>
+        </section>
+
+
         <section className="mt-16 mb-24">
           <h2 className="text-2xl font-bold mb-6 dark:text-white">
             Inne kursy
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {otherCourses.length === 0 && <p>Brak innych kursów.</p>}
-            {otherCourses.map(({ id: cId, title, description }) => (
+            {otherCourses.map(({ id: cId, title, description, image_url }) => (
               <div
                 key={cId}
                 onClick={() => navigate(`/`)}
                 className="rounded-xl overflow-hidden shadow-md hover:shadow-xl hover:scale-[1.02] transition-all bg-white dark:bg-DarkblackText cursor-pointer"
               >
                 <img
-                  src="../react2.png"
+                  src={image_url}
                   alt="mockup image"
-                  className="w-full h-40 object-cover"
+                  className="w-full h-60 object-cover"
                 />
-                <div className="p-4">
+                <div className="p-4 flex flex-col justify-end">
                   <h3 className="text-lg font-semibold dark:text-white">
                     {title}
                   </h3>
