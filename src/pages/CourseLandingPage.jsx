@@ -196,7 +196,7 @@ export default function CourseLandingPage({ isDark, setIsDark }) {
             <img
               src={course.image_url}
               alt={course.title}
-              className="mt-10 rounded-[12px] shadow-lg"
+              className="mt-10 rounded-[12px] shadow-lg hidden md:flex"
             />
 
         </div>
