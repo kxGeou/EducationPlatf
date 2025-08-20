@@ -41,7 +41,7 @@ function Home({isDark, setIsDark}) {
       </div>
       
       
-      <div className="flex flex-col items-center justify-start w-full max-w-[1100px]">
+      <div className="flex flex-col items-center justify-start w-full max-w-[1100px]" id="kursy">
 
       <Courses></Courses>
  

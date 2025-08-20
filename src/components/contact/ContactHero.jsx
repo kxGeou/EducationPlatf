@@ -1,16 +1,26 @@
-import React from 'react'
-import Turek from '../../assets/RobotSiedzącyTur.svg';
+import React from 'react';
+import RobotBiurko from '../../assets/RobotBiurko.svg';
+import Description from '../typography/Description';
+
 function ContactHero() {
   return (
-    <div className='mt-36  w-full flex justify-between items-start mb-32'>
-        <div className='w-full md:w-[50%] flex flex-col gap-2'>
-            <h2 className='text-4xl md:text-6xl font-bold text-blackText dark:text-white'>Skontaktuj się z nami</h2>
-            <p className='opacity-75 dark:text-white/75'>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quibusdam delectus, fuga totam laborum libero saepe praesentium fugit aspernatur, porro aliquam tempora tenetur accusamus voluptatibus voluptas.</p>
-        </div>
+    <div className='mt-30 w-full flex flex-col md:flex-row justify-between items-center mb-32 gap-8'>
+      
+      <div className='w-full md:w-[50%] flex flex-col gap-4'>
+        <h2 className='text-4xl md:text-6xl font-bold text-blackText dark:text-white'>
+          Skontaktuj się z nami
+        </h2>
+        
+        <Description textColor="text-blackText dark:text-white/75">
+          Masz pytania dotyczące naszych kursów lub chcesz dowiedzieć się więcej o indywidualnych korepetycjach? 
+          Napisz do nas, a nasz zespół odpowie Ci najszybciej jak to możliwe. 
+        </Description>
+      </div>
 
-        <img src={Turek} className='w-[15%] hidden md:flex'/>
+      <img src={RobotBiurko} className='w-[43%] hidden md:flex' alt="Robot siedzący" />
+      
     </div>
-  )
+  );
 }
 
-export default ContactHero
+export default ContactHero;

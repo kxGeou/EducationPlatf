@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Wrench, Bot, Cable, Settings } from "lucide-react";
 import Heading2 from "../typography/Heading2";
 import SectionHeading from "../typography/SectionHeading";
+import { useNavigate } from "react-router-dom";
 
 const features = [
   {
@@ -39,7 +40,7 @@ const FeatureCard = ({ icon, title, description, link, href }) => (
     {icon}
     <h3 className="font-bold text-lg">{title}</h3>
     <p className="text-blue-100 dark:text-blue-200 text-sm">{description}</p>
-    <a href={href} className="text-green-300 text-sm mt-1" aria-label={`Czytaj więcej: ${title}`}>
+    <a href={href} className="text-green-300 text-sm mt-1 inline-block" aria-label={`Czytaj więcej: ${title}`}>
       {link}
     </a>
   </div>
@@ -51,6 +52,7 @@ export default function StripeHero() {
   const [lineIndex, setLineIndex] = useState(0);
   const [charIndex, setCharIndex] = useState(0);
   const ref = useRef(null);
+  const navigate = useNavigate();
 
   const codeLines = [
     "const kurs = new PasjonaciIT({",
@@ -70,7 +72,7 @@ export default function StripeHero() {
           observer.disconnect();
         }
       },
-      { threshold: 0.4 }
+      { threshold: 0 }
     );
     if (ref.current) observer.observe(ref.current);
   }, []);
@@ -79,16 +81,20 @@ export default function StripeHero() {
     if (!startTyping || lineIndex >= codeLines.length) return;
 
     const currentLine = codeLines[lineIndex];
+
     if (charIndex < currentLine.length) {
       const timeout = setTimeout(() => {
         setDisplayedCode((prev) => prev + currentLine[charIndex]);
         setCharIndex((prev) => prev + 1);
       }, 40);
       return () => clearTimeout(timeout);
-    } else {
-      setDisplayedCode((prev) => prev + "\n");
-      setLineIndex((prev) => prev + 1);
-      setCharIndex(0);
+    } else if (charIndex === currentLine.length) {
+      const timeout = setTimeout(() => {
+        setDisplayedCode((prev) => prev + "\n");
+        setLineIndex((prev) => prev + 1);
+        setCharIndex(0);
+      }, 200);
+      return () => clearTimeout(timeout);
     }
   }, [charIndex, lineIndex, startTyping]);
 
@@ -104,12 +110,18 @@ export default function StripeHero() {
             Na blogu PasjonaciIT dzielimy się poradami, analizami zadań egzaminacyjnych, wskazówkami do matury i egzaminów zawodowych oraz konkretnymi trikami z Pythona, Excela i Accessa.
             Jeśli chcesz być o krok przed innymi - to miejsce dla Ciebie.
           </p>
-          <button className="bg-primaryGreen dark:text-black hover:bg-secondaryGreen cursor-pointer text-white font-semibold px-4 py-2 rounded-md">
+          <button
+            className="bg-primaryGreen dark:text-black hover:bg-secondaryGreen cursor-pointer text-white font-semibold px-4 py-2 rounded-md"
+            onClick={() => navigate("/blog")}
+          >
             Zobacz blogi »
           </button>
         </div>
 
-        <div className="bg-blue-950 dark:bg-gray-800 text-green-200 h-72 font-mono w-full text-sm rounded-lg shadow-lg mt-8 md:mt-0 md:w-1/2 p-4 overflow-auto mb-12 md:mb-0">
+        <div
+          ref={ref}
+          className="bg-blue-950 dark:bg-gray-800 text-green-200 h-72 font-mono w-full text-sm rounded-lg shadow-lg mt-8 md:mt-0 md:w-1/2 p-4 overflow-auto mb-12 md:mb-0"
+        >
           <pre className="whitespace-pre-wrap">{displayedCode}</pre>
         </div>
       </div>

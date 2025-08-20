@@ -29,12 +29,12 @@ function Hero() {
             Uczysz się krok po kroku, w prosty sposób, bez nudy i tracenia czasu.
           </Description>
 
-          <Link
-            to={`/kurs/42096b48-f979-46a2-8785-eb9ade8d5614`}
+          <a
+            href="#kursy"
             className="bg-primaryGreen cursor-pointer transition-all duration-300 hover:scale-[1.025] hover:bg-secondaryGreen w-[75%] py-3 text-white rounded-[12px] dark:text-blackText text-center"
           >
             Zobacz kursy
-          </Link>
+          </a>
         </div>
 
         <div className="relative w-full max-w-[40%] hidden lg:flex">
