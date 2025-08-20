@@ -123,7 +123,7 @@ function Header({ setIsDark, isDark }) {
                     to="/authentication"
                     className="bg-gradient-to-r to-primaryGreen from-secondaryGreen px-5 py-[5px] rounded-[12px] cursor-pointer hover:scale-[1.025]"
                   >
-                    Zaloguj się do platformy
+                    Zaloguj się 
                   </Link>
                 </li>
               )}
@@ -235,7 +235,7 @@ function Header({ setIsDark, isDark }) {
                       className="bg-gradient-to-r w-full to-primaryGreen from-secondaryGreen px-5 py-[5px] rounded-[12px] cursor-pointer hover:scale-[1.025]"
                       onClick={() => setVisibleModal(false)}
                     >
-                      Zaloguj się do platformy
+                      Zaloguj się 
                     </Link>
                   </li>
                 )}
