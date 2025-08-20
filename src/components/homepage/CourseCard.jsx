@@ -1,11 +1,11 @@
 import { BadgeCheck, Lightbulb } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import Kurs from '../../assets/kartakurs.png';
+
 export default function CourseCard({ course }) {
   const navigate = useNavigate();
 
   function handleClick() {
-    navigate(`/kurs/${course.id}`)
+    navigate(`/kurs/${course.id}`);
   }
 
   return (
@@ -14,68 +14,57 @@ export default function CourseCard({ course }) {
       className="group relative flex flex-col md:flex-row cursor-pointer rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 bg-white dark:bg-DarkblackBorder hover:scale-[1.010]"
     >
       <img
-        // src={Kurs}
-        // src="react2.png"
-        src={`${course.image_url}`}
-        alt={`Obrazek kursu ${course.title}`}
+        src={course.image_url}
+        alt={`Grafika kursu online ${course.title} – przygotowanie do matury z informatyki`}
         className="w-full md:w-72 h-48 md:h-auto object-cover md:rounded-l-2xl rounded-t-2xl md:rounded-t-none"
+        loading="lazy"
       />
 
       <div className="flex flex-col justify-between flex-1 p-6 gap-8">
         <div>
-          <h2 className="text-2xl font-semibold text-blackText dark:text-white mb-1">
+          <h3 className="text-2xl font-semibold text-blackText dark:text-white mb-1">
             {course.title}
-          </h2>
+          </h3>
           <p className="text-sm text-blackText/60 dark:text-white/70 line-clamp-3">
             {course.description}
           </p>
         </div>
 
-        <div className="flex flex-col  w-full justify-between gap-6 ">
+        <div className="flex flex-col w-full justify-between gap-6">
           <div className="w-full flex flex-col gap-4">
-            <h3 className="text-lg font-semibold dark:text-white">
-              Kurs Zawiera
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 ">
-              <div className=" p-2 rounded-[8px] bg-primaryGreen/100 shadow flex items-center justify-center font-semibold text-white dark:text-blackText">
-                4 działy
+            <h4 className="text-lg font-semibold dark:text-white">Kurs zawiera</h4>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              <div className="p-2 rounded-[8px] bg-primaryGreen shadow flex items-center justify-center font-semibold text-white dark:text-blackText">
+                {course.sections || "4"} działy
               </div>
-              <div className=" p-2 rounded-[8px] bg-primaryGreen flex items-center justify-center font-semibold text-white dark:text-blackText">
-                100+ lekcji
+              <div className="p-2 rounded-[8px] bg-primaryGreen shadow flex items-center justify-center font-semibold text-white dark:text-blackText">
+                {course.lessons || "100+"} lekcji
               </div>
-              <div className=" p-2 rounded-[8px] bg-primaryGreen flex items-center justify-center font-semibold text-white dark:text-blackText">
-                100+ zadań
+              <div className="p-2 rounded-[8px] bg-primaryGreen shadow flex items-center justify-center font-semibold text-white dark:text-blackText">
+                {course.tasks || "100+"} zadań
               </div>
-              <div className=" p-2 rounded-[8px] bg-primaryGreen flex items-center justify-center font-semibold text-white dark:text-blackText">
-                próbny test
-              </div>
+              {course.has_mock_exam && (
+                <div className="p-2 rounded-[8px] bg-primaryGreen shadow flex items-center justify-center font-semibold text-white dark:text-blackText">
+                  próbny test
+                </div>
+              )}
             </div>
           </div>
+
           <div className="w-full flex flex-col gap-4">
-            <h3 className="text-lg font-semibold dark:text-white">
-              Nauczysz się
-            </h3>
-            <ul className="flex flex-col md:flex-row gap-4 ">
-              <li className="flex items-center gap-2 text-md dark:text-white/75 md:border-r pr-4 md:border-gray-300">
-                <BadgeCheck
-                  size={20}
-                  className="text-primaryGreen"
-                ></BadgeCheck>{" "}
+            <h4 className="text-lg font-semibold dark:text-white">Nauczysz się</h4>
+            <ul className="flex flex-wrap gap-4">
+              <li className="flex items-center gap-2 text-md dark:text-white/75">
+                <BadgeCheck size={20} className="text-primaryGreen" />
                 Programowania
               </li>
-              <li className="flex items-center gap-2 text-md dark:text-white/75 md:border-r pr-4 md:border-gray-300">
-                <BadgeCheck
-                  size={20}
-                  className="text-primaryGreen"
-                ></BadgeCheck>{" "}
+              <li className="flex items-center gap-2 text-md dark:text-white/75">
+                <BadgeCheck size={20} className="text-primaryGreen" />
                 Tworzenia stron
               </li>
               <li className="flex items-center gap-2 text-md dark:text-white/75">
-                <BadgeCheck
-                  size={20}
-                  className="text-primaryGreen"
-                ></BadgeCheck>{" "}
-                Tworzenia baz daych
+                <BadgeCheck size={20} className="text-primaryGreen" />
+                Tworzenia baz danych
               </li>
             </ul>
           </div>

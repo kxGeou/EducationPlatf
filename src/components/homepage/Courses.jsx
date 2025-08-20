@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import supabase from "../../util/supabaseClient";
 import CourseCard from "./CourseCard";
 import { ShoppingBag } from "lucide-react";
@@ -8,25 +8,27 @@ export default function Courses() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const fetchCourses = useCallback(async () => {
-    try {
-      setLoading(true);
-      const { data, error } = await supabase.from("courses").select("*");
-
-      if (error) throw error;
-
-      setCourses(data || []);
-    } catch (err) {
-      console.error("Failed to fetch courses:", err.message);
-      setError("Wystąpił błąd podczas pobierania kursów.");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
   useEffect(() => {
+    async function fetchCourses() {
+      try {
+        setLoading(true);
+        const { data, error } = await supabase
+          .from("courses")
+          .select("*")
+          .order("created_at", { ascending: false });
+
+        if (error) throw error;
+        setCourses(data || []);
+      } catch (err) {
+        console.error("Failed to fetch courses:", err.message);
+        setError(err.message || "Wystąpił błąd podczas pobierania kursów.");
+      } finally {
+        setLoading(false);
+      }
+    }
+
     fetchCourses();
-  }, [fetchCourses]);
+  }, []);
 
   return (
     <div className="flex flex-col w-full px-4 mt-24">
@@ -43,7 +45,7 @@ export default function Courses() {
 
       <div className="flex flex-col-reverse gap-12">
         {loading
-          ? Array.from({ length: 4 }).map((_, i) => (
+          ? Array.from({ length: courses.length || 4 }).map((_, i) => (
               <div
                 key={i}
                 className="w-full h-64 bg-gray-100 dark:bg-gray-500 rounded-xl shadow animate-pulse"
@@ -61,7 +63,9 @@ export default function Courses() {
       </div>
 
       {!loading && !error && courses.length === 0 && (
-        <p className="text-gray-500 text-center mt-10">Brak dostępnych kursów.</p>
+        <p className="text-gray-500 text-center mt-10">
+          Brak dostępnych kursów. 🚀
+        </p>
       )}
     </div>
   );

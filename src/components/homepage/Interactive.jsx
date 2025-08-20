@@ -7,15 +7,12 @@ import SectionHeading from "../typography/SectionHeading";
 
 function Stats({ Title, Description }) {
   return (
-    <div className="flex flex-col gap-2 bg-secondaryBlue/25 rounded-[12px] border border-secondaryBlue/50 p-4 shadow-md transition-all duration-300 hover:scale-[1.025]">
-      <div className="flex gap-2">
-        {/* <span className="w-[2px] bg-blue-300"></span> */}
-        <p className="text-m md:text-lg md:font-semibold">{Title}</p>
-      </div>
-      <p className="opacity-75 text-sm  md:max-w-[200px] md:w-full">
+    <li className="flex flex-col gap-2 bg-secondaryBlue/25 rounded-[12px] border border-secondaryBlue/50 p-4 shadow-md transition-all duration-300 hover:scale-[1.025]">
+      <p className="text-m md:text-lg md:font-semibold">{Title}</p>
+      <p className="opacity-75 text-sm md:max-w-[200px] md:w-full">
         {Description}
       </p>
-    </div>
+    </li>
   );
 }
 
@@ -24,34 +21,41 @@ function Interactive() {
     {
       title: "92%",
       description:
-        "Z naszych uczniów zdobywa ponad 80% na maturze z informatyki",
+        "Naszych uczniów zdobywa ponad 80% na maturze z informatyki.",
     },
     {
       title: "5+ lat",
       description:
-        "Doświadczenia w prowadzeniu korepetycji i kursów maturalnych",
+        "Doświadczenia w prowadzeniu korepetycji i kursów maturalnych online.",
     },
     {
       title: "+700 uczniów",
-      description: "Już przygotowanych przez nas do matury — i ciągle rośnie!",
+      description:
+        "Już przygotowanych przez nas do matury z informatyki i egzaminów INF.02 / INF.03.",
     },
     {
       title: "100%",
-      description: "Dostosowania kursów do wymagań maturalnych CKE",
+      description:
+        "Dostosowania kursów online do wymagań maturalnych CKE.",
     },
   ];
 
   return (
-    <section className="relative bg-darkBlue dark:bg-DarkblackText text-white py-20 pb-12 w-full px-4 overflow-hidden">
+    <section
+      className="relative bg-darkBlue dark:bg-DarkblackText text-white py-20 pb-12 w-full px-4 overflow-hidden"
+      aria-labelledby="stats-heading"
+    >
       <img
         src={RobotStat}
-        alt=""
+        alt="Ilustracja robota z wykresami – symbol statystyk kursów informatyki"
         className="absolute top-10 right-0 md:right-40 w-[550px] dark:md:opacity-100 pointer-events-none select-none opacity-10 md:opacity-100"
+        width="550"
+        height="400"
       />
 
       <div className="relative z-10">
-        <SectionHeading textColor={"text-primaryGreen"}>
-          Matura z informatyki ? Z nami to formalność.
+        <SectionHeading textColor={"text-primaryGreen"} id="stats-heading">
+          Matura z informatyki? Z nami to formalność.
         </SectionHeading>
 
         <div className="mt-8 flex flex-col gap-4 md:w-full md:max-w-[400px]">
@@ -59,9 +63,10 @@ function Interactive() {
             Statystyki, które mówią same za siebie
           </Heading2>
           <Description textColor={"text-white"}>
-            Nasze kursy przygotowały już setki uczniów do matury. Dzięki
-            przemyślanej strukturze, wsparciu nauczycieli i naciskowi na
-            praktykę — efekty mówią same za siebie.
+            Nasze <strong className="text-primaryGreen">kursy maturalne z informatyki</strong> przygotowały już setki uczniów.
+            Dzięki przemyślanej strukturze, wsparciu nauczycieli i naciskowi na praktykę
+            — efekty mówią same za siebie. To najlepsze przygotowanie do <strong className="text-primaryGreen">matury z informatyki </strong>
+            oraz egzaminów zawodowych <strong className="text-primaryGreen">INF.02</strong> i <strong className="text-primaryGreen">INF.03</strong>.
           </Description>
         </div>
 
