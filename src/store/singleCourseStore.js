@@ -28,7 +28,7 @@ export const useSingleCourseStore = create((set) => ({
     try {
       const { data: courseData, error: courseError } = await supabase
         .from('courses')
-        .select('id, title, description')
+        .select('id, title, description, image_url')
         .eq('id', courseId)
         .single()
 
@@ -36,7 +36,7 @@ export const useSingleCourseStore = create((set) => ({
 
       const { data: videosData, error: videosError } = await supabase
         .from('video_base')
-        .select('videoId, title, directUrl, course_id, section_title, order')
+        .select('videoId, title, directUrl, course_id, section_title, order, video_description, video_section_image,video_section_title, video_section_description')
         .eq('course_id', courseId)
         .order('section_title', { ascending: true })
         .order('order', { ascending: true })

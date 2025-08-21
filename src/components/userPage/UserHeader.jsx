@@ -1,5 +1,5 @@
 import DesktopLogo from "../../assets/logoDesk.png";
-import MobileDesktop from "../../assets/logoMobile.png";
+import MobileDesktop from "../../assets/logoMobile.svg";
 import LogoWhite from "../../assets/logo_biale.svg";
 import useWindowWidth from "../../hooks/useWindowWidth";
 import { useAuthStore } from "../../store/authStore";
@@ -62,14 +62,15 @@ function UserHeader({
                 src={width > 600 ? LogoWhite : MobileDesktop}
                 aria-label="Przejdź do strony głównej"
                 onClick={() => navigate("/")}
-                className="font-semibold w-36 cursor-pointer"
+                className={`font-semibold  cursor-pointer ${width > 600 ? "w-36" : "w-12"}`}
               ></img>
               :
                <img
                 src={width > 600 ? DesktopLogo : MobileDesktop}
                 aria-label="Przejdź do strony głównej"
                 onClick={() => navigate("/")}
-                className="font-semibold w-36 cursor-pointer"
+                                className={`font-semibold  cursor-pointer ${width > 600 ? "w-36" : "w-12"}`}
+
               ></img>
             }
               
@@ -148,7 +149,8 @@ function UserHeader({
               src={width > 600 ? DesktopLogo : MobileDesktop}
               aria-label="Przejdź do strony głównej"
               onClick={() => navigate("/")}
-              className="font-semibold w-36 cursor-pointer"
+                className={`font-semibold  cursor-pointer ${width > 600 ? "w-36" : "w-12"}`}
+
             ></img>
 
             <div className="flex items-center gap-2">

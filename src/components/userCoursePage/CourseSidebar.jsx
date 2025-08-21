@@ -1,143 +1,200 @@
-import { useNavigate } from "react-router-dom";
-import CourseProgressPanel from "./CourseProgressPanel";
+import MobileLogo from "../../assets/logoMobile.svg";
+import DesktopLogo from "../../assets/logoDesk.png";
 import UserPanel from "./UserPanel";
-import VideoSectionList from "./VideoSectionList";
-import { ChartColumnBig, Clapperboard, Moon, NotepadText, SearchCode, Sun, Undo2 } from "lucide-react";
-import { useEffect, useState } from "react";
-import UserData from "../userPage/UserData";
+import {
+  ChartColumnBig,
+  Clapperboard,
+  Moon,
+  NotepadText,
+  SearchCode,
+  SidebarClose,
+  Sun,
+  Undo2,
+  Menu,
+  X,
+} from "lucide-react";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function CourseSidebar({
   user,
-  course,
-  videos,
-  currentVideo,
-  setCurrentVideo,
   isDark,
   setIsDark,
   activeSection,
   setActiveSection,
   userDataModal,
-  setUserDataModal
+  setUserDataModal,
 }) {
-  // console.log(course);
-  // console.log(videos)
-  const maturaDate = new Date("2026-05-05T08:00:00");
   const navigate = useNavigate();
-  const getTimeRemaining = () => {
-    const now = new Date();
-    const total = maturaDate - now;
+  const [showSidebar, setShowSidebar] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-    const days = Math.floor(total / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((total / (1000 * 60 * 60)) % 24);
-    const minutes = Math.floor((total / 1000 / 60) % 60);
-    const seconds = Math.floor((total / 1000) % 60);
+  const menuItems = [
+    { icon: <SearchCode size={20} />, label: "Informacje", key: "info" },
+    { icon: <Clapperboard size={20} />, label: "Wideo", key: "video" },
+    { icon: <NotepadText size={20} />, label: "Fiszki", key: "flashcards" },
+    { icon: <ChartColumnBig size={20} />, label: "Postęp", key: "chart" },
+    { icon: <Undo2 size={20} />, label: "Powrót", key: "back", highlight: true, action: () => navigate("/user_page") },
+  ];
 
-    return { total, days, hours, minutes, seconds };
+  const toggleTheme = () => {
+    setIsDark(prev => {
+      const newValue = !prev;
+      localStorage.setItem("theme", newValue ? "dark" : "light");
+      return newValue;
+    });
   };
-  const [timeLeft, setTimeLeft] = useState(getTimeRemaining());
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setTimeLeft(getTimeRemaining());
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, []);
 
   return (
-    <aside
-      data-theme={isDark ? "dark" : "light"}
-      className="h-[96vh] rounded-[12px] bg-white dark:bg-DarkblackBorder shadow-lg flex flex-col justify-between"
-    >
-      <div>
-        <UserPanel user={user} isDark={isDark} setIsDark={setIsDark}      setUserDataModal={setUserDataModal}
-          userDataModal={userDataModal} />
+    <>
+      <header className="md:hidden flex items-center justify-between px-4 py-3 rounded-[12px] bg-white dark:bg-DarkblackBorder shadow-md">
+        <img src={MobileLogo} alt="Logo" className="w-10" />
+        {mobileMenuOpen ? 
+        <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+          <X size={35} className="text-secondaryBlue dark:text-secondaryGreen" />
+        </button>
+        :
+        <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+          <Menu size={35} className="text-secondaryBlue dark:text-secondaryGreen" />
+        </button>
+      }
+        
+      </header>
 
-        <nav className="px-4 flex flex-col gap-2">
-          <h3 className="text-sm text-gray-400 mb-1">Nawigacja </h3>
-          <button
-            onClick={() => setActiveSection("info")}
-            className={`w-full flex gap-2 cursor-pointer rounded-[12px] dark:border shadow-md dark:border-DarkblackBorder items-center text-left px-4 py-2 text-lg ${
-              activeSection === "info"
-                ? "text-white bg-secondaryBlue dark:bg-blackText border-secondaryGreen/50"
-                : " hover:bg-secondaryBlue/25 dark:hover:bg-DarkblackText"
-            }`}
-          >
-            <SearchCode size={20}></SearchCode> O kursie
-          </button>
-          <button
-            onClick={() => setActiveSection("video")}
-             className={`w-full flex gap-2 cursor-pointer rounded-[12px] dark:border shadow-md dark:border-DarkblackBorder items-center text-left px-4 py-2 text-lg ${
-              activeSection === "video"
-                     ? "text-white bg-secondaryBlue dark:bg-blackText border-secondaryGreen/50"
-                : " hover:bg-secondaryBlue/25 dark:hover:bg-DarkblackText"
-            }`}
-          >
-            <Clapperboard size={20}></Clapperboard> Lekcje wideo
-          </button>
-          <button
-            onClick={() => setActiveSection("flashcards")}
-              className={`w-full flex gap-2 cursor-pointer rounded-[12px] dark:border shadow-md dark:border-DarkblackBorder items-center text-left px-4 py-2 text-lg ${
-              activeSection === "flashcards"
-              ? "text-white bg-secondaryBlue dark:bg-blackText border-secondaryGreen/50"
-                : " hover:bg-secondaryBlue/25 dark:hover:bg-DarkblackText"
-            }`}
-          >
-            <NotepadText size={20}></NotepadText> Fiszki
-          </button>
-          <button
-            onClick={() => setActiveSection("chart")}
-              className={`w-full gap-2 cursor-pointer flex rounded-[12px] dark:border shadow-md dark:border-DarkblackBorder items-center text-left px-4 py-2 text-lg ${
-              activeSection === "chart"
-          ? "text-white bg-secondaryBlue dark:bg-blackText border-secondaryGreen/50 "
-                : " hover:bg-secondaryBlue/25 dark:hover:bg-DarkblackText"
-            }`}
-          >
-            <ChartColumnBig size={20}></ChartColumnBig> Statystyki
-          </button>
-          <a
-            onClick={() => navigate("/user_page")}
-             className={`w-full flex gap-2 items-center text-left px-4 py-2 text-lg cursor-pointer bg-primaryGreen rounded-[12px] text-white`}
-          >
-            <Undo2 size={20}></Undo2> Powrót
-          </a>
-        </nav>
-      </div>
-
-      <div className="py-4 px-5 flex flex-col items-start w-full">
-        <div
-          onClick={() => {
-            setIsDark((prev) => {
-              const newValue = !prev;
-              localStorage.setItem("theme", newValue ? "dark" : "light");
-              return newValue;
-            });
-          }}
-          className="cursor-pointer mb-4 hover:text-gray-300 transition-all"
-          title="Przełącz tryb jasny/ciemny"
-        >
-          {isDark ? <Sun size={20} /> : <Moon size={20} />}
+      <div
+        className={`md:hidden fixed top-0 left-0 w-full h-full bg-black/50 z-40 transition-opacity duration-300 ${
+          mobileMenuOpen ? "opacity-100 visible" : "opacity-0 invisible"
+        }`}
+        onClick={() => setMobileMenuOpen(false)}
+      />
+      <aside
+        className={`md:hidden fixed top-0 left-0 w-64 h-full bg-white dark:bg-DarkblackBorder  z-50 flex flex-col justify-between p-4 shadow-lg transform transition-transform duration-300 ${
+          mobileMenuOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        <div>
+          <img src={MobileLogo} alt="Logo" className="w-10 mb-6 mt-4" />
+          <div className="flex flex-col gap-3">
+            {menuItems.map(item => (
+              <SidebarButton
+                key={item.key}
+                icon={item.icon}
+                label={item.label}
+                expanded={true}
+                active={activeSection === item.key}
+                highlight={item.highlight}
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  if (item.action) item.action();
+                  else setActiveSection(item.key);
+                }}
+              />
+            ))}
+          </div>
         </div>
-        <p className="text-md text-blackText/50 dark:text-white/50 gap-1  flex flex-col">
-          Czas do matury
-          <span className="font-bold text-blackText dark:text-white text-lg">
-            {String(timeLeft.days).padStart(2, "0")} Dni
-            {/* {String(timeLeft.hours).padStart(2, "0")}h :{" "}
-            {String(timeLeft.minutes).padStart(2, "0")}m :{" "}
-            {String(timeLeft.seconds).padStart(2, "0")}s */}
-          </span>
-        </p>
-      </div>
+        <div className="flex flex-col gap-4 mt-4">
+          <div
+            onClick={toggleTheme}
+            className="cursor-pointer flex items-center justify-center gap-2 py-3 px-3 bg-secondaryBlue text-white rounded-lg dark:bg-secondaryGreen"
+          >
+            {isDark ? <Sun size={20} /> : <Moon size={20} />}
+            <span>Tryb {isDark ? "jasny" : "ciemny"}</span>
+          </div>
+          <UserPanel
+            user={user}
+            isDark={isDark}
+            setIsDark={setIsDark}
+            setUserDataModal={setUserDataModal}
+            userDataModal={userDataModal}
+            showSidebar={true}
+          />
+        </div>
+      </aside>
 
-      {/* {activeSection === "video" && (
-        <VideoSectionList
-          videos={videos}
-          currentVideo={currentVideo}
-          setCurrentVideo={setCurrentVideo}
-          isDark={isDark}
-        />
-      )} */}
+      <aside
+        data-theme={isDark ? "dark" : "light"}
+        className={`
+          hidden md:flex h-[96vh] rounded-[12px] bg-white dark:bg-DarkblackBorder shadow-lg
+          flex-col justify-between px-4 py-4 transition-all duration-300 overflow-hidden
+          ${showSidebar ? "w-56" : "w-18"}
+        `}
+      >
+        <div>
+          <nav className="flex flex-col items-center gap-2">
+            <div className="flex justify-between items-center w-full">
+              <img
+                src={MobileLogo}
+                className={`w-9 ${showSidebar ? "mb-0" : "mb-2"} transition-all duration-300`}
+              />
+              {showSidebar && (
+                <button onClick={() => setShowSidebar(!showSidebar)}>
+                  <SidebarClose className="text-secondaryBlue cursor-pointer dark:text-secondaryGreen" size={25} />
+                </button>
+              )}
+            </div>
+            {!showSidebar && (
+              <button
+                onClick={() => setShowSidebar(!showSidebar)}
+                className="flex items-center justify-center mb-2 gap-2 w-full py-2 transition-colors"
+              >
+                <SidebarClose className="text-secondaryBlue dark:text-secondaryGreen" />
+              </button>
+            )}
+            <hr className={`${showSidebar && "mt-2"} text-secondaryBlue/25 mb-4 h-[0.5px] w-full`} />
+            <div className={`flex flex-col gap-3 ${showSidebar && "w-full"}`}>
+              {menuItems.map(item => (
+                <SidebarButton
+                  key={item.key}
+                  icon={item.icon}
+                  label={item.label}
+                  active={activeSection === item.key}
+                  expanded={showSidebar}
+                  highlight={item.highlight}
+                  onClick={() => {
+                    if (item.action) item.action();
+                    else setActiveSection(item.key);
+                  }}
+                />
+              ))}
+            </div>
+          </nav>
+        </div>
+        <div className="flex flex-col gap-1 items-center w-full">
+          {!showSidebar && <hr className="text-secondaryBlue/50 mb-4 h-[1px] w-full" />}
+          <div
+            onClick={toggleTheme}
+            className={`cursor-pointer mb-4 transition-all ${
+              showSidebar && "bg-secondaryBlue w-full py-3 flex items-center justify-center text-white rounded-[12px]"
+            }`}
+            title="Przełącz tryb jasny/ciemny"
+          >
+            {isDark ? <Sun size={20} /> : <Moon size={20} />}
+          </div>
+          <UserPanel
+            user={user}
+            isDark={isDark}
+            setIsDark={setIsDark}
+            setUserDataModal={setUserDataModal}
+            userDataModal={userDataModal}
+            showSidebar={showSidebar}
+          />
+        </div>
+      </aside>
+    </>
+  );
+}
 
-    </aside>
+function SidebarButton({ icon, label, expanded, active, onClick, highlight }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`flex items-center rounded-[12px] py-3 px-3 transition-all duration-300 cursor-pointer
+        ${expanded ? "justify-start gap-2" : "justify-center"}
+        ${active ? "text-secondaryBlue dark:bg-secondaryBlue dark:text-white shadow-secondaryBlue/50 scale-[1.05]" : "hover:shadow-secondaryBlue/50 dark:hover:bg-DarkblackText"}
+        ${highlight ? "bg-secondaryBlue text-white dark:bg-secondaryGreen" : ""}`}
+    >
+      {icon}
+      {expanded && <span className="whitespace-nowrap">{label}</span>}
+    </button>
   );
 }

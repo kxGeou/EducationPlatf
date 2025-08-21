@@ -1,3 +1,4 @@
+import { Clock } from "lucide-react";
 import { useFlashcardStore } from "../../store/flashCardStore";
 import React, { useEffect, useState } from "react";
 
@@ -25,46 +26,63 @@ function CourseInfo({ course, videos }) {
     return () => clearInterval(timer);
   }, []);
 
+  console.log(course)
+
   return (
-    <div className="w-full h-full bg-white dark:bg-DarkblackBorder rounded-xl p-8 flex flex-col gap-8 shadow-lg transition-all min-h-[400px]">
-      <h3 className="text-3xl font-bold text-blackText dark:text-white">
+    <div className="w-full h-full bg-white dark:bg-DarkblackBorder rounded-xl px-8 py-5 flex flex-col gap-8 justify-between shadow-lg transition-all min-h-[400px]">
+      <div>
+
+      <h3 className="text-2xl font-bold text-blackText mb-4 dark:text-white">
         Informacje o kursie
       </h3>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-blackText dark:text-white">
-        <div className="flex flex-col">
+      <div className="flex flex-col md:flex-row gap-8">
+        <img src={course.image_url} alt={course.title} className="rounded-[12px]" loading="lazy"/>
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-col">
           <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
             Tytuł kursu
           </span>
-          <span className="text-lg font-semibold">{course.title}</span>
+          <span className="text-xl font-semibold">{course.title}</span>
         </div>
-
-        <div className="flex flex-col">
-          <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
-            Liczba lekcji
-          </span>
-          <span className="text-lg font-semibold">{videos.length}</span>
-        </div>
-
         <div className="flex flex-col sm:col-span-2">
           <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
             Opis kursu
           </span>
-          <span className="text-lg max-w-[500px] ">{course.description}</span>
+          <span className="text-lg max-w-[500px] leading-[25px]">{course.description}</span>
+        </div>
+
+        <div className="grid grid-cols-3 gap-4 grid-rows-1 h-30 mt-4">
+          <div className="flex flex-col px-2 gap-1 py-2 items-center border border-gray-100 justify-center dark:border-DarkblackText shadow-md rounded-[12px]">
+            <p className="opacity-75">Liczba lekcji</p>
+            <span className="font-semibold text-2xl">5</span>
+          </div>
+          <div className="flex flex-col px-2 gap-1 py-2 items-center border border-gray-100 justify-center dark:border-DarkblackText shadow-md rounded-[12px]">
+            <p className="opacity-75">Liczba działów</p>
+            <span className="font-semibold text-2xl">20</span>
+          </div>
+          <div className="flex flex-col px-2 gap-1 py-2 items-center border border-gray-100 justify-center dark:border-DarkblackText shadow-md rounded-[12px]">
+            <p className="opacity-75">Czas kursu</p>
+            <span className="font-semibold text-2xl">40h</span>
+          </div>
+        </div>
         </div>
       </div>
+      </div>
 
-      <div className="w-full bg-gradient-to-r from-secondaryBlue to-secondaryGreen text-white rounded-[12px] p-6 shadow-md text-center">
-        <p className="text-lg uppercase tracking-wide font-semibold mb-2">
+
+      <div className="w-full bg-gradient-to-r from-secondaryBlue to-primaryBlue text-white rounded-[12px] p-6 shadow-md text-center">
+        <p className="text-lg  tracking-wide font-semibold mb-2 flex flex-col items-center gap-3">
+          <Clock></Clock>
           Czas do matury
         </p>
-        <p className="text-xl sm:text-4xl font-extrabold">
+        <p className="text-2xl md:text-5xl font-bold">
           {String(timeLeft.days).padStart(2, "0")}d :{" "}
           {String(timeLeft.hours).padStart(2, "0")}h :{" "}
           {String(timeLeft.minutes).padStart(2, "0")}m :{" "}
           {String(timeLeft.seconds).padStart(2, "0")}s
         </p>
-      </div>
+      </div> 
     </div>
   );
 }

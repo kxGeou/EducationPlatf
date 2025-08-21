@@ -1,7 +1,7 @@
+import { useAuthStore } from "../../store/authStore";
 import { ChevronLeft } from "lucide-react";
 import { useState } from "react";
 import { useParams } from "react-router-dom";
-import { useAuthStore } from "../../store/authStore";
 
 export default function VideoPanel({
   videos,
@@ -11,101 +11,108 @@ export default function VideoPanel({
 }) {
   const [selectedSection, setSelectedSection] = useState(null);
   const { id: courseId } = useParams();
-
   const { user, userProgress, saveVideoProgress } = useAuthStore();
 
-  const groupVideosBySection = (videos) =>
-    videos.reduce((acc, video) => {
-      const section = video.section_title || "Bez działu";
-      if (!acc[section]) acc[section] = [];
-      acc[section].push(video);
-      return acc;
-    }, {});
-
-  const groupedVideos = groupVideosBySection(videos);
+  const groupedVideos = videos.reduce((acc, video) => {
+    const section = video.section_title || "Bez działu";
+    if (!acc[section]) acc[section] = [];
+    acc[section].push(video);
+    return acc;
+  }, {});
 
   const handleToggleWatched = (videoId, checked) => {
-    if (!user) return; 
+    if (!user) return;
     saveVideoProgress(user.id, videoId, checked);
   };
 
   return (
-    <div className="w-full">
+    <div className="w-full  h-full  md:overflow-y-auto ">
       {!selectedSection ? (
-        <div className="grid md:grid-cols-4 grid-cols-0 grid-rows-4 md:grid-rows-1 gap-6 w-full md:min-h-[96vh]">
-          {Object.keys(groupedVideos).map((section) => {
-            const videosInSection = groupedVideos[section];
-            const watchedCount = videosInSection.filter(
-              (v) => userProgress[v.videoId]
-            ).length;
+        <div className="flex flex-col gap-8 w-full  md:min-h-[96vh] md:py-5">
+          <h3 className="text-2xl font-bold text-blackText  dark:text-white">
+            Lekcje video
+          </h3>
 
-            return (
-              <div
-                key={section}
-                onClick={() => setSelectedSection(section)}
-                className="bg-white dark:bg-DarkblackBorder p-4 md:p-8 flex flex-col items-start justify-center w-full rounded-[12px] shadow cursor-pointer transition-all duration-200 hover:bg-secondaryBlue/20 dark:hover:bg-DarkblackText"
-              >
-                <h3 className="text-lg md:text-2xl font-semibold mb-1 md:mb-2">{section}</h3>
+          <div className="md:grid flex flex-col grid-cols-2 grid-rows-2 gap-8">
+            {Object.keys(groupedVideos).map((section) => {
+              const videosInSection = groupedVideos[section];
+              const watchedCount = videosInSection.filter(
+                (v) => userProgress[v.videoId]
+              ).length;
 
-                <div className="mt-2 w-full">
-                  <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
-                    <div
-                      className="bg-secondaryBlue dark:bg-secondaryGreen h-2 rounded-full transition-all duration-300"
-                      style={{
-                        width: `${
-                          (watchedCount / videosInSection.length) * 100 || 0
-                        }%`,
-                      }}
-                    ></div>
-                  </div>
-                  <p className="text-sm md:text-md text-blackText/50 dark:text-white/50 mt-3">
-                    {Math.round(
-                      (watchedCount / videosInSection.length) * 100
-                    ) || 0}
-                    % ukończono
+              return (
+                <div
+                  key={section}
+                  onClick={() => setSelectedSection(section)}
+                  className="bg-white dark:bg-DarkblackBorder p-8 flex flex-col items-start justify-center w-full rounded-[12px] shadow cursor-pointer transition-all duration-200 hover:shadow-lg  dark:hover:bg-DarkblackText"
+                >
+                  <h3 className="text-2xl font-semibold mb-2">{section}</h3>
+                  <p className="w-full max-w-[75%] font-semibold opacity-50">
+                    Lorem ipsum dolor sit amet consectetur adipisicing elit.
+                    Delectus libero iure doloremque illum eligendi expedita
+                    voluptates sunt harum ut corporis.
                   </p>
+                  <div className="mt-2 w-full">
+                    <p className="text-md mb-2 text-blackText/50 dark:text-white/50 mt-3">
+                      {Math.round(
+                        (watchedCount / videosInSection.length) * 100
+                      ) || 0}
+                      % ukończono
+                    </p>
+                    <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                      <div
+                        className="bg-secondaryBlue dark:bg-secondaryGreen h-3 rounded-full transition-all duration-300"
+                        style={{
+                          width: `${
+                            (watchedCount / videosInSection.length) * 100 || 0
+                          }%`,
+                        }}
+                      ></div>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
       ) : (
-        <div className="flex flex-col md:flex-row-reverse gap-6 w-full bg-white dark:bg-DarkblackBorder min-h-[96vh] rounded-[12px] p-5">
+        <div className="flex flex-col md:flex-row-reverse gap-6 w-full min-h-[96vh] rounded-[12px] p-5">
           <div className="w-full space-y-4">
-            <button
-              onClick={() => {
-                setSelectedSection(null);
-                setCurrentVideo(null);
-              }}
-              className="flex items-center gap-1 text-secondaryBlue dark:text-secondaryGreen hover:underline cursor-pointer"
-            >
-              <ChevronLeft size={18} /> Wróć do listy działów
-            </button>
+            <div className="flex gap-4">
+              <button
+                onClick={() => {
+                  setSelectedSection(null);
+                  setCurrentVideo(null);
+                }}
+                className="flex items-center gap-1 text-secondaryBlue dark:text-secondaryGreen hover:underline cursor-pointer font-medium"
+              >
+                <ChevronLeft size={30} />
+              </button>
 
-            <h3 className="text-xl font-bold mb-4">{selectedSection}</h3>
+              <h3 className="text-2xl font-bold">{selectedSection}</h3>
+            </div>
 
-            <ul className="space-y-3">
+            <ul className="space-y-3 ">
               {groupedVideos[selectedSection].map((video, index) => {
                 const isWatched = !!userProgress[video.videoId];
-
                 return (
                   <li
                     key={video.videoId}
-                    className={`p-3 rounded-lg border border-gray-200 dark:border-DarkblackText dark:bg-DarkblackText shadow-sm ${
+                    className={`p-4 rounded-lg border bg-white border-gray-200 dark:border-DarkblackText dark:bg-DarkblackText shadow-sm transition-all duration-200 cursor-pointer ${
                       currentVideo?.videoId === video.videoId
                         ? "bg-secondaryBlue/25 dark:bg-DarkblackBorder font-semibold"
                         : "hover:bg-gray-100 dark:hover:bg-blackText/75"
                     }`}
                     onClick={() => setCurrentVideo(video)}
                   >
-                    <div className="flex justify-between items-center gap-2">
-                      <div className="cursor-pointer w-full">
-                        <span className="text-md">
+                    <div className="flex justify-between items-center">
+                      <div className="space-y-1 w-full">
+                        <span className="text-md font-medium">
                           {index + 1}. {video.title}
                         </span>
-                        <div className="text-sm text-blackText/50 dark:text-white/50">
+                        <p className="text-sm text-blackText/50 dark:text-white/50">
                           {video.duration || "?"} min
-                        </div>
+                        </p>
                       </div>
 
                       <input
@@ -115,8 +122,8 @@ export default function VideoPanel({
                           handleToggleWatched(video.videoId, e.target.checked)
                         }
                         title="Oznacz jako obejrzany"
-                        className="ml-2 h-5 w-5"
-                        onClick={(e) => e.stopPropagation()} 
+                        className="h-5 w-5 cursor-pointer"
+                        onClick={(e) => e.stopPropagation()}
                       />
                     </div>
                   </li>
@@ -126,17 +133,29 @@ export default function VideoPanel({
           </div>
 
           {currentVideo && (
-            <div className="w-full">
-              <div className="aspect-video w-full max-w-full rounded overflow-hidden shadow">
+            <div className="w-full space-y-4">
+              <div className="aspect-video w-full rounded-xl overflow-hidden shadow-lg">
                 <HlsPlayer
                   src={currentVideo.directUrl}
                   title={currentVideo.title}
                 />
               </div>
-              <h4 className="text-lg mt-2">
-                <span className="text-blackText/75 dark:text-white/75 mr-1 font-semibold">Tytuł:</span>
-                {currentVideo.title}
-              </h4>
+
+              {console.log(currentVideo)}
+
+              <div className="bg-white dark:bg-DarkblackBorder p-5 rounded-xl shadow space-y-3">
+                <h4 className="text-xl font-bold">{currentVideo.title}</h4>
+                <p className="text-gray-700 dark:text-gray-300">
+                  {currentVideo.video_description}
+                </p>
+                <img src={currentVideo.video_section_image} />
+                <h4 className="text-xl font-bold">
+                  {currentVideo.video_section_title}
+                </h4>
+                <p className="text-gray-700 dark:text-gray-300">
+                  {currentVideo.video_section_description}
+                </p>
+              </div>
             </div>
           )}
         </div>

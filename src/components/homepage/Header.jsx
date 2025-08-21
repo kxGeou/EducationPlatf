@@ -1,4 +1,4 @@
-import MobileDesktop from "../../assets/logoMobile.png";
+import MobileDesktop from "../../assets/logoMobile.svg";
 import DesktopLogo from "../../assets/logo_biale.svg";
 import useWindowWidth from "../../hooks/useWindowWidth";
 import { useAuthStore } from "../../store/authStore";
@@ -28,11 +28,10 @@ function Header({ setIsDark, isDark }) {
         <Link to="/" aria-label="Strona główna – Platforma edukacyjna Informatyka">
           <img
             src={width > 850 ? DesktopLogo : MobileDesktop}
-            className="w-36 cursor-pointer"
+            className={`w-10 ${width > 850 && "w-36 "}cursor-pointer`}
             title="Platforma edukacyjna – kursy i egzaminy z informatyki"
             alt="Logo Platforma Edukacyjna – kursy do matury i egzaminów z informatyki"
-            width="144"
-            height="40"
+
             loading="eager"
           />
         </Link>
@@ -113,7 +112,7 @@ function Header({ setIsDark, isDark }) {
                     to="/user_page"
                     className="flex items-center gap-3 bg-gradient-to-r to-primaryGreen from-secondaryGreen px-4 py-[5px] rounded-[8px] hover:scale-[1.025]"
                   >
-                    {userName}
+                    Moje kursy
                     <User size={18} aria-hidden="true" />
                   </Link>
                 </li>
@@ -224,7 +223,7 @@ function Header({ setIsDark, isDark }) {
                       className="flex items-center gap-3 w-full bg-gradient-to-r to-primaryGreen from-secondaryGreen px-4 py-[5px] rounded-[8px] hover:scale-[1.025]"
                       onClick={() => setVisibleModal(false)}
                     >
-                      {userName}
+                      Moje kursy
                       <User size={18} aria-hidden="true" />
                     </Link>
                   </li>

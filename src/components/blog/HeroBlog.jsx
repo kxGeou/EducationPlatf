@@ -1,6 +1,6 @@
 import { ChevronRight } from 'lucide-react'
 import React from 'react'
-import MobileDesktop from "../../assets/logoMobile.png";
+import MobileDesktop from "../../assets/logoMobile.svg";
 
 function HeroBlog() {
   return (
