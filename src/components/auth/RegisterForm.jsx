@@ -3,7 +3,8 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import zxcvbn from 'zxcvbn'
 import { useState } from 'react'
-import { toast } from 'react-hot-toast'
+import { toast } from 'react-toastify';
+
 import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../../store/authStore'
 

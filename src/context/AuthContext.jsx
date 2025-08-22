@@ -1,8 +1,7 @@
 import { createContext, useContext, useEffect, useState, useCallback } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import supabase from '../util/supabaseClient'
-import toast from 'react-hot-toast'
-
+import { toast } from 'react-toastify';
 const AuthContext = createContext()
 
 export const AuthProvider = ({ children }) => {
@@ -68,7 +67,7 @@ export const AuthProvider = ({ children }) => {
     const { data: authListener } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
         await handleSession(session)
-        setLoading(false) // ← najważniejsze!
+        setLoading(false) 
       }
     )
 

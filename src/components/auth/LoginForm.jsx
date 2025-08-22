@@ -3,7 +3,8 @@ import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { toast } from 'react-hot-toast'
+import { toast } from 'react-toastify';
+
 import { useAuthStore } from '../../store/authStore'  
 
 const loginSchema = z.object({

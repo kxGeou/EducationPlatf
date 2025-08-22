@@ -130,15 +130,6 @@ function CourseList({ pageChange }) {
           </motion.div>
         </div>
       </div>
-
-      <div className="lg:hidden mt-6 w-full px-4">
-        <h4 className="text-base font-semibold mb-3 text-primaryBlue dark:text-primaryGreen">
-          Polecane materiały
-        </h4>
-        <div className="grid grid-cols-1 gap-4">
-          {videoList.slice(0, 2)}
-        </div>
-      </div>
     </div>
   );
 }

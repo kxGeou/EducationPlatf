@@ -1,5 +1,5 @@
 import supabase from "../util/supabaseClient";
-import toast from "react-hot-toast";
+import { toast } from 'react-toastify';
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 

@@ -52,7 +52,7 @@ function CourseInfo({ course, videos }) {
           <span className="text-lg max-w-[500px] leading-[25px]">{course.description}</span>
         </div>
 
-        <div className="grid grid-cols-3 gap-4 grid-rows-1 h-30 mt-4">
+        <div className="grid md:grid-cols-3 grid-cols-1 grid-rows-3 gap-4 md:grid-rows-1  md:h-30 mt-4">
           <div className="flex flex-col px-2 gap-1 py-2 items-center border border-gray-100 justify-center dark:border-DarkblackText shadow-md rounded-[12px]">
             <p className="opacity-75">Liczba lekcji</p>
             <span className="font-semibold text-2xl">5</span>

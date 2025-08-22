@@ -48,7 +48,9 @@ export default function CourseSidebar({
   return (
     <>
       <header className="md:hidden flex items-center justify-between px-4 py-3 rounded-[12px] bg-white dark:bg-DarkblackBorder shadow-md">
-        <img src={MobileLogo} alt="Logo" className="w-10" />
+        <a href="/">
+          <img src={MobileLogo} alt="Logo" className="w-10" />
+        </a>
         {mobileMenuOpen ? 
         <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
           <X size={35} className="text-secondaryBlue dark:text-secondaryGreen" />

@@ -4,7 +4,7 @@ import Home from './pages/Home.jsx'
 import MyCourses from './pages/MyCourses.jsx'
 import AuthPage from './pages/AuthPage.jsx'
 import CoursePage from './pages/CoursePage.jsx'
-import { Toaster } from 'react-hot-toast'
+  import { ToastContainer } from 'react-toastify';
 import CourseLandingPage from './pages/CourseLandingPage.jsx'
 import Loading from './components/systemLayouts/Loading.jsx'
 import Error from './components/systemLayouts/Error.jsx'
@@ -38,7 +38,7 @@ export default function App() {
 
   return (
     <>
-      <Toaster position="top-right" reverseOrder={false} />
+      <ToastContainer />
       <ScrollToTop />
       <Routes>
         <Route path='/' element={<Home isDark={isDark} setIsDark={setIsDark} />} />

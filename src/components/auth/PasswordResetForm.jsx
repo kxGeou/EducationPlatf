@@ -2,7 +2,8 @@ import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useState } from 'react'
-import { toast } from 'react-hot-toast'
+import { toast } from 'react-toastify';
+
 import supabase from '../../util/supabaseClient'
 
 const resetSchema = z.object({

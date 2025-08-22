@@ -3,7 +3,7 @@ import Footer from "../components/homepage/Footer";
 import Header from "../components/homepage/Header";
 import { LoaderCircle, ChevronDown, Check } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
-import toast from "react-hot-toast";
+import { toast } from 'react-toastify';
 import Gmail from '../assets/gmail.svg';
 import supabase from "../util/supabaseClient";
 

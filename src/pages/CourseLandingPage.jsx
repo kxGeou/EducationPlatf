@@ -1,4 +1,4 @@
-import toast from "react-hot-toast";
+import { toast } from 'react-toastify';
 import LandingHeader from "../components/coursePage/LandingHeader";
 import Footer from "../components/homepage/Footer";
 import Header from "../components/homepage/Header";
