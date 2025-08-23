@@ -71,7 +71,7 @@ function CourseInfo({ course, videos }) {
       </div>
 
 
-      <div className="w-full bg-gradient-to-r from-secondaryBlue to-primaryBlue text-white rounded-[12px] p-6 shadow-md text-center">
+      <div className="w-full bg-gradient-to-r from-secondaryBlue to-primaryBlue dark:from-secondaryBlue dark:to-primaryGreen text-white rounded-[12px] p-6 shadow-md text-center">
         <p className="text-lg  tracking-wide font-semibold mb-2 flex flex-col items-center gap-3">
           <Clock></Clock>
           Czas do matury
