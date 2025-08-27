@@ -7,7 +7,6 @@ function HeroBlog() {
   return (
     <section className="w-full flex justify-between items-center mb-36 mt-10 sm:mt-0 px-4">
       <div>
-        <img className="w-13 mb-4" src={MobileDesktop}></img>
         <div className="flex flex-col items-start text-5xl md:text-7xl">
           <p className="text-blackText/75 font-thin dark:text-white/75">
             Wiedza

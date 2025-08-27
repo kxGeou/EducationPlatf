@@ -12,8 +12,8 @@ import { useNavigate } from "react-router-dom";
 function UserHeader({
   userDataModal,
   setUserDataModal,
-  pageChange,
-  setPageChange,
+  activePage,
+  setActivePage,
   isDark,
   setIsDark,
 }) {
@@ -56,46 +56,47 @@ function UserHeader({
         {width >= 750 ? (
           <div className="w-full max-w-[1600px] flex justify-between items-center px-6 lg:px-0">
             <div className="flex items-center gap-6">
-
-              {isDark ?
-              <img
-                src={width > 600 ? LogoWhite : MobileDesktop}
-                aria-label="Przejdź do strony głównej"
-                onClick={() => navigate("/")}
-                className={`font-semibold  cursor-pointer ${width > 600 ? "w-36" : "w-12"}`}
-              ></img>
-              :
-               <img
-                src={width > 600 ? DesktopLogo : MobileDesktop}
-                aria-label="Przejdź do strony głównej"
-                onClick={() => navigate("/")}
-                                className={`font-semibold  cursor-pointer ${width > 600 ? "w-36" : "w-12"}`}
-
-              ></img>
-            }
-              
+              {isDark ? (
+                <img
+                  src={width > 600 ? LogoWhite : MobileDesktop}
+                  aria-label="Przejdź do strony głównej"
+                  onClick={() => navigate("/")}
+                  className={`font-semibold  cursor-pointer ${
+                    width > 600 ? "w-36" : "w-12"
+                  }`}
+                ></img>
+              ) : (
+                <img
+                  src={width > 600 ? DesktopLogo : MobileDesktop}
+                  aria-label="Przejdź do strony głównej"
+                  onClick={() => navigate("/")}
+                  className={`font-semibold  cursor-pointer ${
+                    width > 600 ? "w-36" : "w-12"
+                  }`}
+                ></img>
+              )}
 
               <nav>
                 <ul className="flex items-center gap-4">
                   <li
-                    className={`${
-                      pageChange
-                        ? "text-primaryGreen"
-                        : "text-darkBlue dark:text-white"
-                    } cursor-pointer transition-all hover:text-secondaryGreen`}
-                    onClick={() => setPageChange(true)}
+                    onClick={() => setActivePage("courses")}
+                  className="cursor-pointer"
+
                   >
                     Twoje kursy
                   </li>
-                  <li
-                    className={`${
-                      pageChange
-                        ? "text-darkBlue dark:text-white"
-                        : "text-primaryGreen"
-                    } cursor-pointer transition-all hover:text-secondaryGreen`}
-                    onClick={() => setPageChange(false)}
+                  <li 
+                  className="cursor-pointer"
+                    onClick={() => setActivePage("resources")}
                   >
                     Zasoby
+                  </li>
+                  <li
+                    onClick={() => setActivePage("reports")}
+                  className="cursor-pointer"
+
+                  >
+                    Zgłoszenia
                   </li>
                   <li
                     onClick={() => {
@@ -149,8 +150,9 @@ function UserHeader({
               src={width > 600 ? DesktopLogo : MobileDesktop}
               aria-label="Przejdź do strony głównej"
               onClick={() => navigate("/")}
-                className={`font-semibold  cursor-pointer ${width > 600 ? "w-36" : "w-12"}`}
-
+              className={`font-semibold  cursor-pointer ${
+                width > 600 ? "w-36" : "w-12"
+              }`}
             ></img>
 
             <div className="flex items-center gap-2">
@@ -228,30 +230,29 @@ function UserHeader({
                     </h3>
                     <ul className="flex flex-col gap-3">
                       <li
-                        className={`${
-                          pageChange
-                            ? "text-primaryGreen"
-                            : "text-darkBlue dark:text-white"
-                        } cursor-pointer font-medium`}
+                     
                         onClick={() => {
-                          setPageChange(true);
+                          setActivePage("courses")
                           setMobileOpen(false);
                         }}
                       >
                         📚 Twoje kursy
                       </li>
                       <li
-                        className={`${
-                          pageChange
-                            ? "text-darkBlue dark:text-white"
-                            : "text-primaryGreen"
-                        } cursor-pointer font-medium`}
-                        onClick={() => {
-                          setPageChange(false);
+                       onClick={() => {
+                          setActivePage("resources")
                           setMobileOpen(false);
                         }}
                       >
                         🎧 Zasoby
+                      </li>
+                      <li
+                       onClick={() => {
+                          setActivePage("reports")
+                          setMobileOpen(false);
+                        }}
+                      >
+                        📢 Zgłoszenia
                       </li>
                     </ul>
                   </div>

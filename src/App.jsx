@@ -18,6 +18,7 @@ import ScrollToTop from './scripts/scrollToTop.jsx'
 import PasswordResetForm from './components/auth/PasswordResetForm.jsx'
 import NewPassword from './components/auth/NewPassword.jsx'
 import ContactPage from './pages/ContactPage.jsx'
+import ReportPage from './pages/ReportPage.jsx'
 import Regulations from './pages/Regulations.jsx'
 export default function App() {
   const init = useAuthStore(state => state.init)
@@ -56,6 +57,7 @@ export default function App() {
         <Route path='/blog' element={<BlogMainPage isDark={isDark} setIsDark={setIsDark} />} />
         <Route path='/blog/:id' element={<BlogPage isDark={isDark} setIsDark={setIsDark} />} />
         <Route path='/zasoby' element={<TestResources isDark={isDark} setIsDark={setIsDark}/>} />
+        <Route path='/reports' element={<ReportPage></ReportPage>}></Route>
         <Route path='/*' element={<WrongPage isDark={isDark} />} />
       </Routes>
     </>

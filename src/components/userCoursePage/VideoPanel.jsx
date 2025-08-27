@@ -26,7 +26,7 @@ export default function VideoPanel({
   };
 
   return (
-    <div className="w-full  h-full  md:overflow-y-auto ">
+    <div className="w-full ">
       {!selectedSection ? (
         <div className="flex flex-col gap-8 w-full  md:min-h-[96vh] md:py-5">
           <h3 className="text-2xl font-bold text-blackText  dark:text-white">
@@ -76,7 +76,7 @@ export default function VideoPanel({
           </div>
         </div>
       ) : (
-        <div className="flex flex-col md:flex-row-reverse gap-6 w-full min-h-[96vh] rounded-[12px] p-5">
+        <div className="flex flex-col md:flex-row-reverse gap-6 w-full max-h-[96vh] overflow-y-auto rounded-[12px] p-5">
           <div className="w-full space-y-4">
             <div className="flex gap-4">
               <button
@@ -92,7 +92,7 @@ export default function VideoPanel({
               <h3 className="text-2xl font-bold">{selectedSection}</h3>
             </div>
 
-            <ul className="space-y-3 ">
+            <ul className="space-y-3">
               {groupedVideos[selectedSection].map((video, index) => {
                 const isWatched = !!userProgress[video.videoId];
                 return (
@@ -133,7 +133,7 @@ export default function VideoPanel({
           </div>
 
           {currentVideo && (
-            <div className="w-full space-y-4">
+            <div className="w-full space-y-4 ">
               <div className="aspect-video w-full rounded-xl overflow-hidden shadow-lg">
                 <HlsPlayer
                   src={currentVideo.directUrl}

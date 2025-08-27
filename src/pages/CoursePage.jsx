@@ -68,7 +68,7 @@ export default function CoursePage({ isDark, setIsDark }) {
       data-theme={isDark ? "dark" : "light"}
       className=" flex justify-center bg-slate-300 dark:bg-blackText dark:text-white"
     >
-      <div className="flex flex-col md:flex-row h-full py-4 px-6 gap-6 w-full max-w-[1900px]">
+      <div className="flex flex-col md:flex-row h-full py-4 px-4 gap-6 w-full max-w-[1900px]">
         <CourseSidebar
           user={user}
           course={course}

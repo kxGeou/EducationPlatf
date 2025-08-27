@@ -8,24 +8,24 @@ import { useAuthStore } from '../store/authStore'
 
 export default function MyCourses({isDark, setIsDark}) {
   const [userDataModal, setUserDataModal] = useState(false)
-  const [pageChange, setPageChange] = useState(true)
+  const [activePage, setActivePage] = useState("courses");
   const user = useAuthStore((state) => state.user);
   const loading = useAuthStore((state) => state.loading);
-
   return (
     <div data-theme={isDark ? "dark" : "light"} className='flex justify-center bg-slate-300 w-full dark:bg-blackText'>
       <div className='flex justify-center bg-slate-300 dark:bg-blackText relative w-full max-w-[1400px]'>
         <div className='w-full'>
           <div className='min-h-screen'>
-            <UserHeader
-              pageChange={pageChange}
-              setPageChange={setPageChange}
+            <UserHeader 
+              activePage = {activePage}
+              setActivePage = {setActivePage}
               userDataModal={userDataModal}
               setUserDataModal={setUserDataModal}
               isDark={isDark}
               setIsDark={setIsDark}
             />
-            <CourseList pageChange={pageChange} />
+            <CourseList      activePage = {activePage}
+              />
           </div>
           <div className='md:px-4'>
 
