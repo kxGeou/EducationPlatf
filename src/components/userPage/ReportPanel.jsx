@@ -43,9 +43,9 @@ export default function ReportPanel() {
   }, [activePanel, reportsByStatus, openForm]);
 
   const statusStyles = {
-    "Do zrobienia": { color: "", text: "text-green-700 ", icon: <User size={18} className=" text-green-500" /> },
-    "W trakcie": { color: "", text: "text-yellow-700 ", icon: <ClipboardList size={18} className=" text-yellow-500" /> },
-    "Zrobione": { color: "", text: "text-red-700", icon: <CheckCircle size={18} className=" text-red-500" /> },
+    "Do zrobienia": { color: "", text: "text-green-700 dark:text-green-500", icon: <User size={18} className=" text-green-500" /> },
+    "W trakcie": { color: "", text: "text-yellow-700 dark:text-yellow-500", icon: <ClipboardList size={18} className=" text-yellow-500" /> },
+    "Zrobione": { color: "", text: "text-red-700 dark:text-red-500", icon: <CheckCircle size={18} className=" text-red-500" /> },
   };
 
   return (
@@ -54,7 +54,7 @@ export default function ReportPanel() {
        <div className="flex justify-start mb-2">
               <button
                 onClick={() => setOpenForm(true)}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white border border-gray-100 shadow-md shadow-gray-400/20 hover:shadow-md transition text-gray-700 cursor-pointer hover:shadow-gray-400/30"
+                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white border dark:bg-DarkblackText dark:text-white dark:border-DarkblackText dark:shadow-blackText/50 hover:dark:shadow-blackText/75 border-gray-100 shadow-md shadow-gray-400/20 hover:shadow-md transition text-gray-700 cursor-pointer hover:shadow-gray-400/30"
               >
                 <Plus className="w-4 h-4" /> Napisz zgłoszenie
               </button>
@@ -64,7 +64,7 @@ export default function ReportPanel() {
             key={status}
             onClick={() => setActivePanel(status)}
             className={`flex items-center gap-3 p-4 cursor-pointer hover:shadow-gray-400/50 rounded-xl transition-all duration-200 border border-gray-100 shadow-md shadow-gray-400/20 ${
-              activePanel === status && !openForm ? "bg-white " : ""
+              activePanel === status && !openForm ? "bg-white dark:bg-DarkblackText dark:border-DarkblackText hover:dark:shadow-blackText/50 dark:shadow-blackText/25" : "dark:bg-DarkblackText dark:border-DarkblackText dark:shadow-blackText/25 hover:dark:shadow-blackText/50"
             }`}
           >
             <div>{statusStyles[status].icon}</div>
@@ -89,7 +89,7 @@ export default function ReportPanel() {
                 displayedReports.map((r) => (
                   <div
                     key={r.id}
-                    className="bg-white dark:bg-neutral-800 p-4 rounded-xl shadow hover:shadow-md transition flex flex-col gap-2"
+                    className="bg-white dark:bg-DarkblackText p-4 rounded-xl shadow hover:shadow-md transition flex flex-col gap-2"
                   >
                     <div className="flex justify-between items-center">
                       <div className="flex items-center gap-2">

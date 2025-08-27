@@ -27,7 +27,7 @@ const BlogList = () => {
           {isOpen && "Materiały pomocnicze"}
         </span>
 
-          <SidebarClose className="text-primaryBlue" size={20} />
+          <SidebarClose className="text-primaryBlue dark:text-white" size={20} />
       </button>
 
       <ul className="flex flex-col gap-2">
