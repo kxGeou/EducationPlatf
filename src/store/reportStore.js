@@ -28,12 +28,14 @@ export const useReports = create((set, get) => ({
       description,
       topic,
       status: "Do zrobienia",
+      answer: null,
     });
     if (error) {
       console.error("Nie udało się wysłać raportu", error.message);
+      toast.error("Nie udało się wysłać raportu");
     } else {
       toast.success("Zgłoszenie wysłane");
-      get().fetchReports(); 
+      get().fetchReports();
     }
     set({ loading: false });
   },
@@ -60,7 +62,7 @@ export const useReports = create((set, get) => ({
     }
   },
 
-   updateStatus: async (reportId, newStatus) => {
+  updateStatus: async (reportId, newStatus) => {
     set({ loading: true });
     const { error } = await supabase
       .from("reports")
@@ -75,6 +77,27 @@ export const useReports = create((set, get) => ({
       set((state) => ({
         reports: state.reports.map((r) =>
           r.id === reportId ? { ...r, status: newStatus } : r
+        ),
+      }));
+    }
+    set({ loading: false });
+  },
+
+  addAnswer: async (reportId, answerText) => {
+    set({ loading: true });
+    const { error } = await supabase
+      .from("reports")
+      .update({ answer: answerText })
+      .eq("id", reportId);
+
+    if (error) {
+      console.error("Nie udało się dodać odpowiedzi", error.message);
+      toast.error("Nie udało się dodać odpowiedzi");
+    } else {
+      toast.success("Odpowiedź wysłana");
+      set((state) => ({
+        reports: state.reports.map((r) =>
+          r.id === reportId ? { ...r, answer: answerText } : r
         ),
       }));
     }

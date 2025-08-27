@@ -1,6 +1,6 @@
 import { useReports } from "../store/reportStore";
 import { User, ChevronDown } from "lucide-react";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 
 function timeAgo(dateString) {
   const now = new Date();
@@ -20,7 +20,10 @@ export default function ReportPage() {
   const [openDropdown, setOpenDropdown] = useState(null);
   const [openFilter, setOpenFilter] = useState(false);
 
-  const { fetchReports, reports, updateStatus } = useReports();
+  const [replyModal, setReplyModal] = useState(null);
+  const [replyText, setReplyText] = useState("");
+
+  const { fetchReports, reports, updateStatus, addAnswer } = useReports();
 
   const statuses = [
     { label: "Do zrobienia", color: "bg-green-100 text-green-600" },
@@ -54,6 +57,13 @@ export default function ReportPage() {
     document.addEventListener("click", closeOnOutsideClick);
     return () => document.removeEventListener("click", closeOnOutsideClick);
   }, []);
+
+  const handleSendReply = () => {
+    if (!replyText.trim()) return;
+    addAnswer(replyModal, replyText);
+    setReplyText("");
+    setReplyModal(null);
+  };
 
   if (accessGranted) {
     return (
@@ -100,7 +110,7 @@ export default function ReportPage() {
             </div>
           </div>
 
-          {filteredReports && filteredReports.length > 0 ? (
+          {filteredReports.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {filteredReports.map((report, index) => {
                 const currentStatus = statuses.find(
@@ -123,6 +133,19 @@ export default function ReportPage() {
                       <p className="text-gray-600 text-sm leading-relaxed">
                         {report.description}
                       </p>
+
+                      {report.answer ? (
+                        <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg text-sm">
+                          <p className="font-medium text-green-700">
+                            Odpowiedź admina:
+                          </p>
+                          <p className="text-gray-700">{report.answer}</p>
+                        </div>
+                      ) : (
+                        <p className="text-xs italic text-gray-400 mt-2">
+                          Brak odpowiedzi
+                        </p>
+                      )}
                     </div>
 
                     <div className="flex justify-between items-center mt-6">
@@ -161,6 +184,13 @@ export default function ReportPage() {
                         <span>{timeAgo(report.created_at)}</span>
                       </div>
                     </div>
+
+                    <button
+                      onClick={() => setReplyModal(report.id)}
+                      className="mt-4 bg-gradient-to-r from-primaryBlue to-secondaryBlue text-white text-sm px-4 py-2 rounded-lg shadow hover:scale-[1.03] transition"
+                    >
+                      Odpowiedz
+                    </button>
                   </div>
                 );
               })}
@@ -171,6 +201,37 @@ export default function ReportPage() {
             </p>
           )}
         </div>
+
+        {replyModal && (
+          <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 animate-fadeIn">
+            <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg p-6 animate-scaleIn">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                Odpowiedź na zgłoszenie
+              </h3>
+              <textarea
+                value={replyText}
+                onChange={(e) => setReplyText(e.target.value)}
+                rows="4"
+                className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primaryBlue text-sm"
+                placeholder="Wpisz odpowiedź..."
+              />
+              <div className="flex justify-end gap-3 mt-4">
+                <button
+                  onClick={() => setReplyModal(null)}
+                  className="px-4 py-2 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-100 transition"
+                >
+                  Anuluj
+                </button>
+                <button
+                  onClick={handleSendReply}
+                  className="px-4 py-2 rounded-lg bg-gradient-to-r from-primaryBlue to-secondaryBlue text-white shadow hover:scale-[1.03] transition"
+                >
+                  Wyślij odpowiedź
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
