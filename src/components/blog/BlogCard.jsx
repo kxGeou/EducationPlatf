@@ -2,7 +2,7 @@ import React from 'react';
 import { ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-function BlogCard({ id, image, title, description }) {
+function BlogCard({ key, id, image, title, description }) {
   return (
     <div className='min-w-[300px] max-w-[320px] rounded-xl shadow-lg bg-white dark:bg-DarkblackBorder overflow-hidden flex flex-col'>
       <img src={image} alt={title} className='w-full h-48 object-cover' />

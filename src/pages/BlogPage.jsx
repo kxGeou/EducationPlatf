@@ -53,28 +53,9 @@ export default function BlogPage({ isDark, setIsDark }) {
           hero_description={post.hero_description}
           hero_image={post.cover_image}
         ></PostHeader>
-        <p className="flex gap-2 items-center w-full px-4 mt-20 mb-6 text-gray-400 dark:text-white/60">
-          <BookMarked
-            size={18}
-            className="text-gray-400  dark:text-white/60"
-          ></BookMarked>
-          Sprawdź nasze kursy
-        </p>
+       
         <CourseListHero></CourseListHero>
-        <AboutPost
-          first_image={post.first_image}
-          first_header={post.first_header}
-          first_description={post.first_description}
-          second_image={post.second_image}
-          second_header={post.second_header}
-          second_description={post.second_description}
-        ></AboutPost>
-        <TextSection third_header={post.third_header} third_description={post.third_description}></TextSection>
-
-        <div className="w-full flex items-center justify-center px-4">
-          <ImageSectionPost></ImageSectionPost>
-        </div>
-
+      
         <div className="flex w-full max-w-[1100px]">
           <Footer padding={"px-4"}></Footer>
         </div>

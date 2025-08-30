@@ -1,28 +1,10 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import SectionHeading from '../typography/SectionHeading';
 import BlogCard from './BlogCard';
-import  supabase  from '../../util/supabaseClient';
 
-function BlogList() {
+function BlogList({ posts }) {
   const scrollRef = useRef(null);
-  const [posts, setPosts] = useState([]);
-
-  useEffect(() => {
-    const fetchPosts = async () => {
-      const { data, error } = await supabase
-        .from('posts')
-        .select('id, hero_title, hero_description, cover_image, created_at')
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error('Błąd pobierania wpisów:', error);
-      } else {
-        setPosts(data);
-      }
-    };
-    fetchPosts();
-  }, []);
 
   const scroll = (offset) => {
     if (scrollRef.current) {
@@ -31,9 +13,11 @@ function BlogList() {
   };
 
   return (
-    <section className='px-6 mt-36 w-full'>
+    <section id="Inne" className='px-6 mt-36 w-full'>
       <div className='flex items-center justify-between mb-4'>
-        <SectionHeading textColor={"dark:text-secondaryGreen"}>Lista blogów</SectionHeading>
+        <SectionHeading textColor={"dark:text-secondaryGreen"}>
+          Inne blogi które mogą cię zainteresować
+        </SectionHeading>
         <div className='flex gap-2'>
           <button
             onClick={() => scroll(-320)}
@@ -60,7 +44,7 @@ function BlogList() {
             id={post.id}
             image={post.cover_image}
             title={post.hero_title}
-            description={post.hero_description.slice(0, 120) + '...'}
+            description={post.first_header.slice(0, 120) + '...'}
           />
         ))}
       </div>

@@ -1,38 +1,58 @@
-import Access from "/access.svg";
-import Excel from "/excel.svg";
-import Forms from "/forms.svg";
-import Python from "/python.svg";
+import { BookMarked } from 'lucide-react';
+import Fiszki from '../../assets/ikony/fiszki.svg';
+import Test from '../../assets/ikony/test.svg';
+import Video from '../../assets/ikony/video.svg';
+import Zadan from '../../assets/ikony/zadan.svg';
 
 function CourseListHero() {
   const courses = [
     {
-      label: "Excel",
-      icon: Excel,
+      label: "Egzamin i nauka",
+      description: "Porady dotyczące matury, egzaminów zawodowych, planowania nauki, strategii zdawania.",
+      section: "Egzamin i nauka",
+      icon: Fiszki,
     },
     {
-      label: "Access",
-      icon: Access,
-    },
-     {
-      label: "Python",
-      icon: Python,
+      label: "Psychika i motywacja",
+      description: "Zarządzanie stresem, organizacja, produktywność, skupienie, budowanie nawyków.",
+      section: "Psychika i motywacja",
+      icon: Test,
     },
     {
-      label: "Teoria",
-      icon: Forms,
+      label: "Informatyka w praktyce",
+      description: "Faktyczne umiejętności: triki z Excela, Pythona, Accessa, analizowanie zadań z arkuszy.",
+      section: "Informatyka w praktyce",
+      icon: Video,
     },
-    
-   
+    {
+      label: "Po egzaminie",
+      description: "Decyzje po maturze i egzaminie: wybór studiów, kierunki IT, co dalej z karierą, alternatywy.",
+      section: "Po egzaminie",
+      icon: Zadan,
+    },
   ];
 
   return (
     <section className="w-full">
-      <ul className="grid grid-cols-2 grid-rows-2 lg:grid-cols-4 lg:grid-rows-1 w-full gap-4 px-4">
-        {courses.map((courses, index) => (
-            <li key={index} className="shadow-md bg-white border border-gray-100 rounded-[12px] flex justify-center items-center py-2 gap-2 flex-col transition-all hover:shadow-lg hover:scale-[1.025]  cursor-pointer dark:bg-DarkblackText dark:border-DarkblackBorder dark:hover:bg-DarkblackBorder">
-                <img src={courses.icon} alt="#" className="w-10 lg:w-13"/>
-                <p className="text-blackText dark:text-white">{courses.label}</p>
-            </li>
+      <p className="flex gap-2 items-center w-full px-4 mt-20 mb-6 text-gray-500 dark:text-white/60">
+        <BookMarked size={18} className="text-gray-500 dark:text-white/60" />
+        Tak wygląda nauka z PasjonatamiIT
+      </p>
+      <ul className="grid grid-cols-2 grid-rows-2 lg:grid-cols-4 lg:grid-rows-1 w-full gap-6 px-4">
+        {courses.map((course, index) => (
+          <div
+            key={index}
+            onClick={() =>
+              document
+                .getElementById(course.section.replace(/\s+/g, ''))
+                ?.scrollIntoView({ behavior: "smooth" })
+            }
+            className="border border-gray-200 shadow-md p-6 bg-white dark:bg-DarkblackBorder dark:border-DarkblackBorder dark:text-white rounded-[12px] cursor-pointer transition-all duration-300 hover:-translate-y-1"
+          >
+            <img src={course.icon} className="mb-2 w-10" alt={course.label} />
+            <h3 className="font-semibold text-lg">{course.label}</h3>
+            <p className="opacity-75 mt-2 font-light">{course.description}</p>
+          </div>
         ))}
       </ul>
     </section>

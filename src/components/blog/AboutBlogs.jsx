@@ -1,52 +1,45 @@
+import { ChevronRight } from "lucide-react";
+import SectionHeading from "../typography/SectionHeading";
 import React from "react";
+import { Link } from "react-router-dom";
 
-function AboutBlogs() {
+function AboutBlogs({ section, posts }) {
   return (
-    <div className="mt-42 px-6 min-h-screen flex flex-col gap-20">
-      <div className="flex flex-col-reverse lg:flex-row justify-between gap-10">
-        <div className="bg-secondaryBlue/25 dark:text-white w-full lg:w-1/2 rounded-[12px] flex items-center justify-center min-h-[200px]">
-          prototyp
-        </div>
+    <div
+      id={section.replace(/\s+/g, '')}
+      className="px-6 flex flex-col mb-[12rem]"
+    >
+      <SectionHeading textColor={"mb-6 opacity-75 dark:text-white"}>
+        {section}
+      </SectionHeading>
 
-        <div className="w-full lg:w-1/2 flex flex-col  items-end text-left lg:text-right lg:items-end">
-          <h2 className="font-bold text-4xl md:text-5xl text-blackText dark:text-white">
-            Why build{" "}
-            <span className="font-normal text-blackText/75 dark:text-white/75">
-              on monday.com
-            </span>
-          </h2>
-          <p className="text-blackText/75 dark:text-white/75 leading-7 text-base md:text-lg mt-4 md:mt-6">
-            Use our powerful app framework, flexible APIs, and robust SDK to
-            build solutions customers truly need - and are ready to pay for.
-            With built-in monetization, developer tools and resources, and a
-            marketplace ecosystem designed to support and drive apps’ success,
-            you’ll have everything you need to grow your business.
-          </p>
-        </div>
-      </div>
+      {posts.map((post, index) => (
+        <div
+          key={post.id}
+          className={`flex flex-col lg:gap-16 gap-8 mb-16 ${
+            index % 2 === 0 ? "lg:flex-row" : "lg:flex-row-reverse"
+          } justify-between`}
+        >
+          <div className="bg-secondaryBlue/25 dark:text-white w-full lg:w-1/2 rounded-[12px] flex items-center justify-center min-h-[300px]">
+        
+          </div>
 
-      <div className="flex flex-col lg:flex-row justify-between gap-10">
-        <div className="w-full lg:w-1/2 flex flex-col items-start text-left">
-          <h2 className="font-normal text-4xl md:text-5xl text-blackText/75 dark:text-white/75">
-            Simple, native
-          </h2>
-          <span className="font-bold text-4xl md:text-5xl text-blackText dark:text-white">
-            monetization
-          </span>
-
-          <p className="text-blackText/75 dark:text-white/75 leading-7 text-base md:text-lg mt-4 md:mt-6">
-            Easily set your pricing and plans - then let our platform handle the
-            rest. Everything from payments to subscriptions and billing is
-            seamlessly managed, so you can focus on building great apps, not
-            transactions. Your users enjoy easy, secure payments, while you
-            benefit from frictionless sales and predictable revenue.
-          </p>
+          <div className="w-full lg:w-1/2 flex flex-col items-start text-left">
+            <h2 className="font-bold text-3xl md:text-5xl text-blackText dark:text-white">
+              {post.hero_title}
+            </h2>
+            <p className="text-blackText/75 dark:text-white/75 leading-7 text-base md:text-lg mt-4 md:mt-6">
+              {post.first_header}
+            </p>
+            <Link
+              to={`/blog/${post.id}`}
+              className="mt-4 text-primaryBlue font-semibold flex items-center gap-1 hover:translate-x-1 transition-all duration-300 hover:underline dark:text-primaryGreen"
+            >
+              Zobacz bloga <ChevronRight size={20} />
+            </Link>
+          </div>
         </div>
-
-        <div className="bg-secondaryBlue/25 dark:text-white w-full lg:w-1/2 rounded-[12px] flex items-center justify-center min-h-[200px]">
-          prototyp
-        </div>
-      </div>
+      ))}
     </div>
   );
 }
