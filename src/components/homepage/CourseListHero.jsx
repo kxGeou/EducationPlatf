@@ -38,7 +38,7 @@ function CourseListHero() {
         <BookMarked size={18} className="text-gray-500 dark:text-white/60" />
         Tak wygląda nauka z PasjonatamiIT
       </p>
-      <ul className="grid grid-cols-2 grid-rows-2 lg:grid-cols-4 lg:grid-rows-1 w-full gap-6 px-4">
+      <ul className="grid grid-cols-1 md:grid-cols-2 grid-rows-2 lg:grid-cols-4 lg:grid-rows-1 w-full gap-6 px-4">
         {courses.map((course, index) => (
           <div
             key={index}
