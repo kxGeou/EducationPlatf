@@ -26,7 +26,7 @@ export default function App() {
   const user = useAuthStore(state => state.user)
   const [isDark, setIsDark] = useState(() => {
     const theme = localStorage.getItem("theme");
-    return theme === "dark" ? true : false;
+    return theme === "light" ? true : false;
   });
 
   useEffect(() => {

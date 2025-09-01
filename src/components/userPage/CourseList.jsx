@@ -1,6 +1,6 @@
 import { memo, useMemo, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
-import { Book, ShoppingCart } from "lucide-react";
+import { Book, MessageCircleQuestionIcon, ShoppingCart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../../store/authStore";
 import { useCourseStore } from "../../store/courseStore";
@@ -38,34 +38,58 @@ const ResourceVideo = memo(({ videoTitle, videoDescription }) => (
 
 const CourseItem = memo(({ course, onClick }) => (
   <motion.li
-    className="flex flex-col sm:flex-row w-full border border-gray-200 dark:border-gray-700 shadow-md cursor-pointer hover:shadow-lg transition-all duration-300 hover:-translate-y-1 rounded-2xl bg-white dark:bg-blackText dark:text-white overflow-hidden"
-    onClick={() => onClick(course.id)}
+    className="flex p-4 border rounded-[12px] border-blackText/10 dark:text-white dark:bg-DarkblackText shadow-md text-blackText"
   >
     <img
       src={course.image_url}
       alt="course img"
-      className="w-full sm:w-60 h-40 sm:h-auto object-cover rounded-t-2xl sm:rounded-t-none sm:rounded-l-2xl flex-shrink-0"
+      className="w-full sm:w-64 h-40 sm:h-auto object-cover rounded-[12px] flex-shrink-0"
     />
-    <div className="px-4 py-3 flex flex-col flex-1 min-w-0">
-      <h3 className="font-bold text-lg sm:text-xl mb-1 truncate w-full">{course.title}</h3>
-      <p className="text-sm opacity-70 w-full break-words line-clamp-4 sm:line-clamp-6 overflow-hidden leading-snug">
-        {course.description}
-      </p>
-      <div className="flex gap-2 flex-wrap items-center w-full mt-auto pt-3">
-        <span className="bg-blue-500 text-white px-2 py-1 rounded-lg text-xs shadow-md">
-          {course.time_to_complete}
-        </span>
-        {tierStyles[course.difficulty] && (
-          <span className={`px-2 py-1 text-xs rounded-lg shadow-md ${tierStyles[course.difficulty]}`}>
-            {course.difficulty}
-          </span>
-        )}
+    <div className="px-4 flex  flex-1 min-w-0">
+      <div className="grid grid-cols-2 gap-8 w-full border-blackText/20 ">
+
+      <div className="pr-4 border-r border-blackText/15 dark:border-white/20 flex flex-col justify-between">
+      <div>
+  <h3 className="font-bold text-lg sm:text-xl w-full">{course.title}</h3>
+            <p className="text-sm opacity-70 w-full break-words line-clamp-4 sm:line-clamp-6 overflow-hidden leading-snug">
+              {course.description}
+            </p>
       </div>
+          <button className="w-full py-3 bg-gradient-to-br from-primaryGreen to-secondaryGreen transition-discrete hover:-translate-y-1 duration-300 hover:shadow-md rounded-[12px] text-white font-semibold cursor-pointer" 
+          onClick={() => onClick(course.id)}
+          >Zobacz kurs</button>
+      </div>
+     
+
+      <div className="flex flex-col gap-4">
+        <div>
+  <h2 className="text-xl font-bold">Kurs zawiera</h2>
+        <div className="w-full grid grid-rows-1 grid-cols-3 text-center gap-4 items-center mt-2">
+          <div className="bg-primaryBlue dark:bg-primaryGreen/75 dark:border-primaryGreen dark:border text-white font-semibold px-4 py-3 rounded-[8px]">4 działy</div>
+          <div className="bg-primaryBlue dark:bg-primaryGreen/75 dark:border-primaryGreen dark:border text-white font-semibold px-4 py-3 rounded-[8px]">100+ lekcji</div>
+          <div className="bg-primaryBlue dark:bg-primaryGreen/75 dark:border-primaryGreen dark:border text-white font-semibold px-4 py-3 rounded-[8px]">100+ zadań</div>
+        </div>
+        
+        </div>
+        <div>
+  <h2 className="text-xl font-bold">Używane narzędzia</h2>
+        <ol className="w-full grid grid-rows-3 grid-cols-1 gap-1 items-center mt-2 list-disc pl-4">
+          <li className="opacity-75">Visual Studio Code</li>
+          <li className="opacity-75">PyCharm</li>
+          <li className="opacity-75">Xamp Control Panel</li>
+        </ol>
+        
+        </div>
+      
+      </div>
+      </div>
+      
+    
     </div>
   </motion.li>
 ));
 
-function CourseList({ activePage }) {
+function CourseList({ activePage, setTutorialVisible, tutorialVisible }) {
   const user = useAuthStore((state) => state.user);
   const authLoading = useAuthStore((state) => state.loading);
   const { courses, loading: coursesLoading, error, fetchCourses } = useCourseStore();
@@ -92,22 +116,42 @@ function CourseList({ activePage }) {
   if (error) return <Error />;
 
   return (
-    <div className="flex flex-col items-center mt-4 w-full ">
-      <div className="flex flex-col lg:flex-row w-full max-w-[1400px] gap-6 px-4 ">
+    <div className="flex flex-col items-center w-full ">
+      <div className="flex flex-col lg:flex-row w-full">
         
-        <aside className="w-full lg:w-auto order-2 lg:order-1 flex-shrink-0">
+        {/* <aside className="w-full lg:w-auto order-2 lg:order-1 flex-shrink-0">
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4 }}>
             <BlogList />
           </motion.div>
-        </aside>
+        </aside> */}
 
-        <div className="flex-1 order-1 lg:order-2 min-w-0 p-6 rounded-[16px] bg-white dark:bg-DarkblackBorder">
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4 }} >
-            <div className="flex flex-col items-center w-full">
+        <div className="flex-1 order-1 lg:order-2">
+          <motion.div>
+            <div className="flex flex-col items-center w-full bg-white shadow-md relative dark:bg-DarkblackBorder py-2 px-6 min-h-[98vh] rounded-[12px]">
+
+
+              {/* TWOJE KURSY */}
+
+
               {activePage === "courses" && (
                 courses.length > 0 ? (
-                  <ul className="w-full flex flex-col gap-4">
+                  <ul className="w-full flex flex-col gap-2 text-blackText  ">
+                    <div className="w-full flex justify-between  mt-2 ">
+                      <span className="flex gap-2 text-lg items-center font-semibold border-l-4 px-3 border-primaryBlue dark:border-primaryGreen text-primaryBlue dark:text-primaryGreen">
+                        Twoje kursy
+                      </span>
+                      <span className="text-primaryBlue cursor-pointer dark:text-primaryGreen" onClick={() => setTutorialVisible(!tutorialVisible)}>
+                        <MessageCircleQuestionIcon></MessageCircleQuestionIcon>
+                      </span>
+                    </div>
+
+                    <div className="flex flex-col mt-12">
+                      <h2 className="flex gap-2 items-center text-lg font-bold uppercase mb-4 dark:text-white"><ShoppingCart className="font-bold"></ShoppingCart>Kursy które posiadasz :</h2>
+                    <div className="flex flex-col gap-8">
                     {courseList}
+                    </div>
+                 
+                    </div>
                   </ul>
                 ) : (
                   <div className="flex flex-col items-center justify-center py-10 text-center">
@@ -116,6 +160,11 @@ function CourseList({ activePage }) {
                   </div>
                 )
               )}
+
+
+
+              {/* ZASOBY */}
+
 
               {activePage === "resources" && 
                 <div className="flex flex-col items-start w-full">
@@ -127,6 +176,8 @@ function CourseList({ activePage }) {
                   </div>
                 </div>
               }
+
+              {/* ZGŁOSZENIA */}
 
               {activePage === "reports" && 
                 <ReportPanel />

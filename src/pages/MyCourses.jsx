@@ -1,42 +1,51 @@
-import CourseList from '../components/userPage/CourseList'
-import { useNavigate } from 'react-router-dom'
-import Footer from '../components/homepage/Footer'
-import UserHeader from '../components/userPage/UserHeader'
-import UserData from '../components/userPage/UserData'
-import { useState, useEffect } from 'react'
-import { useAuthStore } from '../store/authStore'
+import Footer from "../components/homepage/Footer";
+import CourseList from "../components/userPage/CourseList";
+import Navigation from "../components/userPage/Navigation";
+import Tutorial from "../components/userPage/Tutorial";
+import UserData from "../components/userPage/UserData";
+import UserHeader from "../components/userPage/UserHeader";
+import { useAuthStore } from "../store/authStore";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
-export default function MyCourses({isDark, setIsDark}) {
-  const [userDataModal, setUserDataModal] = useState(false)
+export default function MyCourses({ isDark, setIsDark }) {
+  const [userDataModal, setUserDataModal] = useState(false);
   const [activePage, setActivePage] = useState("courses");
   const user = useAuthStore((state) => state.user);
   const loading = useAuthStore((state) => state.loading);
+  const [tutorialVisible, setTutorialVisible] = useState(true);
+
   return (
-    <div data-theme={isDark ? "dark" : "light"} className='flex justify-center bg-slate-300 w-full dark:bg-blackText'>
-      <div className='flex justify-center bg-slate-300 dark:bg-blackText relative w-full max-w-[1400px]'>
-        <div className='w-full'>
-          <div className='min-h-screen'>
-            <UserHeader 
-              activePage = {activePage}
-              setActivePage = {setActivePage}
+    <div
+      data-theme={isDark ? "dark" : "light"}
+      className="flex justify-center bg-slate-200 w-full dark:bg-blackText relative"
+    >
+      <div className="w-full max-w-[1920px] p-2">
+        <div className="w-full">
+          <div className="flex gap-3">
+            <Navigation
+              activePage={activePage}
+              setActivePage={setActivePage}
               userDataModal={userDataModal}
               setUserDataModal={setUserDataModal}
               isDark={isDark}
               setIsDark={setIsDark}
-            />
-            <CourseList      activePage = {activePage}
-              />
-          </div>
-          <div className='md:px-4'>
+            ></Navigation>
 
-          <Footer padding="px-4 rounded-xl" />
+            <CourseList activePage={activePage} setTutorialVisible={setTutorialVisible} tutorialVisible={tutorialVisible}/>
           </div>
         </div>
 
         {userDataModal && (
-          <UserData userDataModal={userDataModal} setUserDataModal={setUserDataModal} />
+          <UserData
+            userDataModal={userDataModal}
+            setUserDataModal={setUserDataModal}
+          />
         )}
+
       </div>
+        <Tutorial isDark={isDark} tutorialVisible={tutorialVisible} setTutorialVisible={setTutorialVisible}></Tutorial>
+
     </div>
-  )
+  );
 }
