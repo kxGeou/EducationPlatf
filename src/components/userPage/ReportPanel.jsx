@@ -1,13 +1,15 @@
-import { useEffect, useState, useMemo } from "react";
-import { User, ClipboardList, CheckCircle, Plus } from "lucide-react";
 import { useAuthStore } from "../../store/authStore";
 import { useReports } from "../../store/reportStore";
+import { User, ClipboardList, CheckCircle, Plus } from "lucide-react";
+import { useEffect, useState, useMemo } from "react";
 
 export default function ReportPanel() {
   const [openForm, setOpenForm] = useState(false);
   const [activePanel, setActivePanel] = useState("Do zrobienia");
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [selectedTopic, setSelectedTopic] = useState("Wybierz temat zgłoszenia");
+  const [selectedTopic, setSelectedTopic] = useState(
+    "Wybierz temat zgłoszenia"
+  );
   const [topic, setTopic] = useState("Inne");
   const [description, setDescription] = useState("");
 
@@ -32,7 +34,8 @@ export default function ReportPanel() {
 
     const lastSent = localStorage.getItem("lastReportTime");
     if (lastSent) {
-      const diff = 200 - Math.floor((Date.now() - parseInt(lastSent, 10)) / 1000);
+      const diff =
+        200 - Math.floor((Date.now() - parseInt(lastSent, 10)) / 1000);
       if (diff > 0) setTimeLeft(diff);
     }
   }, []);
@@ -69,7 +72,7 @@ export default function ReportPanel() {
       text: "text-yellow-700 dark:text-yellow-500",
       icon: <ClipboardList size={18} className=" text-yellow-500" />,
     },
-    "Zrobione": {
+    Zrobione: {
       color: "",
       text: "text-red-700 dark:text-red-500",
       icon: <CheckCircle size={18} className=" text-red-500" />,
@@ -83,49 +86,55 @@ export default function ReportPanel() {
   };
 
   return (
-    <div className="flex flex-col md:flex-row gap-8 w-full p-2 dark:bg-DarkblackBorder">
-      <div className="flex flex-col gap-4 w-full md:w-1/4">
-        <div className="flex justify-start mb-2">
+    <div className="flex flex-col gap-8 w-full mt-2 dark:bg-DarkblackBorder">
+      <span className="flex gap-2 text-lg items-center font-semibold border-l-4 px-3 border-primaryBlue dark:border-primaryGreen text-primaryBlue dark:text-primaryGreen md:mt-0 mt-18">
+        Twoje zgłoszenia
+      </span>
+      <div className="flex gap-4 w-full flex-col md:flex-row">
           <button
-            onClick={() => setOpenForm(true)}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white border dark:bg-DarkblackText dark:text-white dark:border-DarkblackText dark:shadow-blackText/50 hover:dark:shadow-blackText/75 border-gray-100 shadow-md shadow-gray-400/20 hover:shadow-md transition text-gray-700 cursor-pointer hover:shadow-gray-400/30"
+            onClick={() => setOpenForm(!openForm)}
+            className="border border-gray-200 flex gap-2 items-center justify-center rounded-[12px] shadow-md cursor-pointer transition-all hover:-translate-y-1 hover:shadow-lg duration-300 w-full text-blackText dark:bg-blackText dark:border-0 dark:text-white bg-white py-3 md:py-0"
           >
-            <Plus className="w-4 h-4" /> Napisz zgłoszenie
+            Napisz zgłoszenie<Plus className="w-4 h-4" /> 
           </button>
-        </div>
+
+
+
+
         {["Do zrobienia", "W trakcie", "Zrobione"].map((status) => (
           <button
             key={status}
             onClick={() => setActivePanel(status)}
-            className={`flex items-center gap-3 p-4 cursor-pointer hover:shadow-gray-400/50 rounded-xl transition-all duration-200 border border-gray-100 shadow-md shadow-gray-400/20 ${
+            className={`w-full border border-gray-200 shadow-md rounded-[12px] flex items-center gap-2 px-4 py-3 cursor-pointer transition-all hover:-translate-y-1 hover:shadow-lg duration-300 dark:border-0 bg-white dark:bg-blackText ${
               activePanel === status && !openForm
-                ? "bg-white dark:bg-DarkblackText dark:border-DarkblackText hover:dark:shadow-blackText/50 dark:shadow-blackText/25"
-                : "dark:bg-DarkblackText dark:border-DarkblackText dark:shadow-blackText/25 hover:dark:shadow-blackText/50"
+                ? "shadow-lg" : "opacity-75"
             }`}
           >
+
+
             <div>{statusStyles[status].icon}</div>
             <div className="flex flex-col text-left">
               <span
-                className={` text-sm font-medium ${statusStyles[status].color} ${statusStyles[status].text}`}
+                className={`text-sm font-medium ${statusStyles[status].color} ${statusStyles[status].text}`}
               >
                 {status}
               </span>
-              <span className="text-gray-500 dark:text-gray-300 text-xs mt-1">
+              <span className="text-gray-500 dark:text-gray-300 text-xs">
                 {(reportsByStatus[status] || []).length} zgłoszeń
               </span>
             </div>
           </button>
         ))}
       </div>
-      <div className="flex flex-col gap-4 w-full md:w-3/4">
+      <div className="flex flex-col gap-4 w-full">
         {!openForm ? (
-          <>
-            <div className="flex flex-col gap-4">
+          <div className="w-full">
+            <div className="flex flex-col gap-4 w-full">
               {displayedReports.length > 0 ? (
                 displayedReports.map((r) => (
                   <div
                     key={r.id}
-                    className="bg-white dark:bg-DarkblackText p-4 rounded-xl shadow hover:shadow-md transition flex flex-col gap-3"
+                    className="bg-white dark:bg-DarkblackText p-4 rounded-[12px] border border-gray-200 dark:border-0 shadow transition flex flex-col gap-3"
                   >
                     <div className="flex justify-between items-center">
                       <div className="flex items-center gap-2">
@@ -135,7 +144,9 @@ export default function ReportPanel() {
                         </h3>
                       </div>
                       <span
-                        className={`px-2 py-0.5 rounded-full text-xs font-medium ${statusStyles[r.status]?.color} ${statusStyles[r.status]?.text}`}
+                        className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                          statusStyles[r.status]?.color
+                        } ${statusStyles[r.status]?.text}`}
                       >
                         {r.status}
                       </span>
@@ -165,7 +176,7 @@ export default function ReportPanel() {
                 <p className="text-gray-400">Brak zgłoszeń</p>
               )}
             </div>
-          </>
+          </div>
         ) : (
           <form
             className="bg-white dark:bg-DarkblackText p-6 rounded-xl shadow hover:shadow-md flex flex-col gap-4 transition"

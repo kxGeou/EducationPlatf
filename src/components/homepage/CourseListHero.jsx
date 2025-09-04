@@ -34,7 +34,7 @@ function CourseListHero() {
 
   return (
     <section className="w-full">
-      <p className="flex gap-2 items-center w-full px-4 mt-20 mb-6 text-gray-500 dark:text-white/60">
+      <p className="flex gap-2 items-center w-full px-4 mb-6 text-gray-500 dark:text-white/60">
         <BookMarked size={18} className="text-gray-500 dark:text-white/60" />
         Tak wygląda nauka z PasjonatamiIT
       </p>

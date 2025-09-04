@@ -26,7 +26,7 @@ function TestResources({ isDark, setIsDark }) {
           ))}
         </div>
       </main>
-      <div className="flex flex-col items-center justify-start w-full bg-white dark:bg-DarkblackText dark:border-DarkblackBorder border-t border-gray-300 mt-26">
+      <div className="flex flex-col items-center justify-start w-full ">
       <div className="flex w-full max-w-[1100px]">
        <Footer></Footer>
        

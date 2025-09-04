@@ -20,7 +20,7 @@ export default function MyCourses({ isDark, setIsDark }) {
       data-theme={isDark ? "dark" : "light"}
       className="flex justify-center bg-slate-200 w-full dark:bg-blackText relative"
     >
-      <div className="w-full max-w-[1920px] p-2">
+      <div className="w-full max-w-[1920px] md:p-2">
         <div className="w-full">
           <div className="flex gap-3">
             <Navigation

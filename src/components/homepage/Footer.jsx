@@ -1,12 +1,16 @@
 import { Facebook, Instagram, Mail } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-
-function Footer({ padding = "" }) {
+import Logo from '../../assets/logo_biale.svg';
+import LogoDark from '../../assets/logoDesk.png'
+function Footer({isDark}) {
     const navigate = useNavigate();
     return (
-        <footer className={`w-full bg-white dark:bg-blackText text-black dark:text-white mt-20 pt-12 pb-8 ${padding}`}>
-            <div className="max-w-[1100px] mx-auto md:px-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
-                
+        <footer className={`w-full bg-gray-100 dark:bg-blackText text-black dark:text-white mt-20 pt-12 pb-8 max-w-[1200px] px-4`}>
+            <div className="max-w-[1200px] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
+                <div>
+                    <p>Lorem</p>
+                    
+                </div>
                 <div className="space-y-3">
                     <h3 className="text-lg font-semibold tracking-tight">Kontakt</h3>
                     <address className="not-italic text-sm space-y-1">
@@ -46,7 +50,7 @@ function Footer({ padding = "" }) {
                 </div>
             </div>
 
-            <div className="mt-12 border-t border-gray-200 dark:border-gray-700 pt-6 text-center text-xs opacity-60">
+            <div className="mt-18 mb-4 text-center text-xs opacity-60">
                 © {new Date().getFullYear()} TwojaFirma. Wszelkie prawa zastrzeżone.
             </div>
         </footer>

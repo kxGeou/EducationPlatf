@@ -156,7 +156,7 @@ export default function CourseLandingPage({ isDark, setIsDark }) {
   return (
     <div
       data-theme={isDark ? "dark" : "light"}
-      className="w-full flex flex-col items-center dark:bg-blackText"
+      className="w-full flex flex-col items-center dark:bg-blackText bg-gray-100"
     >
       <Header isDark={isDark} setIsDark={setIsDark} />
 
@@ -251,14 +251,14 @@ export default function CourseLandingPage({ isDark, setIsDark }) {
           <CourseSections videos={videos} firstVideoId={firstVideo?.videoId} />
         </section>
 
-        <section className="flex mt-20 md:my-30 justify-center md:justify-between items-center border border-gray-100 dark:bg-DarkblackBorder dark:border-0 dark:text-white px-4 md:px-12 py-12 rounded-[12px] shadow-md">
+        <section className="flex mt-20 md:my-24 justify-center md:justify-between items-center border bg-white border-gray-100 dark:bg-DarkblackBorder dark:border-0 dark:text-white px-4 md:px-12 py-12 rounded-[12px] shadow-md">
           <div className="">
             <h3 className="font-semibold text-2xl md:text-3xl mb-2">Umów się na zajęcia!</h3>
             <p className="md:text-md w-full max-w-[400px] opacity-75 mb-4">Na naszej platformie istnieje opcja umówienia się na indywidualne zajęcia, przejdź do sekcji kontakt i wyślij do nas wiadomość</p>
-            <button className="bg-gradient-to-r from-DarkblackText cursor-pointer transiton-all shadow-md duration-300 hover:shadow-lg hover:scale-[1.02] to-DarkblackBorder text-white rounded-[12px] dark:from-secondaryGreen dark:to-primaryGreen py-2 md:py-3 w-full" onClick={() => navigate("/contact")}>Skontaktuj sie z nami</button>
+            <button className="bg-gradient-to-r from-DarkblackText cursor-pointer transiton-all shadow-md duration-300 hover:shadow-lg hover:scale-[1.02] to-DarkblackBorder font-semibold mt-2 text-white rounded-[12px] dark:from-secondaryGreen dark:to-primaryGreen py-2 md:py-3 w-full" onClick={() => navigate("/contact")}>Skontaktuj sie z nami</button>
           </div>
 
-          <img src={Turek} className="w-[20%] hidden md:flex"/>
+          <img src={Turek} className="w-[17%] hidden md:flex"/>
         </section>
 
 
@@ -297,7 +297,7 @@ export default function CourseLandingPage({ isDark, setIsDark }) {
         </section>
       </main>
 
-      <Footer padding="px-4"/>
+      <Footer/>
     </div>
   );
 }
@@ -360,22 +360,22 @@ function CourseSections({ videos, firstVideoId }) {
   };
 
   return (
-    <div className="rounded-xl">
+    <div className="rounded-[12px] ">
       {Object.entries(groupedVideos).map(([section, vids]) => (
         <div
           key={section}
-          className="rounded-xl overflow-hidden border border-gray-200 dark:border-DarkblackBorder mb-3"
+          className=" rounded-[12px] overflow-hidden border border-gray-100 shadow-sm dark:border-DarkblackBorder mb-3"
         >
           <button
             onClick={() => toggleSection(section)}
-            className="w-full text-left font-semibold text-lg flex justify-between items-center px-4 py-3 bg-gray-100 dark:bg-DarkblackBorder dark:text-white"
+            className="w-full bg-white text-left font-semibold text-lg flex justify-between items-center px-4 py-3  dark:bg-DarkblackBorder dark:text-white"
           >
             {section}
             <span>{openSections[section] ? <ChevronDown /> : <ChevronRight />}</span>
           </button>
 
           {openSections[section] && (
-            <ul className="bg-gray-50 dark:bg-DarkblackText py-3 px-4 flex flex-col gap-2">
+            <ul className="bg-gray-200 dark:bg-DarkblackText py-3 px-4 flex flex-col gap-2">
               {vids.map((video) => (
                 <li
                   key={video.videoId}

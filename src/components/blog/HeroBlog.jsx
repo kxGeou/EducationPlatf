@@ -5,7 +5,7 @@ import React from "react";
 
 function HeroBlog() {
   return (
-    <section className="w-full flex justify-between items-center mb-36 mt-10 sm:mt-0 px-4">
+    <section className="w-full flex justify-between items-center mb-20 mt-10 sm:mt-0 px-4">
       <div>
         <div className="flex flex-col items-start text-5xl md:text-7xl">
           <p className="text-blackText/75 font-thin dark:text-white/75">

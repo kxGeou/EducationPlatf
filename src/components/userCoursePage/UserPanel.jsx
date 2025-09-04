@@ -9,27 +9,25 @@ export default function UserPanel({ user, setIsDark, isDark, userDataModal, setU
   return (
     <div className="dark:bg-DarkblackBorder  w-full">
       <div className="flex flex-col items-start gap-4 w-full">
-        <div className="flex items-center gap-4">
-          {!showSidebar &&
+        <div className="flex items-center gap-2">
           <Avatar
           name={userName}
           colors={["#0056d6", "#669c35", "#ffffff", "#74a7fe", "#cce8b5"]}
           variant="beam"
-          size={40}
-          className="cursor-pointer hover:scale-[1.025]"
+          size={30}
+          className="cursor-pointer"
           onClick={() => setUserDataModal((prev) => (!prev))}
         />
-          }
         
-        <div 
+        {showSidebar &&
+            <div 
           onClick={() => setUserDataModal((prev) => (!prev))}
           className="cursor-pointer "
         >
-          <p className="text-lg font-semibold">{userName}</p>
-          <p className="text-xs text-gray-500 dark:text-gray-400">
-            {userEmail}
-          </p>
+          <p className="">{userName}</p>
         </div>
+        }
+    
         </div>
 
       </div>

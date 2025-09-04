@@ -66,9 +66,9 @@ export default function CoursePage({ isDark, setIsDark }) {
   return (
     <div
       data-theme={isDark ? "dark" : "light"}
-      className=" flex justify-center bg-slate-300 dark:bg-blackText dark:text-white"
+      className=" flex justify-center bg-slate-300 dark:bg-blackText dark:text-white min-h-screen"
     >
-      <div className="flex flex-col md:flex-row h-full py-4 px-4 gap-6 w-full max-w-[1900px]">
+      <div className="flex flex-col md:flex-row h-full gap-4 w-full max-w-[1900px] min-h-screen p-2">
         <CourseSidebar
           user={user}
           course={course}
@@ -83,7 +83,7 @@ export default function CoursePage({ isDark, setIsDark }) {
           userDataModal={userDataModal}
         />
 
-        <main className="flex flex-col w-full items-start">
+        <main className="flex flex-col w-full items-start min-h-[98vh] bg-gray-50 dark:bg-DarkblackBorder rounded-[12px] p-2">
 
           {activeSection === "info" && (
             <CourseInfo course={course} videos={videos} />

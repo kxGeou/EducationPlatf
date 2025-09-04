@@ -113,37 +113,40 @@ export default function CourseSidebar({
         </div>
       </aside>
 
+
+      {/* DESKTOP */}
+
       <aside
         data-theme={isDark ? "dark" : "light"}
         className={`
-          hidden md:flex h-[96vh] rounded-[12px] bg-white dark:bg-DarkblackBorder shadow-lg
-          flex-col justify-between px-4 py-4 transition-all duration-300 overflow-hidden
-          ${showSidebar ? "w-56" : "w-18"}
+          hidden md:flex h-[98vh] rounded-[12px] bg-white dark:bg-DarkblackBorder shadow-md
+          flex-col justify-between p-4 transition-all duration-300 overflow-hidden sticky top-0 
+          ${showSidebar ? "w-[17.5rem]" : "w-[4.5rem]"}
         `}
       >
         <div>
-          <nav className="flex flex-col items-center gap-2">
+          <nav className="flex flex-col items-center justify-center gap-2">
             <div className="flex justify-between items-center w-full">
               <img
-                src={MobileLogo}
-                className={`w-9 ${showSidebar ? "mb-0" : "mb-2"} transition-all duration-300`}
+                src={showSidebar ? DesktopLogo : MobileLogo}
+                className={` ${showSidebar ? "mb-0 w-30" : "mb-2 w-9"} transition-all duration-300`}
               />
               {showSidebar && (
                 <button onClick={() => setShowSidebar(!showSidebar)}>
-                  <SidebarClose className="text-secondaryBlue cursor-pointer dark:text-secondaryGreen" size={25} />
+                  <SidebarClose className=" cursor-pointer text-blackText dark:text-white" size={20} />
                 </button>
               )}
             </div>
             {!showSidebar && (
               <button
                 onClick={() => setShowSidebar(!showSidebar)}
-                className="flex items-center justify-center mb-2 gap-2 w-full py-2 transition-colors"
+                className="flex items-center justify-center gap-2 w-full py-2 transition-colors"
               >
                 <SidebarClose className="text-secondaryBlue dark:text-secondaryGreen" />
               </button>
             )}
-            <hr className={`${showSidebar && "mt-2"} text-secondaryBlue/25 mb-4 h-[0.5px] w-full`} />
-            <div className={`flex flex-col gap-3 ${showSidebar && "w-full"}`}>
+            <hr className={` text-secondaryBlue/25 mt-2 mb-3 h-[0.5px] w-full`} />
+            <div className={`flex flex-col  ${showSidebar ? "w-full gap-3" : "gap-6 "}`}>
               {menuItems.map(item => (
                 <SidebarButton
                   key={item.key}
@@ -163,15 +166,7 @@ export default function CourseSidebar({
         </div>
         <div className="flex flex-col gap-1 items-center w-full">
           {!showSidebar && <hr className="text-secondaryBlue/50 mb-4 h-[1px] w-full" />}
-          <div
-            onClick={toggleTheme}
-            className={`cursor-pointer mb-4 transition-all ${
-              showSidebar && "bg-secondaryBlue w-full py-3 flex items-center justify-center text-white rounded-[12px]"
-            }`}
-            title="Przełącz tryb jasny/ciemny"
-          >
-            {isDark ? <Sun size={20} /> : <Moon size={20} />}
-          </div>
+         
           <UserPanel
             user={user}
             isDark={isDark}
@@ -180,6 +175,15 @@ export default function CourseSidebar({
             userDataModal={userDataModal}
             showSidebar={showSidebar}
           />
+           <div
+            onClick={toggleTheme}
+            className={`cursor-pointer mt-3 mb-3 transition-all ${
+              showSidebar && "bg-secondaryBlue w-full py-3 flex items-center justify-center text-white rounded-[12px]"
+            }`}
+            title="Przełącz tryb jasny/ciemny"
+          >
+            {isDark ? <Sun size={20} /> : <Moon size={20} />}
+          </div>
         </div>
       </aside>
     </>
@@ -190,10 +194,10 @@ function SidebarButton({ icon, label, expanded, active, onClick, highlight }) {
   return (
     <button
       onClick={onClick}
-      className={`flex items-center rounded-[12px] py-3 px-3 transition-all duration-300 cursor-pointer
-        ${expanded ? "justify-start gap-2" : "justify-center"}
-        ${active ? "text-secondaryBlue dark:bg-secondaryBlue dark:text-white shadow-secondaryBlue/50 scale-[1.05]" : "hover:shadow-secondaryBlue/50 dark:hover:bg-DarkblackText"}
-        ${highlight ? "bg-secondaryBlue text-white dark:bg-secondaryGreen" : ""}`}
+      className={`flex items-center  transition-all duration-300 cursor-pointer
+        ${expanded ? "justify-start gap-1 py-1" : "justify-center"}
+        ${active ? ` dark:text-primaryGreen text-primaryBlue ${expanded && " border-l-6 pl-3"}` : ""}
+        ${highlight ? "" : ""}`}
     >
       {icon}
       {expanded && <span className="whitespace-nowrap">{label}</span>}

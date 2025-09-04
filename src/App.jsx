@@ -26,7 +26,7 @@ export default function App() {
   const user = useAuthStore(state => state.user)
   const [isDark, setIsDark] = useState(() => {
     const theme = localStorage.getItem("theme");
-    return theme === "light" ? true : false;
+    return theme === "dark" ? true : false;
   });
 
   useEffect(() => {
@@ -57,8 +57,8 @@ export default function App() {
         <Route path='/blog' element={<BlogMainPage isDark={isDark} setIsDark={setIsDark} />} />
         <Route path='/blog/:id' element={<BlogPage isDark={isDark} setIsDark={setIsDark} />} />
         <Route path='/zasoby' element={<TestResources isDark={isDark} setIsDark={setIsDark}/>} />
-        <Route path='/reports' element={<ReportPage></ReportPage>}></Route>
-        <Route path='/*' element={<WrongPage isDark={isDark} />} />
+        <Route path='/reports' element={<ReportPage isDark={isDark}></ReportPage>}></Route>
+        <Route path='/*' element={<WrongPage isDark={isDark} setIsDark={setIsDark} />} />
       </Routes>
     </>
   )

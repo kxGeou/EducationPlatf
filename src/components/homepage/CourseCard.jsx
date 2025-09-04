@@ -11,7 +11,7 @@ export default function CourseCard({ course }) {
   return (
     <div
       onClick={handleClick}
-      className="group relative flex flex-col md:flex-row cursor-pointer rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 bg-white dark:bg-DarkblackBorder hover:scale-[1.010]"
+      className="group relative flex flex-col md:flex-row cursor-pointer rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 bg-white dark:bg-DarkblackBorder hover:-translate-y-1"
     >
       <img
         src={course.image_url}
@@ -34,13 +34,13 @@ export default function CourseCard({ course }) {
           <div className="w-full flex flex-col gap-4">
             <h4 className="text-lg font-semibold dark:text-white">Kurs zawiera</h4>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              <div className="p-2 rounded-[8px] bg-primaryGreen shadow flex items-center justify-center font-semibold text-white dark:text-blackText">
+              <div className="p-2 rounded-[8px] bg-primaryBlue dark:bg-primaryGreen shadow flex items-center justify-center font-semibold text-white dark:text-blackText">
                 {course.sections || "4"} działy
               </div>
-              <div className="p-2 rounded-[8px] bg-primaryGreen shadow flex items-center justify-center font-semibold text-white dark:text-blackText">
+              <div className="p-2 rounded-[8px] bg-primaryBlue dark:bg-primaryGreen shadow flex items-center justify-center font-semibold text-white dark:text-blackText">
                 {course.lessons || "100+"} lekcji
               </div>
-              <div className="p-2 rounded-[8px] bg-primaryGreen shadow flex items-center justify-center font-semibold text-white dark:text-blackText">
+              <div className="p-2 rounded-[8px] bg-primaryBlue dark:bg-primaryGreen shadow flex items-center justify-center font-semibold text-white dark:text-blackText">
                 {course.tasks || "100+"} zadań
               </div>
               {course.has_mock_exam && (
@@ -55,15 +55,15 @@ export default function CourseCard({ course }) {
             <h4 className="text-lg font-semibold dark:text-white">Nauczysz się</h4>
             <ul className="flex flex-wrap gap-4">
               <li className="flex items-center gap-2 text-md dark:text-white/75">
-                <BadgeCheck size={20} className="text-primaryGreen" />
+                <BadgeCheck size={20} className="text-primaryBlue dark:text-primaryGreen" />
                 Programowania
               </li>
               <li className="flex items-center gap-2 text-md dark:text-white/75">
-                <BadgeCheck size={20} className="text-primaryGreen" />
+                <BadgeCheck size={20} className="text-primaryBlue dark:text-primaryGreen" />
                 Tworzenia stron
               </li>
               <li className="flex items-center gap-2 text-md dark:text-white/75">
-                <BadgeCheck size={20} className="text-primaryGreen" />
+                <BadgeCheck size={20} className="text-primaryBlue dark:text-primaryGreen" />
                 Tworzenia baz danych
               </li>
             </ul>

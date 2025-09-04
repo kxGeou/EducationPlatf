@@ -29,39 +29,39 @@ function CourseInfo({ course, videos }) {
   console.log(course)
 
   return (
-    <div className="w-full h-full bg-white dark:bg-DarkblackBorder rounded-xl px-8 py-5 flex flex-col gap-8 justify-between shadow-lg transition-all min-h-[400px]">
+    <div className="w-full h-full p-3 rounded-[12px] flex flex-col gap-8 justify-between shadow-lg transition-all">
       <div>
 
-      <h3 className="text-2xl font-bold text-blackText mb-4 dark:text-white">
-        Informacje o kursie
-      </h3>
+        <span className="flex gap-2 text-lg items-center font-semibold border-l-4 px-3 border-primaryBlue dark:border-primaryGreen text-primaryBlue dark:text-primaryGreen mb-6">
+        Twoje zgłoszenia
+      </span>
 
       <div className="flex flex-col md:flex-row gap-8">
-        <img src={course.image_url} alt={course.title} className="rounded-[12px]" loading="lazy"/>
+        <img src={course.image_url} alt={course.title} className="rounded-[10px]" loading="lazy"/>
         <div className="flex flex-col gap-4">
           <div className="flex flex-col">
-          <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
+          <span className="text-sm font-medium dark:text-white/50 text-blackText/75">
             Tytuł kursu
           </span>
-          <span className="text-xl font-semibold">{course.title}</span>
+          <span className="text-xl font-semibold text-blackText dark:text-white">{course.title}</span>
         </div>
         <div className="flex flex-col sm:col-span-2">
-          <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
+          <span className="text-sm font-medium dark:text-white/50 text-blackText/75">
             Opis kursu
           </span>
-          <span className="text-lg max-w-[500px] leading-[25px]">{course.description}</span>
+          <span className="text-lg max-w-[500px] leading-[25px] text-blackText dark:text-white">{course.description}</span>
         </div>
 
         <div className="grid md:grid-cols-3 grid-cols-1 grid-rows-3 gap-4 md:grid-rows-1  md:h-30 mt-4">
-          <div className="flex flex-col px-2 gap-1 py-2 items-center border border-gray-100 justify-center dark:border-DarkblackText shadow-md rounded-[12px]">
+          <div className="flex flex-col px-2 gap-1 py-2 items-center border bg-white border-gray-100 justify-center dark:border-0 dark:bg-DarkblackText shadow-md rounded-[12px]">
             <p className="opacity-75">Liczba lekcji</p>
             <span className="font-semibold text-2xl">5</span>
           </div>
-          <div className="flex flex-col px-2 gap-1 py-2 items-center border border-gray-100 justify-center dark:border-DarkblackText shadow-md rounded-[12px]">
+          <div className="flex flex-col px-2 gap-1 py-2 items-center border bg-white border-gray-100 justify-center dark:border-0 dark:bg-DarkblackText shadow-md rounded-[12px]">
             <p className="opacity-75">Liczba działów</p>
             <span className="font-semibold text-2xl">20</span>
           </div>
-          <div className="flex flex-col px-2 gap-1 py-2 items-center border border-gray-100 justify-center dark:border-DarkblackText shadow-md rounded-[12px]">
+          <div className="flex flex-col px-2 gap-1 py-2 items-center border bg-white border-gray-100 justify-center dark:border-0 dark:bg-DarkblackText shadow-md rounded-[12px]">
             <p className="opacity-75">Czas kursu</p>
             <span className="font-semibold text-2xl">40h</span>
           </div>

@@ -29,19 +29,20 @@ function BlogMainPage({ isDark, setIsDark }) {
     >
       <Header isDark={isDark} setIsDark={setIsDark} />
 
-      <div className='w-full max-w-[1100px] mt-26 lg:mt-38 mb-42'>
+      <div className='w-full max-w-[1100px] mt-26 lg:mt-38 mb-40'>
         <HeroBlog />
         <CourseListHero />
       </div>
 
-      <div className="flex flex-col w-full max-w-[1100px] gap-20">
+      <div className="flex  flex-col-reverse w-full max-w-[1100px] ">
         {categories.map(category => {
           const categoryBlogs = blogs.filter(blog => blog.category === category);
 
-          if (category === "Inne") {
-            return <BlogList key={category} posts={categoryBlogs} />;
-          }
 
+          if(category == "Inne") {
+            return
+          }
+          
           if (categoryBlogs.length > 0) {
             return (
               <AboutBlogs
@@ -53,6 +54,16 @@ function BlogMainPage({ isDark, setIsDark }) {
           }
 
           return null;
+        })}
+      </div>
+
+      <div className='w-full max-w-[1100px]'>
+        {categories.map(category => {
+          const categoryBlog = blogs.filter(blog => blog.category === category);
+
+          if(category === "Inne") {
+            return <BlogList key={category} posts={categoryBlog} />;
+          }
         })}
       </div>
 

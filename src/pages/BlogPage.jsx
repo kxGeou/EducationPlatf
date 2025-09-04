@@ -57,7 +57,7 @@ export default function BlogPage({ isDark, setIsDark }) {
         <CourseListHero></CourseListHero>
       
         <div className="flex w-full max-w-[1100px]">
-          <Footer padding={"px-4"}></Footer>
+          <Footer ></Footer>
         </div>
       </div>
     </div>

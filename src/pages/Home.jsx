@@ -15,7 +15,7 @@ import HowWeLearn from '../components/homepage/HowWeLearn';
 function Home({isDark, setIsDark}) {
  
   return (
-    <main data-theme={isDark ? "dark" : "light"} className="flex flex-col items-center justify-center relative dark:bg-blackText">
+    <main data-theme={isDark ? "dark" : "light"} className="flex flex-col items-center justify-center relative dark:bg-blackText bg-gray-100">
       
       <div  className="flex flex-col items-center justify-start w-full max-w-[1100px] min-h-screen ">
 
@@ -61,7 +61,7 @@ function Home({isDark, setIsDark}) {
       <StripeHero></StripeHero>
   
       <div className="flex w-full max-w-[1100px]">
-       <Footer padding={"px-4"}></Footer>
+       <Footer ></Footer>
        
       </div>
 

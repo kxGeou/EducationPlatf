@@ -195,7 +195,7 @@ const validateForm = () => {
   return (
     <div
       data-theme={isDark ? "dark" : "light"}
-      className="w-full bg-gradient-to-br from-indigo-500/50 to-white dark:from-indigo-700 dark:to-blackText to-30% min-h-screen flex flex-col items-center"
+      className="w-full bg-gradient-to-br from-indigo-400/40 to-gray-100 dark:from-indigo-700 dark:to-blackText to-30% min-h-screen flex flex-col items-center"
     >
       <Header isDark={isDark} setIsDark={setIsDark} />
 
@@ -281,7 +281,7 @@ const validateForm = () => {
         </div>
       </div>
 
-      <Footer padding="px-4" />
+      <Footer  />
     </div>
   );
 }
