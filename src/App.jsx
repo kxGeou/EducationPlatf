@@ -20,6 +20,7 @@ import NewPassword from './components/auth/NewPassword.jsx'
 import ContactPage from './pages/ContactPage.jsx'
 import ReportPage from './pages/ReportPage.jsx'
 import Regulations from './pages/Regulations.jsx'
+import FormPage from './pages/FormPage.jsx'
 export default function App() {
   const init = useAuthStore(state => state.init)
   const loading = useAuthStore(state => state.loading)
@@ -58,6 +59,7 @@ export default function App() {
         <Route path='/blog/:id' element={<BlogPage isDark={isDark} setIsDark={setIsDark} />} />
         <Route path='/zasoby' element={<TestResources isDark={isDark} setIsDark={setIsDark}/>} />
         <Route path='/reports' element={<ReportPage isDark={isDark}></ReportPage>}></Route>
+        <Route path='/formPage' element={<FormPage isDark={isDark} setIsDark={setIsDark}></FormPage>}></Route>
         <Route path='/*' element={<WrongPage isDark={isDark} setIsDark={setIsDark} />} />
       </Routes>
     </>

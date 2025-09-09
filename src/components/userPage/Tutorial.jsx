@@ -1,6 +1,6 @@
 import RobotKsiazka from "../../assets/RobotKsiązka.svg";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, ArrowLeft, ArrowRight, ShoppingCart, BookOpenText, MessageSquareWarningIcon, BookText } from "lucide-react";
+import { X, ArrowLeft, ArrowRight, ShoppingCart, BookOpenText, MessageSquareWarningIcon, BookText, ListCheck } from "lucide-react";
 import React, { useState, useEffect } from "react";
 
 function Tutorial({ isDark, setTutorialVisible, tutorialVisible }) {
@@ -28,6 +28,12 @@ function Tutorial({ isDark, setTutorialVisible, tutorialVisible }) {
       title: "Panel 'Blogi'",
       description:
         "W tym panelu znajdziesz blogi przygotowane specjalnie z myślą o uczniach. Artykuły pomogą ci lepiej uporządkować wiedzę, spojrzeć na naukę z nowej perspektywy i zrozumieć, jak łączyć teorię z praktyką. Znajdziesz tu również teksty wspierające w podejmowaniu ważnych decyzji – na przykład związanych z wyborem kierunku studiów czy ścieżki kariery.",
+    },
+    {
+      icon : <ListCheck className="text-primaryBlue dark:text-primaryGreen"></ListCheck>,
+      title: "Panel 'Ankiety'",
+      description:
+        "Chcemy łączyć się z naszą społecznością za pomocą ankiet, gdy tylko będziemy wprowadzić jakąś zmianę lub feature do strony to zapytamy was co o tym sądzicie",
     },
   ];
 

@@ -7,6 +7,7 @@ import { MessageCircleQuestionIcon, ShoppingCart } from "lucide-react";
 import { memo, useMemo, useEffect, useCallback, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import BlogPanel from "./BlogPanel";
+import FormUserPage from "./FormUserPage";
 
 const videoResources = [
   {
@@ -264,6 +265,9 @@ function CourseList({ activePage, setTutorialVisible, tutorialVisible }) {
 
               {/* BLOGI */}
               {activePage === "blogs" && <BlogPanel />}
+
+              {/* ANKIETY */}
+              {activePage === "forms" && <FormUserPage></FormUserPage>}
             </div>
         </div>
       </div>

@@ -3,6 +3,7 @@ import LogoLight from "../../assets/logoDesk.png";
 import LogoMobile from "../../assets/logoMobile.svg";
 import LogoDark from "../../assets/logo_biale.svg";
 import { useAuthStore } from "../../store/authStore";
+import { usePollStore } from "../../store/formStore";
 import Avatar from "boring-avatars";
 import {
   BookOpenText,
@@ -13,8 +14,9 @@ import {
   SidebarClose,
   Sun,
   Menu,
+  ListCheck,
 } from "lucide-react";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 function Navigation({
   activePage,
@@ -24,9 +26,22 @@ function Navigation({
   isDark,
   setIsDark,
 }) {
-  const [isOpen, setIsOpen] = useState(true); 
-  const [mobileOpen, setMobileOpen] = useState(false); 
+  const [isOpen, setIsOpen] = useState(true);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const user = useAuthStore((state) => state.user);
+
+  const polls = usePollStore((s) => s.polls);
+  const fetchPolls = usePollStore((s) => s.fetchPolls);
+  const [votedPolls, setVotedPolls] = useState(() => {
+    const stored = localStorage.getItem("votedPolls");
+    return stored ? JSON.parse(stored) : [];
+  });
+
+  useEffect(() => {
+    fetchPolls();
+  }, [fetchPolls]);
+
+  const hasUnvotedPolls = polls.some((poll) => !votedPolls.includes(poll.id));
 
   return (
     <>
@@ -40,13 +55,13 @@ function Navigation({
             <div>
               <div className="flex justify-between items-center w-full">
                 <Link to={"/"}>
-<img
-                  src={isDark ? LogoDark : LogoLight}
-                  alt="Vector logo"
-                  className="w-30"
-                />
+                  <img
+                    src={isDark ? LogoDark : LogoLight}
+                    alt="Vector logo"
+                    className="w-30"
+                  />
                 </Link>
-                
+
                 <SidebarClose
                   size={20}
                   className="hover:text-primaryBlue transition-all duration-200 cursor-pointer dark:hover:text-primaryGreen"
@@ -95,6 +110,22 @@ function Navigation({
                 >
                   <BookText size={20} />
                   Blogi
+                </span>
+                <span
+                  onClick={() => setActivePage("forms")}
+                  className={`relative cursor-pointer flex items-center gap-2 transition-discrete duration-200 ${
+                    activePage === "forms" &&
+                    "border-l-6 px-2 border-secondaryBlue text-secondaryBlue dark:border-primaryGreen dark:text-primaryGreen"
+                  }`}
+                >
+                  <ListCheck size={20} />
+                  Ankiety
+                  {hasUnvotedPolls && (
+                    <>
+                      <span className="absolute right-[50%] top-0 w-2 h-2 rounded-full bg-primaryGreen animate-ping"></span>
+                      <span className="absolute right-[50%] top-0 w-2 h-2 rounded-full bg-primaryGreen"></span>
+                    </>
+                  )}
                 </span>
               </div>
             </div>
@@ -195,6 +226,21 @@ function Navigation({
                 >
                   <BookText size={22} />
                 </span>
+                <span
+                  onClick={() => setActivePage("forms")}
+                  className={`relative cursor-pointer ${
+                    activePage === "forms" &&
+                    "text-secondaryBlue dark:text-primaryGreen"
+                  }`}
+                >
+                  <ListCheck size={22} />
+                  {hasUnvotedPolls && (
+                    <>
+                      <span className="absolute left-[78%] top-0 w-2 h-2 rounded-full bg-primaryGreen animate-ping"></span>
+                      <span className="absolute left-[78%] top-0 w-2 h-2 rounded-full bg-primaryGreen"></span>
+                    </>
+                  )}
+                </span>
               </div>
             </div>
             <div>
@@ -268,8 +314,7 @@ function Navigation({
         >
           <div className="flex justify-between items-center p-4 border-b border-gray-300 dark:border-gray-700">
             <Link to={"/"}>
-            <img src={isDark ? LogoDark : LogoLight} alt="Logo" className="h-8" />
-            
+              <img src={isDark ? LogoDark : LogoLight} alt="Logo" className="h-8" />
             </Link>
             <SidebarClose
               size={24}
@@ -326,6 +371,24 @@ function Navigation({
               }`}
             >
               <BookText size={20} /> Blogi
+            </span>
+            <span
+              onClick={() => {
+                setActivePage("forms");
+                setMobileOpen(false);
+              }}
+              className={`relative cursor-pointer flex items-center gap-2 ${
+                activePage === "forms" &&
+                "text-secondaryBlue dark:text-primaryGreen"
+              }`}
+            >
+              <ListCheck size={20} /> Ankiety
+              {hasUnvotedPolls && (
+                <>
+                  <span className="absolute left-[37%] top-0 w-2 h-2 rounded-full bg-primaryGreen animate-ping"></span>
+                  <span className="absolute left-[37%] top-0 w-2 h-2 rounded-full bg-primaryGreen"></span>
+                </>
+              )}
             </span>
           </div>
 
