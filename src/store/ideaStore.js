@@ -14,7 +14,7 @@ export const useIdeaStore = create((set) => ({
     const {error} = await supabase.from("ideas").insert({
         user_id : userId,
         user_email : email,
-        type : type,
+        type : type == null ? "Inne" : type,
         description : description,
         name : name
     })

@@ -239,7 +239,7 @@ function FormPage({ isDark, setIsDark }) {
                 {ideas.map((idea, index) => (
                   <li
                     key={index}
-                    className="bg-white shadow-md rounded-[12px] p-4"
+                    className="bg-white dark:bg-DarkblackBorder shadow-md rounded-[12px] p-4"
                   >
                     <span
                       className={`${
@@ -257,7 +257,7 @@ function FormPage({ isDark, setIsDark }) {
                     </span>
                     <p className="text-md opacity-75 mt-2">{idea.user_email}</p>
                     <p className="text-lg font-semibold mt-2">{idea.name}</p>
-                    <p className="bg-gray-100 p-2 text-blackText/75 mt-1">
+                    <p className="bg-gray-100 dark:bg-blackText/50 dark:text-white/75 p-2 text-blackText/75 mt-1">
                       {idea.description}
                     </p>
                   </li>

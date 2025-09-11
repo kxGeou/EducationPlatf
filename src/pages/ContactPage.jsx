@@ -56,7 +56,9 @@ function CustomSelect({ value, onChange, options, placeholder = "-- Wybierz tema
         }
         onClick={() => setOpen((o) => !o)}
       >
-        <span className={selected ? "" : "text-gray-400 dark:text-gray-500"}>{selected ? selected.label : placeholder}</span>
+        <span className={selected ? "" : "text-gray-400 dark:text-gray-500"}>
+          {selected ? selected.label : placeholder}
+        </span>
         <ChevronDown size={18} className={`transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
 
@@ -64,7 +66,7 @@ function CustomSelect({ value, onChange, options, placeholder = "-- Wybierz tema
         <ul
           role="listbox"
           tabIndex={-1}
-          className="absolute z-50 mt-2 w-full max-h-60 overflow-auto rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-xl focus:outline-none"
+          className="absolute z-50 mt-2 w-full max-h-60 overflow-auto rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-DarkblackBorder shadow-xl focus:outline-none"
         >
           {options.map((opt, idx) => {
             const isSelected = opt.value === value;
@@ -75,8 +77,8 @@ function CustomSelect({ value, onChange, options, placeholder = "-- Wybierz tema
                 role="option"
                 aria-selected={isSelected}
                 className={`px-4 py-3 cursor-pointer flex items-center justify-between transition ${
-                  isHighlighted ? "bg-indigo-50 dark:bg-indigo-900/40" : ""
-                } ${isSelected ? "font-semibold" : ""} hover:bg-indigo-50 dark:hover:bg-indigo-900/30`}
+                  isHighlighted ? "bg-indigo-50 dark:bg-primaryBlue" : ""
+                } ${isSelected ? "font-semibold" : ""} hover:bg-indigo-50 dark:hover:bg-DarkblackText`}
                 onMouseEnter={() => setHighlight(idx)}
                 onClick={() => {
                   onChange(opt.value);
@@ -95,13 +97,40 @@ function CustomSelect({ value, onChange, options, placeholder = "-- Wybierz tema
 }
 
 function Calendly() {
+  const calendlyRef = useRef(null);
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setLoaded(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: "100px" }
+    );
+    if (calendlyRef.current) observer.observe(calendlyRef.current);
+    return () => observer.disconnect();
+  }, []);
+
   return (
-    <div className="w-full rounded-xl overflow-hidden shadow-lg">
-      <div
-        className="calendly-inline-widget w-full h-[700px]"
-        data-url="https://calendly.com/educationplatform-supabase/30min?text_color=0a2540&primary_color=00498a"
-      ></div>
-      <script type="text/javascript" src="https://assets.calendly.com/assets/external/widget.js" async></script>
+    <div
+      ref={calendlyRef}
+      className="w-full rounded-[12px] overflow-hidden shadow-lg min-h-[400px] flex items-center justify-center bg-gray-100 dark:bg-DarkblackBorder mt-12"
+    >
+      {loaded ? (
+        <iframe
+          src="https://calendly.com/educationplatform-supabase/30min?text_color=0a2540&primary_color=00498a"
+          className="w-full h-[1000px] border-0"
+          loading="lazy"
+          title="Calendly"
+        />
+      ) : (
+        <span className="text-gray-500 dark:text-gray-300 animate-pulse">
+          Ładowanie kalendarza...
+        </span>
+      )}
     </div>
   );
 }
@@ -109,7 +138,6 @@ function Calendly() {
 function ContactPage({ isDark, setIsDark }) {
   const [formData, setFormData] = useState({ email: "", name: "", phone: "", topic: "", message: "" });
   const [loading, setLoading] = useState(false);
-  const [mode, setMode] = useState("message");
 
   const topics = [
     { label: "Matura z informatyki", value: "Matura z informatyki" },
@@ -170,49 +198,82 @@ function ContactPage({ isDark, setIsDark }) {
   };
 
   return (
-    <div data-theme={isDark ? "dark" : "light"} className="w-full min-h-screen bg-gray-100 dark:bg-blackText flex flex-col items-center">
+    <div
+      data-theme={isDark ? "dark" : "light"}
+      className="w-full min-h-screen bg-gray-100 dark:bg-blackText flex flex-col items-center"
+    >
       <Header isDark={isDark} setIsDark={setIsDark} />
       <div className="w-full max-w-[1100px] px-4 mt-8">
         <ContactHero />
 
-        <div className="w-full bg-white dark:bg-DarkblackBorder rounded-2xl shadow-xl p-8 mt-12">
-          <h2 className="text-3xl font-bold text-center mb-8 dark:text-white">Skontaktuj się z nami</h2>
+        <Calendly />
 
-          <div className="flex justify-center gap-6 mb-8">
-            {["message", "calendar"].map((m) => (
+        <div className="w-full bg-white dark:bg-DarkblackBorder rounded-2xl shadow-xl p-8 mt-24">
+          <h2 className="text-3xl font-bold text-center mb-8 dark:text-white">
+            Skontaktuj się z nami
+          </h2>
+
+          <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <input
+              type="email"
+              name="email"
+              placeholder="Twój email..."
+              value={formData.email}
+              onChange={handleChange}
+              required
+              className="p-4 rounded-xl border border-gray-300 dark:border-gray-700 dark:bg-DarkblackText dark:text-white focus:outline-none focus:ring-2 focus:ring-primaryBlue shadow-sm transition"
+            />
+            <input
+              type="text"
+              name="name"
+              placeholder="Imię i nazwisko..."
+              value={formData.name}
+              onChange={handleChange}
+              required
+              className="p-4 rounded-xl border border-gray-300 dark:border-gray-700 dark:bg-DarkblackText dark:text-white focus:outline-none focus:ring-2 focus:ring-primaryBlue shadow-sm transition"
+            />
+            <input
+              type="tel"
+              name="phone"
+              placeholder="Numer telefonu (opcjonalnie)"
+              value={formData.phone}
+              onChange={handleChange}
+              className="p-4 rounded-xl border border-gray-300 dark:border-gray-700 dark:bg-DarkblackText dark:text-white focus:outline-none focus:ring-2 focus:ring-primaryBlue shadow-sm transition"
+            />
+            <CustomSelect
+              value={formData.topic}
+              onChange={(v) => setFormData((p) => ({ ...p, topic: v }))}
+              options={topics}
+              placeholder="-- Wybierz temat --"
+            />
+
+            <textarea
+              name="message"
+              placeholder="Treść wiadomości..."
+              value={formData.message}
+              onChange={handleChange}
+              required
+              rows="5"
+              className="p-4 col-span-1 md:col-span-2 rounded-xl border border-gray-300 dark:border-gray-700 dark:bg-DarkblackText dark:text-white focus:outline-none focus:ring-2 focus:ring-primaryBlue shadow-sm transition"
+            />
+
+            <div className="col-span-1 md:col-span-2 flex flex-col md:flex-row gap-4 mt-4">
               <button
-                key={m}
-                onClick={() => setMode(m)}
-                className={`px-6 py-3 rounded-xl font-semibold transition ${
-                  mode === m ? "bg-primaryBlue dark:bg-primaryGreen text-white shadow-lg" : "bg-gray-200 dark:bg-gray-500 text-gray-700 dark:text-gray-300"
-                } hover:scale-105`}
+                type="submit"
+                className="bg-primaryBlue dark:bg-primaryGreen w-full md:w-auto flex-1 text-white font-semibold py-4 px-6 rounded-xl transition shadow-lg flex items-center justify-center gap-2"
               >
-                {m === "message" ? "Formularz" : "Kalendarz"}
+                {loading ? <LoaderCircle size={20} className="animate-spin" /> : "Wyślij formularz"}
               </button>
-            ))}
-          </div>
-
-          {mode === "message" && (
-            <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <input type="email" name="email" placeholder="Twój email..." value={formData.email} onChange={handleChange} required className="p-4 rounded-xl border border-gray-300 dark:border-gray-700 dark:bg-DarkblackText dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm transition" />
-              <input type="text" name="name" placeholder="Imię i nazwisko..." value={formData.name} onChange={handleChange} required className="p-4 rounded-xl border border-gray-300 dark:border-gray-700 dark:bg-DarkblackText dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm transition" />
-              <input type="tel" name="phone" placeholder="Numer telefonu (opcjonalnie)" value={formData.phone} onChange={handleChange} className="p-4 rounded-xl border border-gray-300 dark:border-gray-700 dark:bg-DarkblackText dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm transition" />
-              <CustomSelect value={formData.topic} onChange={(v) => setFormData((p) => ({ ...p, topic: v }))} options={topics} placeholder="-- Wybierz temat --" />
-
-              <textarea name="message" placeholder="Treść wiadomości..." value={formData.message} onChange={handleChange} required rows="5" className="p-4 col-span-1 md:col-span-2 rounded-xl border border-gray-300 dark:border-gray-700 dark:bg-DarkblackText dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm transition" />
-
-              <div className="col-span-1 md:col-span-2 flex flex-col md:flex-row gap-4 mt-4">
-                <button type="submit" className="bg-primaryBlue dark:bg-primaryGreen w-full md:w-auto flex-1 text-white font-semibold py-4 px-6 rounded-xl transition shadow-lg flex items-center justify-center gap-2">
-                  {loading ? <LoaderCircle size={20} className="animate-spin" /> : "Wyślij formularz"}
-                </button>
-                <a href="https://mail.google.com/mail/?view=cm&fs=1&to=educationplatform.supabase@gmail.com" target="_blank" rel="noopener noreferrer" className="flex gap-2 items-center justify-center w-full md:w-auto px-6 py-4 font-semibold rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 shadow hover:scale-105 transition">
-                  <img src={Gmail} className="h-5" alt="Gmail" /> Wyślij przez Gmail
-                </a>
-              </div>
-            </form>
-          )}
-
-          {mode === "calendar" && <Calendly />}
+              <a
+                href="https://mail.google.com/mail/?view=cm&fs=1&to=educationplatform.supabase@gmail.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex gap-2 items-center justify-center w-full md:w-auto px-6 py-4 font-semibold rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 shadow hover:scale-105 transition"
+              >
+                <img src={Gmail} className="h-5" alt="Gmail" /> Wyślij przez Gmail
+              </a>
+            </div>
+          </form>
         </div>
       </div>
       <Footer />

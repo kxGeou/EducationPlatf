@@ -56,9 +56,9 @@ function IdeaPanel() {
             >
           <p>{!type ? "Kategoria pomysłu" : type}</p>
           {showOption && (
-            <div className="flex flex-col gap-2 absolute top-12 bg-white shadow-md border border-gray-200 left-0 rounded-[8px]  w-full">
+            <div className="flex flex-col gap-2 absolute top-12 bg-white dark:bg-DarkblackText  shadow-md border border-gray-200 dark:border-DarkblackBorder left-0 rounded-[8px]  w-full">
               {options.map((option, index) => (
-                <span className="px-2 py-2 hover:bg-gray-100" onClick={() => setType(option)} key={index}>
+                <span className="px-2 py-2 hover:bg-gray-100 dark:hover:bg-DarkblackBorder cursor-pointer" onClick={() => setType(option)} key={index}>
                   {option}
                 </span>
               ))}
