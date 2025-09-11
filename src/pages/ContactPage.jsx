@@ -51,7 +51,7 @@ function CustomSelect({ value, onChange, options, placeholder = "-- Wybierz tema
         aria-haspopup="listbox"
         aria-expanded={open}
         className={
-          "w-full text-left p-4 rounded-xl border border-gray-300 dark:border-gray-700 dark:bg-DarkblackText dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 flex items-center justify-between transition shadow-sm hover:shadow-md " +
+          "w-full text-left p-4 rounded-xl border border-gray-300 dark:border-gray-700 dark:bg-DarkblackText dark:text-white focus:outline-none focus:ring-2 focus:ring-primaryBlue flex items-center justify-between transition shadow-sm hover:shadow-md " +
           className
         }
         onClick={() => setOpen((o) => !o)}
@@ -170,7 +170,7 @@ function ContactPage({ isDark, setIsDark }) {
   };
 
   return (
-    <div data-theme={isDark ? "dark" : "light"} className="w-full min-h-screen bg-gradient-to-br from-indigo-50 to-gray-100 dark:from-indigo-900 dark:to-blackText flex flex-col items-center">
+    <div data-theme={isDark ? "dark" : "light"} className="w-full min-h-screen bg-gray-100 dark:bg-blackText flex flex-col items-center">
       <Header isDark={isDark} setIsDark={setIsDark} />
       <div className="w-full max-w-[1100px] px-4 mt-8">
         <ContactHero />
@@ -178,14 +178,13 @@ function ContactPage({ isDark, setIsDark }) {
         <div className="w-full bg-white dark:bg-DarkblackBorder rounded-2xl shadow-xl p-8 mt-12">
           <h2 className="text-3xl font-bold text-center mb-8 dark:text-white">Skontaktuj się z nami</h2>
 
-          {/* Tryb formularza / kalendarza */}
           <div className="flex justify-center gap-6 mb-8">
             {["message", "calendar"].map((m) => (
               <button
                 key={m}
                 onClick={() => setMode(m)}
                 className={`px-6 py-3 rounded-xl font-semibold transition ${
-                  mode === m ? "bg-indigo-500 text-white shadow-lg" : "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
+                  mode === m ? "bg-primaryBlue dark:bg-primaryGreen text-white shadow-lg" : "bg-gray-200 dark:bg-gray-500 text-gray-700 dark:text-gray-300"
                 } hover:scale-105`}
               >
                 {m === "message" ? "Formularz" : "Kalendarz"}
@@ -203,7 +202,7 @@ function ContactPage({ isDark, setIsDark }) {
               <textarea name="message" placeholder="Treść wiadomości..." value={formData.message} onChange={handleChange} required rows="5" className="p-4 col-span-1 md:col-span-2 rounded-xl border border-gray-300 dark:border-gray-700 dark:bg-DarkblackText dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm transition" />
 
               <div className="col-span-1 md:col-span-2 flex flex-col md:flex-row gap-4 mt-4">
-                <button type="submit" className="bg-indigo-500 w-full md:w-auto flex-1 text-white font-semibold py-4 px-6 rounded-xl transition hover:bg-indigo-600 shadow-lg flex items-center justify-center gap-2">
+                <button type="submit" className="bg-primaryBlue dark:bg-primaryGreen w-full md:w-auto flex-1 text-white font-semibold py-4 px-6 rounded-xl transition shadow-lg flex items-center justify-center gap-2">
                   {loading ? <LoaderCircle size={20} className="animate-spin" /> : "Wyślij formularz"}
                 </button>
                 <a href="https://mail.google.com/mail/?view=cm&fs=1&to=educationplatform.supabase@gmail.com" target="_blank" rel="noopener noreferrer" className="flex gap-2 items-center justify-center w-full md:w-auto px-6 py-4 font-semibold rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 shadow hover:scale-105 transition">
