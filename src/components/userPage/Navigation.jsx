@@ -15,6 +15,7 @@ import {
   Sun,
   Menu,
   ListCheck,
+  PenBoxIcon,
 } from "lucide-react";
 import React, { useState, useEffect } from "react";
 
@@ -126,6 +127,17 @@ function Navigation({
                       <span className="absolute right-[50%] top-0 w-2 h-2 rounded-full bg-primaryGreen"></span>
                     </>
                   )}
+                </span>
+                <span
+                  onClick={() => setActivePage("ideas")}
+                  className={`relative cursor-pointer flex items-center gap-2 transition-discrete duration-200 ${
+                    activePage === "ideas" &&
+                    "border-l-6 px-2 border-secondaryBlue text-secondaryBlue dark:border-primaryGreen dark:text-primaryGreen"
+                  }`}
+                >
+                  <PenBoxIcon size={20} />
+                  Pomysły
+                
                 </span>
               </div>
             </div>
@@ -240,6 +252,15 @@ function Navigation({
                       <span className="absolute left-[78%] top-0 w-2 h-2 rounded-full bg-primaryGreen"></span>
                     </>
                   )}
+                </span>
+                <span
+                  onClick={() => setActivePage("ideas")}
+                  className={`relative cursor-pointer ${
+                    activePage === "ideas" &&
+                    "text-secondaryBlue dark:text-primaryGreen"
+                  }`}
+                >
+                  <PenBoxIcon size={22} />
                 </span>
               </div>
             </div>
@@ -389,6 +410,19 @@ function Navigation({
                   <span className="absolute left-[37%] top-0 w-2 h-2 rounded-full bg-primaryGreen"></span>
                 </>
               )}
+            </span>
+            <span
+              onClick={() => {
+                setActivePage("ideas");
+                setMobileOpen(false);
+              }}
+              className={`relative cursor-pointer flex items-center gap-2 ${
+                activePage === "ideas" &&
+                "text-secondaryBlue dark:text-primaryGreen"
+              }`}
+            >
+              <PenBoxIcon size={20} /> Pomysły
+              
             </span>
           </div>
 

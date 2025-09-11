@@ -8,6 +8,7 @@ import { memo, useMemo, useEffect, useCallback, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import BlogPanel from "./BlogPanel";
 import FormUserPage from "./FormUserPage";
+import IdeaPanel from "./IdeaPanel";
 
 const videoResources = [
   {
@@ -268,6 +269,10 @@ function CourseList({ activePage, setTutorialVisible, tutorialVisible }) {
 
               {/* ANKIETY */}
               {activePage === "forms" && <FormUserPage></FormUserPage>}
+
+              {/* POMYSŁY  */}
+
+              {activePage === "ideas" && <IdeaPanel></IdeaPanel>}
             </div>
         </div>
       </div>
