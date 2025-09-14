@@ -3,6 +3,7 @@ import Footer from "../components/homepage/Footer";
 import Header from "../components/homepage/Header";
 import ExamSettings from "../components/questions/ExamSettings";
 import QuestionCard from "../components/questions/QuestionCard";
+import RandomQuestionCard from "../components/questions/RandomQuestionCard";
 import ResultView from "../components/questions/ResultView";
 import { useExamStore } from "../store/examStore";
 import { useEffect, useRef, useState } from "react";
@@ -13,6 +14,7 @@ export default function ExamPage({ isDark, setIsDark }) {
   const pool = useExamStore((s) => s.questionPool);
   const result = useExamStore((s) => s.result);
   const remaining = useExamStore((s) => s.remainingSeconds);
+  const randomQuestionMode = useExamStore((s) => s.randomQuestionMode);
   const timerRef = useRef(null);
   const [showStickyTimer, setShowStickyTimer] = useState(false);
 
@@ -66,8 +68,10 @@ export default function ExamPage({ isDark, setIsDark }) {
            <img src={Biurko} className="w-[30rem]" />
           </div>
         </div>
-        {!pool.length && !result ? (
+        {!pool.length && !result && !randomQuestionMode ? (
           <ExamSettings />
+        ) : randomQuestionMode ? (
+          <RandomQuestionCard isDark={isDark} />
         ) : !result ? (
           <>
             <div ref={timerRef} className="mb-12 text-xl py-3 rounded-[12px] text-center sticky dark:bg-primaryGreen text-white font-bold bg-primaryBlue flex items-center justify-center gap-3 ">

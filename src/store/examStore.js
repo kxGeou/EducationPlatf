@@ -8,6 +8,12 @@ export const useExamStore = create((set, get) => ({
   examId: null,
   result: null,
   loading: false,
+  // Random question mode
+  randomQuestionMode: false,
+  currentRandomQuestion: null,
+  randomQuestionAnswer: null,
+  randomQuestionCorrect: null,
+  currentSubjectId: null,
 
   fetchSubjects: async () => {
     const { data, error } = await supabase.from("subjects").select("*");
@@ -86,5 +92,67 @@ export const useExamStore = create((set, get) => ({
       .eq("id", examId);
 
     set({ result: { correctCount, total: questionPool.length, score } });
+  },
+
+  // Random question methods
+  startRandomQuestionMode: async (subjectId) => {
+    set({ loading: true, randomQuestionMode: true });
+
+    const { data: questions } = await supabase
+      .from("questions")
+      .select("id,prompt,choices(id,label,text,is_correct)")
+      .eq("subject_id", subjectId);
+
+    if (!questions || questions.length === 0) { 
+      set({ loading: false, randomQuestionMode: false }); 
+      return; 
+    }
+
+    const randomQuestion = questions[Math.floor(Math.random() * questions.length)];
+    
+    set({ 
+      currentRandomQuestion: randomQuestion, 
+      randomQuestionAnswer: null,
+      randomQuestionCorrect: null,
+      currentSubjectId: subjectId,
+      loading: false 
+    });
+  },
+
+  answerRandomQuestion: (choice) => {
+    set((s) => ({
+      randomQuestionAnswer: choice,
+      randomQuestionCorrect: choice.is_correct,
+    }));
+  },
+
+  getNewRandomQuestion: async () => {
+    const { currentSubjectId } = get();
+    if (!currentSubjectId) return;
+
+    const { data: questions } = await supabase
+      .from("questions")
+      .select("id,prompt,choices(id,label,text,is_correct)")
+      .eq("subject_id", currentSubjectId);
+
+    if (!questions || questions.length === 0) return;
+
+    const randomQuestion = questions[Math.floor(Math.random() * questions.length)];
+    
+    set({ 
+      currentRandomQuestion: randomQuestion, 
+      randomQuestionAnswer: null,
+      randomQuestionCorrect: null,
+    });
+  },
+
+  exitRandomQuestionMode: () => {
+    set({ 
+      randomQuestionMode: false,
+      currentRandomQuestion: null,
+      randomQuestionAnswer: null,
+      randomQuestionCorrect: null,
+      currentSubjectId: null,
+    });
   },
 }));

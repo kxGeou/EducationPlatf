@@ -6,6 +6,7 @@ export default function ExamSettings() {
   const [subject, setSubject] = useState("");
   const [numQ, setNumQ] = useState(10);
   const startExam = useExamStore((s) => s.startExam);
+  const startRandomQuestionMode = useExamStore((s) => s.startRandomQuestionMode);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
 
@@ -70,7 +71,15 @@ export default function ExamSettings() {
         onClick={() => startExam({ subjectId: subject, numQuestions: numQ })}
         disabled={!subject}
       >
-        Start
+        Start Full Exam
+      </button>
+      
+      <button
+        className="mt-3 px-4 py-3 bg-primaryBlue dark:bg-primaryGreen dark:hover:bg-secondaryGreen w-full rounded-[12px] hover:-translate-y-1 duration-300 hover:shadow-md hover:bg-secondaryBlue transition-all cursor-pointer text-white "
+        onClick={() => startRandomQuestionMode(subject)}
+        disabled={!subject}
+      >
+         Losowe Pytanie
       </button>
     </div>
   );
