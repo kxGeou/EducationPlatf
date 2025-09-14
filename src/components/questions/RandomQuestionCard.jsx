@@ -18,11 +18,11 @@ export default function RandomQuestionCard({ isDark }) {
     }
     
     if (choice.is_correct) {
-      return "text-white bg-green-500 dark:bg-green-600";
+      return "text-white bg-primaryGreen dark:bg-primaryGreen";
     }
     
     if (randomQuestionAnswer.id === choice.id && !choice.is_correct) {
-      return "text-white bg-red-500 dark:bg-red-600";
+      return "text-white bg-red-500 dark:bg-red-500";
     }
     
     return "border-gray-200 bg-white dark:bg-DarkblackBorder dark:text-white opacity-50";
@@ -41,7 +41,7 @@ export default function RandomQuestionCard({ isDark }) {
         </h2>
         <button
           onClick={exitRandomQuestionMode}
-          className="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-[12px] transition-colors duration-200"
+          className="px-4 py-2 bg-primaryBlue dark:bg-primaryGreen hover:bg-secondaryBlue dark:hover:bg-secondaryGreen cursor-pointer text-white rounded-[12px] transition-colors duration-200"
         >
           Wyjdź z trybu losowego
         </button>
@@ -72,9 +72,9 @@ export default function RandomQuestionCard({ isDark }) {
 
       {randomQuestionAnswer && (
         <div className="mt-6 p-4 rounded-[12px] bg-white dark:bg-DarkblackBorder shadow">
-          <div className={`text-center mb-4 ${randomQuestionCorrect ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+          <div className={`text-center mb-4 ${randomQuestionCorrect ? 'text-primaryGreen dark:text-primaryGreen' : 'text-red-500 dark:text-red-500'}`}>
             <h4 className="text-xl font-bold mb-2">
-              {randomQuestionCorrect ? '✅ Poprawnie!' : '❌ Niepoprawnie'}
+              {randomQuestionCorrect ? 'Poprawnie!' : 'Niepoprawnie'}
             </h4>
             <p className="text-sm opacity-75">
               {randomQuestionCorrect 
@@ -83,18 +83,18 @@ export default function RandomQuestionCard({ isDark }) {
             </p>
           </div>
           
-          <div className="flex gap-3 justify-center">
+          <div className="grid grid-cols-2 mt-8 gap-3 justify-center">
             <button
               onClick={() => getNewRandomQuestion()}
-              className="px-6 py-3 bg-primaryBlue dark:bg-primaryGreen hover:bg-secondaryBlue dark:hover:bg-secondaryGreen text-white rounded-[12px] transition-colors duration-200 font-medium"
+              className="md:px-6 py-3 bg-primaryBlue dark:bg-primaryGreen hover:bg-secondaryBlue dark:hover:bg-secondaryGreen text-white rounded-[12px] transition-colors duration-200 font-medium cursor-pointer"
             >
               Nowe Pytanie
             </button>
             <button
               onClick={exitRandomQuestionMode}
-              className="px-6 py-3 bg-gray-500 hover:bg-gray-600 text-white rounded-[12px] transition-colors duration-200 font-medium"
+              className="cursor-pointer md:px-6 py-3 bg-DarkblackBorder dark:bg-DarkblackText text-white rounded-[12px] transition-colors duration-200 font-medium"
             >
-              Powrót do ustawień egzaminu
+              Powrót
             </button>
           </div>
         </div>

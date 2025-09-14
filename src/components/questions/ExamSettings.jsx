@@ -71,7 +71,7 @@ export default function ExamSettings() {
         onClick={() => startExam({ subjectId: subject, numQuestions: numQ })}
         disabled={!subject}
       >
-        Start Full Exam
+        Zacznij test
       </button>
       
       <button
