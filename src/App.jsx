@@ -4,7 +4,7 @@ import Home from './pages/Home.jsx'
 import MyCourses from './pages/MyCourses.jsx'
 import AuthPage from './pages/AuthPage.jsx'
 import CoursePage from './pages/CoursePage.jsx'
-  import { ToastContainer } from 'react-toastify';
+import { ToastContainer } from 'react-toastify';
 import CourseLandingPage from './pages/CourseLandingPage.jsx'
 import Loading from './components/systemLayouts/Loading.jsx'
 import Error from './components/systemLayouts/Error.jsx'
@@ -21,6 +21,7 @@ import ContactPage from './pages/ContactPage.jsx'
 import ReportPage from './pages/ReportPage.jsx'
 import Regulations from './pages/Regulations.jsx'
 import FormPage from './pages/FormPage.jsx'
+import ExamPage from './pages/ExamPage.jsx'
 export default function App() {
   const init = useAuthStore(state => state.init)
   const loading = useAuthStore(state => state.loading)
@@ -60,6 +61,7 @@ export default function App() {
         <Route path='/zasoby' element={<TestResources isDark={isDark} setIsDark={setIsDark}/>} />
         <Route path='/reports' element={<ReportPage isDark={isDark}></ReportPage>}></Route>
         <Route path='/formPage' element={<FormPage isDark={isDark} setIsDark={setIsDark}></FormPage>}></Route>
+        <Route path='/exam' element={<ExamPage isDark={isDark} setIsDark={setIsDark}></ExamPage>}></Route>
         <Route path='/*' element={<WrongPage isDark={isDark} setIsDark={setIsDark} />} />
       </Routes>
     </>

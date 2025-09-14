@@ -90,11 +90,19 @@ function Header({ setIsDark, isDark }) {
                 </AnimatePresence>
               </li>
 
+
+<li>
+                <Link to="/exam" className="hover:text-gray-300">
+                  Egzaminy
+                </Link>
+              </li>
               <li>
+                
                 <Link to="/contact" className="hover:text-gray-300">
                   Kontakt
                 </Link>
               </li>
+              
               <li>
                 <Link to="/blog" className="hover:text-gray-300">
                   Blog
@@ -201,6 +209,11 @@ function Header({ setIsDark, isDark }) {
                     )}
                   </ul>
                 )}
+                <li>
+                <Link to="/exam" className="hover:text-gray-300">
+                  Egzaminy
+                </Link>
+              </li>
                 <li>
                   <Link to="/contact" className="hover:text-gray-300" onClick={() => setVisibleModal(false)}>
                     Kontakt 
