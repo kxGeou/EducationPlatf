@@ -1,5 +1,6 @@
 import MobileLogo from "../../assets/logoMobile.svg";
 import DesktopLogo from "../../assets/logoDesk.png";
+import WhiteLogo from "../../assets/logo_biale.svg";
 import UserPanel from "./UserPanel";
 import {
   ChartColumnBig,
@@ -12,6 +13,7 @@ import {
   Undo2,
   Menu,
   X,
+  Notebook,
 } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -128,7 +130,12 @@ export default function CourseSidebar({
           <nav className="flex flex-col items-center justify-center gap-2">
             <div className="flex justify-between items-center w-full">
               <img
-                src={showSidebar ? DesktopLogo : MobileLogo}
+                src={
+                  isDark
+                    ? (showSidebar ? WhiteLogo : MobileLogo)
+                    : (showSidebar ? DesktopLogo : MobileLogo)
+                }
+
                 className={` ${showSidebar ? "mb-0 w-30" : "mb-2 w-9"} transition-all duration-300`}
               />
               {showSidebar && (

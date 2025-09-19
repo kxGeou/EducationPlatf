@@ -1,18 +1,52 @@
-import { X, Mail, BookOpen, LogOut, ShieldCheck } from 'lucide-react'
-import React from 'react'
+import { X, Mail, BookOpen, LogOut, ShieldCheck, Key, Eye, EyeOff } from 'lucide-react'
+import React, { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Avatar from 'boring-avatars'
 import { useAuthStore } from '../../store/authStore'
 import { useCourseStore } from '../../store/courseStore'
+import { toast } from 'react-toastify'
+import supabase from '../../util/supabaseClient'
 
 function UserData({ userDataModal, setUserDataModal }) {
   const user = useAuthStore(state => state.user)
   const logout = useAuthStore(state => state.logout)
+  const resetPassword = useAuthStore(state => state.resetPassword)
+  const loading = useAuthStore(state => state.loading)
 
   const courses = useCourseStore(state => state.courses)
   const coursesLoading = useCourseStore(state => state.loading)
   const error = useCourseStore(state => state.error)
-console.log(courses)
+
+  const [showPasswordReset, setShowPasswordReset] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
+  const [password, setPassword] = useState('')
+
+  const handlePasswordReset = async () => {
+    if (!password) {
+      toast.error('Wprowadź nowe hasło')
+      return
+    }
+    
+    if (password.length < 6) {
+      toast.error('Hasło musi mieć co najmniej 6 znaków')
+      return
+    }
+
+    try {
+      const { error } = await supabase.auth.updateUser({ password })
+      
+      if (error) {
+        toast.error('Błąd zmiany hasła: ' + error.message)
+        return
+      }
+      
+      toast.success('Hasło zostało zmienione pomyślnie!')
+      setPassword('')
+      setShowPasswordReset(false)
+    } catch (err) {
+      toast.error('Wystąpił błąd podczas zmiany hasła')
+    }
+  }
   return (
     <AnimatePresence>
       {userDataModal && (
@@ -95,7 +129,71 @@ console.log(courses)
               </div>
             </div>
 
-            <div className="pt-6 border-t border-blackText/25  flex justify-end">
+            {/* Password Reset Section */}
+            <div className="pt-4 border-t border-blackText/25">
+              <div className="flex items-center justify-between mb-3">
+                <span className="flex items-center gap-2 text-sm text-gray-600 dark:text-white">
+                  <Key size={16} />
+                  Bezpieczeństwo:
+                </span>
+                <button
+                  onClick={() => setShowPasswordReset(!showPasswordReset)}
+                  className="text-xs text-primaryBlue dark:text-primaryGreen hover:underline"
+                >
+                  {showPasswordReset ? 'Anuluj' : 'Zmień hasło'}
+                </button>
+              </div>
+
+              {showPasswordReset && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="flex flex-col gap-3"
+                >
+                  <div className="relative">
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="Wprowadź nowe hasło"
+                      className="w-full p-2 pr-10 border border-gray-300 dark:border-DarkblackBorder dark:bg-DarkblackBorder/50 rounded bg-gray-50 sm:bg-transparent text-sm"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                    >
+                      {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    Hasło musi mieć co najmniej 6 znaków
+                  </p>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={handlePasswordReset}
+                      disabled={loading || password.length < 6}
+                      className="flex-1 bg-primaryBlue dark:bg-primaryGreen dark:hover:bg-secondaryGreen text-white px-3 py-2 rounded text-sm transition disabled:opacity-50 disabled:cursor-not-allowed hover:bg-secondaryBlue"
+                    >
+                      {loading ? 'Zapisywanie...' : 'Zapisz hasło'}
+                    </button>
+                    <button
+                      onClick={() => {
+                        setShowPasswordReset(false)
+                        setPassword('')
+                        setShowPassword(false)
+                      }}
+                      className="px-3 py-2 border border-gray-300 dark:border-DarkblackBorder rounded text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-DarkblackBorder/50 transition"
+                    >
+                      Anuluj
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </div>
+
+            <div className="pt-6 border-t border-blackText/25 flex justify-end">
               <button
                 onClick={() => {
                   logout()

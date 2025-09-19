@@ -1,6 +1,5 @@
 import ContactHero from "../components/contact/ContactHero";
-import Footer from "../components/homepage/Footer";
-import Header from "../components/homepage/Header";
+import PageLayout from "../components/systemLayouts/PageLayout";
 import { LoaderCircle, ChevronDown, Check } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 import { toast } from "react-toastify";
@@ -198,22 +197,20 @@ function ContactPage({ isDark, setIsDark }) {
   };
 
   return (
-    <div
-      data-theme={isDark ? "dark" : "light"}
-      className="w-full min-h-screen bg-gray-100 dark:bg-blackText flex flex-col items-center"
-    >
-      <Header isDark={isDark} setIsDark={setIsDark} />
-      <div className="w-full max-w-[1100px] px-4 mt-8">
+    <PageLayout isDark={isDark} setIsDark={setIsDark}>
+      <div className="mt-8 space-y-16">
         <ContactHero />
 
-        <Calendly />
+        <div className="bg-white/50 dark:bg-DarkblackBorder/50 rounded-2xl p-6 shadow-sm">
+          <Calendly />
+        </div>
 
-        <div className="w-full bg-white dark:bg-DarkblackBorder rounded-2xl shadow-xl p-8 mt-24">
-          <h2 className="text-3xl font-bold text-center mb-8 dark:text-white">
+        <div className="w-full bg-white dark:bg-DarkblackBorder rounded-2xl shadow-lg p-8">
+          <h2 className="text-2xl font-bold text-center mb-6 dark:text-white">
             Skontaktuj się z nami
           </h2>
 
-          <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <input
               type="email"
               name="email"
@@ -276,8 +273,7 @@ function ContactPage({ isDark, setIsDark }) {
           </form>
         </div>
       </div>
-      <Footer />
-    </div>
+    </PageLayout>
   );
 }
 

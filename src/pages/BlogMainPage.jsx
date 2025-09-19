@@ -1,8 +1,7 @@
 import React, { useEffect } from 'react';
-import Header from '../components/homepage/Header';
+import PageLayout from '../components/systemLayouts/PageLayout';
 import HeroBlog from '../components/blog/HeroBlog';
 import CourseListHero from '../components/homepage/CourseListHero';
-import Footer from '../components/homepage/Footer';
 import AboutBlogs from '../components/blog/AboutBlogs';
 import BlogList from '../components/blog/BlogList';
 import { useBlogStore } from '../store/blogStore';
@@ -23,21 +22,19 @@ function BlogMainPage({ isDark, setIsDark }) {
   ];
 
   return (
-    <div
-      data-theme={isDark ? "dark" : "light"}
-      className='flex flex-col items-center min-h-screen bg-gradient-to-br to-18% from-secondaryGreen to-white dark:from-primaryBlue dark:to-23% dark:to-blackText'
+    <PageLayout 
+      isDark={isDark} 
+      setIsDark={setIsDark}
+      className="bg-gradient-to-br to-18% from-secondaryGreen to-gray-100 dark:from-primaryBlue dark:to-23% dark:to-blackText"
     >
-      <Header isDark={isDark} setIsDark={setIsDark} />
-
-      <div className='w-full max-w-[1100px] mt-26 lg:mt-38 mb-40'>
+      <div className='mt-8 mb-16'>
         <HeroBlog />
         <CourseListHero />
       </div>
 
-      <div className="flex  flex-col-reverse w-full max-w-[1100px] ">
+      <div className="space-y-16">
         {categories.map(category => {
           const categoryBlogs = blogs.filter(blog => blog.category === category);
-
 
           if(category == "Inne") {
             return
@@ -45,11 +42,12 @@ function BlogMainPage({ isDark, setIsDark }) {
           
           if (categoryBlogs.length > 0) {
             return (
-              <AboutBlogs
-                key={category}
-                posts={categoryBlogs.slice(0, 2)}
-                section={category}
-              />
+              <div key={category} >
+                <AboutBlogs
+                  posts={categoryBlogs.slice(0, 2)}
+                  section={category}
+                />
+              </div>
             );
           }
 
@@ -57,20 +55,20 @@ function BlogMainPage({ isDark, setIsDark }) {
         })}
       </div>
 
-      <div className='w-full max-w-[1100px]'>
+      <div className='mt-16'>
         {categories.map(category => {
           const categoryBlog = blogs.filter(blog => blog.category === category);
 
           if(category === "Inne") {
-            return <BlogList key={category} posts={categoryBlog} />;
+            return (
+              <div key={category} >
+                <BlogList posts={categoryBlog} />
+              </div>
+            );
           }
         })}
       </div>
-
-      <div className="flex w-full max-w-[1100px] mt-20">
-        <Footer />
-      </div>
-    </div>
+    </PageLayout>
   );
 }
 

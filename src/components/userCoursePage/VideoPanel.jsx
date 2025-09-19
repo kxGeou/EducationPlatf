@@ -28,10 +28,10 @@ export default function VideoPanel({
   return (
     <div className="w-full ">
       {!selectedSection ? (
-        <div className="flex flex-col gap-8 w-full  md:min-h-[96vh] md:py-5">
-          <h3 className="text-2xl font-bold text-blackText  dark:text-white">
-            Lekcje video
-          </h3>
+        <div className="flex flex-col gap-8 w-full  md:min-h-[96vh] p-3">
+          <span className="flex gap-2 text-lg items-center font-semibold border-l-4 px-3 border-primaryBlue dark:border-primaryGreen text-primaryBlue dark:text-primaryGreen mb-6">
+            Panel wideo
+          </span>
 
           <div className="md:grid flex flex-col grid-cols-2 grid-rows-2 gap-8">
             {Object.keys(groupedVideos).map((section) => {

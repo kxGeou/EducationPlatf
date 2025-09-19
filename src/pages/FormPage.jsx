@@ -1,5 +1,6 @@
 import { usePollStore } from "../store/formStore";
 import { useIdeaStore } from "../store/ideaStore";
+import PageLayout from "../components/systemLayouts/PageLayout";
 import {
   User,
   PlusCircle,
@@ -55,11 +56,9 @@ function FormPage({ isDark, setIsDark }) {
 
   if (!accessGranted) {
     return (
-      <div
-        data-theme={isDark ? "dark" : "light"}
-        className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-blackText px-4"
-      >
-        <div className="bg-white dark:bg-DarkblackBorder backdrop-blur-xl shadow-xl rounded-2xl p-10 w-full max-w-md flex flex-col gap-6 items-center justify-center">
+      <PageLayout isDark={isDark} setIsDark={setIsDark}>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="bg-white dark:bg-DarkblackBorder backdrop-blur-xl shadow-xl rounded-2xl p-10 w-full max-w-md flex flex-col gap-6 items-center justify-center">
           <h2 className="text-2xl tracking-wide text-blackText opacity-80 dark:text-white flex flex-col items-center gap-3">
             <User className="text-blackText opacity-40 dark:text-white w-10 h-10" />
             Panel Admina
@@ -79,19 +78,16 @@ function FormPage({ isDark, setIsDark }) {
           >
             Zaloguj
           </button>
+          </div>
         </div>
-      </div>
+      </PageLayout>
     );
   }
 
   return (
-    <div
-      className="min-h-screen  bg-gray-100 dark:bg-blackText text-blackText dark:text-white"
-      data-theme={isDark ? "dark" : "light"}
-    >
+    <PageLayout isDark={isDark} setIsDark={setIsDark} showFooter={false}>
       {/* NAWIGACJA */}
-
-      <div className="flex gap-4 p-4 bg-white dark:bg-DarkblackBorder shadow-sm justify-center">
+      <div className="flex gap-4 p-4 bg-white/80 dark:bg-DarkblackBorder/80 backdrop-blur-sm shadow-sm justify-center -mx-4 mb-8 rounded-b-2xl">
         <div className="w-full max-w-[1650px] flex gap-4 items-center">
           <button
             onClick={() => setActiveTab("create")}
@@ -143,9 +139,9 @@ function FormPage({ isDark, setIsDark }) {
 
       {/* ZAWARTOŚC */}
 
-      <div className="p-6">
+      <div className="space-y-8">
         {activeTab === "create" && (
-          <div className="max-w-[700px] mx-auto bg-white dark:bg-DarkblackBorder rounded-[12px] shadow-md p-6 flex flex-col gap-4">
+          <div className="max-w-[700px] mx-auto bg-white dark:bg-DarkblackBorder rounded-2xl shadow-lg p-8 space-y-6">
             <input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
@@ -208,7 +204,7 @@ function FormPage({ isDark, setIsDark }) {
             {polls.map((poll) => (
               <div
                 key={poll.id}
-                className="bg-white dark:bg-DarkblackBorder rounded-2xl shadow-md p-5"
+                className="bg-white dark:bg-DarkblackBorder rounded-2xl shadow-lg p-6 border border-gray-100 dark:border-DarkblackText"
               >
                 <h3 className="text-lg font-semibold mb-2">{poll.title}</h3>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
@@ -233,13 +229,15 @@ function FormPage({ isDark, setIsDark }) {
         {activeTab === "ideas" && (
           <div className="w-full">
             {ideas.length === 0 ? (
-              <p>Nie ma żadnych pomysłów</p>
+              <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+                <p>Nie ma żadnych pomysłów</p>
+              </div>
             ) : (
-              <ol className="grid grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {ideas.map((idea, index) => (
-                  <li
+                  <div
                     key={index}
-                    className="bg-white dark:bg-DarkblackBorder shadow-md rounded-[12px] p-4"
+                    className="bg-white dark:bg-DarkblackBorder shadow-lg rounded-2xl p-6 border border-gray-100 dark:border-DarkblackText"
                   >
                     <span
                       className={`${
@@ -260,14 +258,14 @@ function FormPage({ isDark, setIsDark }) {
                     <p className="bg-gray-100 dark:bg-blackText/50 dark:text-white/75 p-2 text-blackText/75 mt-1">
                       {idea.description}
                     </p>
-                  </li>
+                  </div>
                 ))}
-              </ol>
+              </div>
             )}
           </div>
         )}
       </div>
-    </div>
+    </PageLayout>
   );
 }
 

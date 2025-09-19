@@ -27,60 +27,85 @@ export default function ExamSettings() {
   const selectedSubject = subjects.find((s) => s.id === subject);
 
   return (
-    <div>
-      <h2 className="font-bold mb-2 text-xl">Wybierz egzamin oraz ilość pytań</h2>
-      <div className="relative mb-4" ref={dropdownRef}>
-        <button
-          type="button"
-          className="w-full border p-4 rounded-[12px] flex justify-between items-center bg-white border-gray-200 dark:bg-DarkblackBorder dark:border-DarkblackText  hover:shadow-md transition-all duration-200 focus:outline-none cursor-pointer"
-          onClick={() => setDropdownOpen((open) => !open)}
-        >
-          <span>{selectedSubject ? selectedSubject.title : "Wybierz dział"}</span>
-          <svg className={`w-4 h-4 ml-2 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
-        </button>
-        {dropdownOpen && (
-          <ul className="absolute z-10 w-full bg-white dark:bg-DarkblackBorder rounded-[12px] shadow mt-1 max-h-60 overflow-auto p-2">
-            {subjects.map((s) => (
-              <li
-                key={s.id}
-                className={`p-2 cursor-pointer hover:bg-blue-50 dark:hover:bg-DarkblackText ${subject === s.id ? "text-primaryBlue dark:text-primaryGreen font-semibold" : ""}`}
-                onClick={() => {
-                  setSubject(s.id);
-                  setDropdownOpen(false);
-                }}
-              >
-                {s.title}
-              </li>
-            ))}
-          </ul>
-        )}
+    <div className="bg-white dark:bg-DarkblackBorder rounded-2xl shadow-xl p-8 border border-gray-100 dark:border-DarkblackText">
+      <div className="text-center mb-8">
+        <h2 className="text-2xl font-bold mb-3 bg-gradient-to-r dark:from-primaryGreen dark:to-secondaryGreen from-primaryBlue to-secondaryBlue bg-clip-text text-transparent">
+          Wybierz egzamin oraz ilość pytań
+        </h2>
+        <p className="text-gray-600 dark:text-gray-400">
+          Rozpocznij swój egzamin lub spróbuj losowego pytania
+        </p>
       </div>
-      <div className="grid grid-cols-3 w-full gap-3 md:gap-4 mt-4">
-        {[10, 20, 40].map((n) => (
+      <div className="mb-6">
+        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+          Wybierz dział
+        </label>
+        <div className="relative" ref={dropdownRef}>
           <button
-            key={n}
-            className={`px-3 py-2 md:py-3 rounded-[12px] transition-colors cursor-pointer duration-150 shadow-sm ${numQ === n ? "bg-primaryBlue dark:bg-primaryGreen text-white" : "bg-white dark:bg-DarkblackBorder hover:bg-secondaryBlue dark:hover:bg-secondaryGreen hover:text-white"}`}
-            onClick={() => setNumQ(n)}
+            type="button"
+            className="w-full border-2 border-gray-200 dark:border-DarkblackText p-4 rounded-xl flex justify-between items-center bg-white dark:bg-DarkblackText hover:border-primaryBlue dark:hover:border-primaryGreen hover:shadow-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primaryBlue dark:focus:ring-primaryGreen cursor-pointer"
+            onClick={() => setDropdownOpen((open) => !open)}
           >
-            {n}
+            <span className={selectedSubject ? "text-gray-900 dark:text-white font-medium" : "text-gray-500 dark:text-gray-400"}>
+              {selectedSubject ? selectedSubject.title : "Wybierz dział"}
+            </span>
+            <svg className={`w-5 h-5 ml-2 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
           </button>
-        ))}
+          {dropdownOpen && (
+            <ul className="absolute z-20 w-full bg-white dark:bg-DarkblackBorder rounded-xl shadow-xl border border-gray-200 dark:border-DarkblackText mt-2 max-h-60 overflow-auto">
+              {subjects.map((s) => (
+                <li
+                  key={s.id}
+                  className={`p-4 cursor-pointer hover:bg-primaryBlue/5 dark:hover:bg-primaryGreen/5 transition-colors duration-150 ${subject === s.id ? "text-primaryBlue dark:text-primaryGreen font-semibold bg-primaryBlue/10 dark:bg-primaryGreen/10" : "text-gray-700 dark:text-gray-300"}`}
+                  onClick={() => {
+                    setSubject(s.id);
+                    setDropdownOpen(false);
+                  }}
+                >
+                  {s.title}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
       </div>
-      <button
-        className="mt-4 px-4 py-3 bg-primaryBlue dark:bg-primaryGreen dark:hover:bg-secondaryGreen w-full rounded-[12px] hover:-translate-y-1 duration-300 hover:shadow-md  hover:bg-secondaryBlue transition-all cursor-pointer text-white "
-        onClick={() => startExam({ subjectId: subject, numQuestions: numQ })}
-        disabled={!subject}
-      >
-        Zacznij test
-      </button>
-      
-      <button
-        className="mt-3 px-4 py-3 bg-primaryBlue dark:bg-primaryGreen dark:hover:bg-secondaryGreen w-full rounded-[12px] hover:-translate-y-1 duration-300 hover:shadow-md hover:bg-secondaryBlue transition-all cursor-pointer text-white "
-        onClick={() => startRandomQuestionMode(subject)}
-        disabled={!subject}
-      >
-         Losowe Pytanie
-      </button>
+      <div className="mb-8">
+        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+          Liczba pytań
+        </label>
+        <div className="grid grid-cols-3 gap-4">
+          {[10, 20, 40].map((n) => (
+            <button
+              key={n}
+              className={`px-4 py-4 rounded-xl transition-all duration-200 font-semibold text-lg ${
+                numQ === n 
+                  ? "bg-primaryBlue dark:bg-primaryGreen text-white shadow-lg transform scale-105" 
+                  : "bg-gray-100 dark:bg-DarkblackText hover:bg-primaryBlue/10 dark:hover:bg-primaryGreen/10 hover:shadow-md border-2 border-transparent hover:border-primaryBlue/20 dark:hover:border-primaryGreen/20"
+              }`}
+              onClick={() => setNumQ(n)}
+            >
+              {n}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="space-y-4">
+        <button
+          className="w-full px-6 py-4 bg-gradient-to-r from-primaryBlue to-secondaryBlue dark:from-primaryGreen dark:to-secondaryGreen text-white font-semibold text-lg rounded-xl hover:shadow-xl hover:-translate-y-1 duration-300 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-lg"
+          onClick={() => startExam({ subjectId: subject, numQuestions: numQ })}
+          disabled={!subject}
+        >
+          Zacznij test
+        </button>
+        
+        <button
+          className="w-full px-6 py-4 bg-gradient-to-r from-green-500 to-green-600 dark:from-green-400 dark:to-green-500 text-white font-semibold text-lg rounded-xl hover:shadow-xl hover:-translate-y-1 duration-300 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-lg"
+          onClick={() => startRandomQuestionMode(subject)}
+          disabled={!subject}
+        >
+          Losowe Pytanie
+        </button>
+      </div>
     </div>
   );
 }

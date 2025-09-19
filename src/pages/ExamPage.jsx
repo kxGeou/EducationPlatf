@@ -1,6 +1,5 @@
 import { TimerIcon } from "lucide-react";
-import Footer from "../components/homepage/Footer";
-import Header from "../components/homepage/Header";
+import PageLayout from "../components/systemLayouts/PageLayout";
 import ExamSettings from "../components/questions/ExamSettings";
 import QuestionCard from "../components/questions/QuestionCard";
 import RandomQuestionCard from "../components/questions/RandomQuestionCard";
@@ -51,23 +50,38 @@ export default function ExamPage({ isDark, setIsDark }) {
   };
 
   return (
-    <div
-      data-theme={isDark ? "dark" : "light"}
-      className="bg-gray-100 dark:bg-blackText text-blackText dark:text-white min-h-screen w-full flex items-center justify-center"
-    >
-      <Header isDark={isDark} setIsDark={setIsDark}></Header>
-      <div className="p-4 max-w-[1100px] w-full mt-28  relative">
-        <div className="flex flex-col md:flex-row gap-6 mb-16 items-center ">
-          <div className="flex-1 flex flex-col gap-4">
-            <h2 className="text-4xl md:text-5xl md:max-w-[500px] md:leading-[55px] font-black leading-[42px] bg-gradient-to-r dark:from-primaryGreen dark:via-secondaryBlue dark:to-secondaryGreen from-primaryBlue to-secondaryBlue bg-clip-text text-transparent">
-              Wystaw swoje umiejętności na próbe
-            </h2>
-            <p className="leading-[25px] opacity-75 md:text-lg md:max-w-[400px]">Rozwiąż teorytyczne egzaminy próbne z kwalifikacji <strong className="text-primaryBlue dark:text-primaryGreen">INF 03</strong> , <strong className="text-primaryBlue dark:text-primaryGreen">INF 02</strong> oraz <strong className="text-primaryBlue dark:text-primaryGreen">test maturalny z informatyki</strong> i sprawdź co wymaga powtórki bez zbędnego stresu</p>
+    <PageLayout isDark={isDark} setIsDark={setIsDark}>
+      <div className="relative  mb-16 overflow-hidden">
+        <div className="absolute "></div>
+        <div className="relative flex flex-col md:flex-row gap-8 items-center">
+          <div className="flex-1 flex flex-col gap-6">
+            <h1 className="text-3xl md:text-4xl font-bold leading-tight bg-gradient-to-r dark:from-primaryGreen dark:via-secondaryBlue dark:to-secondaryGreen from-primaryBlue via-secondaryBlue to-primaryBlue bg-clip-text text-transparent">
+              Wystaw swoje umiejętności na próbę
+            </h1>
+            <p className="text-base md:text-lg leading-relaxed opacity-80 max-w-[600px]">
+              Rozwiąż teoretyczne egzaminy próbne z kwalifikacji{" "}
+              <span className="font-bold text-primaryBlue dark:text-primaryGreen">INF 03</span>,{" "}
+              <span className="font-bold text-primaryBlue dark:text-primaryGreen">INF 02</span> oraz{" "}
+              <span className="font-bold text-primaryBlue dark:text-primaryGreen">test maturalny z informatyki</span>{" "}
+              i sprawdź co wymaga powtórki bez zbędnego stresu
+            </p>
+            <div className="flex flex-wrap gap-2 mt-4">
+              <div className="px-3 py-2 bg-white dark:bg-DarkblackBorder shadow-sm rounded-full text-sm font-medium">
+                Egzaminy próbne
+              </div>
+              <div className="px-3 py-2 bg-white dark:bg-DarkblackBorder shadow-sm rounded-full text-sm font-medium">
+                Timer
+              </div>
+              <div className="px-3 py-2 bg-white dark:bg-DarkblackBorder shadow-sm rounded-full text-sm font-medium">
+                Wyniki
+              </div>
+            </div>
           </div>
-          <div className="flex-1  items-center justify-center min-h-[180px] hidden md:flex">
-           <img src={Biurko} className="w-[30rem]" />
+          <div className="flex-1 items-center justify-center min-h-[200px] hidden md:flex">
+            <img src={Biurko} className="w-[28rem]" />
           </div>
         </div>
+      </div>
         {!pool.length && !result && !randomQuestionMode ? (
           <ExamSettings />
         ) : randomQuestionMode ? (
@@ -109,8 +123,6 @@ export default function ExamPage({ isDark, setIsDark }) {
             <ResultView />
           </div>
         )}
-        <Footer isDark={isDark}></Footer>
-      </div>
-    </div>
+    </PageLayout>
   );
 }

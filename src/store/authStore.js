@@ -238,6 +238,58 @@ export const useAuthStore = create(
           toast.error("Błąd wylogowywania");
         }
       },
+
+      resetPassword: async (email) => {
+        set({ loading: true, error: null });
+        try {
+          const redirectUrl = `${window.location.origin}/reset-password`;
+          console.log('Password reset redirect URL:', redirectUrl);
+          
+          const { error } = await supabase.auth.resetPasswordForEmail(email, {
+            redirectTo: redirectUrl,
+          });
+
+          if (error) {
+            console.error('Password reset error:', error);
+            toast.error(error.message);
+            set({ error: error.message, loading: false });
+            return false;
+          }
+
+          console.log('Password reset email sent successfully');
+
+          toast.success("Sprawdź swoją skrzynkę e-mail i kliknij link resetujący");
+          set({ loading: false });
+          return true;
+        } catch (err) {
+          toast.error("Wystąpił błąd. Spróbuj ponownie.");
+          set({ error: err.message, loading: false });
+          return false;
+        }
+      },
+
+      updatePassword: async (newPassword) => {
+        set({ loading: true, error: null });
+        try {
+          const { error } = await supabase.auth.updateUser({ 
+            password: newPassword 
+          });
+
+          if (error) {
+            toast.error(error.message);
+            set({ error: error.message, loading: false });
+            return false;
+          }
+
+          toast.success("Hasło zostało zmienione pomyślnie");
+          set({ loading: false });
+          return true;
+        } catch (err) {
+          toast.error("Wystąpił błąd podczas zmiany hasła");
+          set({ error: err.message, loading: false });
+          return false;
+        }
+      },
     }),
     {
       name: "auth-storage",

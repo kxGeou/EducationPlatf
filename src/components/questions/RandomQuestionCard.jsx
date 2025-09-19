@@ -14,18 +14,18 @@ export default function RandomQuestionCard({ isDark }) {
 
   const getChoiceStyle = (choice) => {
     if (!randomQuestionAnswer) {
-      return "border-gray-200 bg-white dark:bg-DarkblackBorder dark:text-white";
+      return "border-gray-200 bg-white dark:bg-DarkblackText dark:text-white hover:border-primaryBlue dark:hover:border-primaryGreen hover:shadow-md";
     }
     
     if (choice.is_correct) {
-      return "text-white bg-primaryGreen dark:bg-primaryGreen";
+      return "text-white bg-green-500 dark:bg-green-600 border-green-500 dark:border-green-600 shadow-lg";
     }
     
     if (randomQuestionAnswer.id === choice.id && !choice.is_correct) {
-      return "text-white bg-red-500 dark:bg-red-500";
+      return "text-white bg-red-500 dark:bg-red-600 border-red-500 dark:border-red-600 shadow-lg";
     }
     
-    return "border-gray-200 bg-white dark:bg-DarkblackBorder dark:text-white opacity-50";
+    return "border-gray-200 bg-white dark:bg-DarkblackText dark:text-white opacity-50";
   };
 
   const getSubjectTitle = () => {
@@ -34,65 +34,75 @@ export default function RandomQuestionCard({ isDark }) {
   };
 
   return (
-    <div className="mb-16 w-full">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-bold bg-gradient-to-r dark:from-primaryGreen dark:via-secondaryBlue dark:to-secondaryGreen from-primaryBlue to-secondaryBlue bg-clip-text text-transparent">
-          {getSubjectTitle()}
-        </h2>
+    <div className="bg-white dark:bg-DarkblackBorder rounded-2xl shadow-xl p-8 border border-gray-100 dark:border-DarkblackText">
+      <div className="flex justify-between items-center mb-8">
+        <div>
+          <h2 className="text-2xl font-bold bg-gradient-to-r dark:from-primaryGreen dark:via-secondaryBlue dark:to-secondaryGreen from-primaryBlue via-secondaryBlue to-primaryBlue bg-clip-text text-transparent mb-2">
+            {getSubjectTitle()}
+          </h2>
+          <p className="text-gray-600 dark:text-gray-400">
+            Odpowiedz na pytanie i sprawdź swoją wiedzę
+          </p>
+        </div>
         <button
           onClick={exitRandomQuestionMode}
-          className="px-4 py-2 bg-primaryBlue dark:bg-primaryGreen hover:bg-secondaryBlue dark:hover:bg-secondaryGreen cursor-pointer text-white rounded-[12px] transition-colors duration-200"
+          className="px-6 py-3 bg-gray-500 hover:bg-gray-600 text-white font-semibold rounded-xl transition-all duration-200 hover:shadow-lg"
         >
-          Wyjdź z trybu losowego
+          ← Powrót
         </button>
       </div>
       
-      <h3 className="font-bold mb-4 text-xl bg-white dark:bg-DarkblackBorder dark:text-white text-blackText p-5 shadow rounded-[12px]">
-        {currentRandomQuestion.prompt}
-      </h3>
+      <div className="bg-gradient-to-r from-primaryBlue/5 to-secondaryBlue/5 dark:from-primaryGreen/5 dark:to-secondaryBlue/5 rounded-xl p-6 mb-8">
+        <h3 className="font-bold text-xl dark:text-white text-blackText leading-relaxed">
+          {currentRandomQuestion.prompt}
+        </h3>
+      </div>
       
-      <div className="space-y-3 w-full">
+      <div className="space-y-4">
         {currentRandomQuestion.choices?.map((choice) => (
           <label
             key={choice.id}
-            className={`flex items-center transition-colors duration-150 p-3 rounded-xl shadow-sm cursor-pointer ${getChoiceStyle(choice)}`}
+            className={`flex items-center transition-all duration-200 p-4 rounded-xl cursor-pointer border-2 ${getChoiceStyle(choice)}`}
           >
             <input
               type="radio"
               checked={randomQuestionAnswer?.id === choice.id}
               onChange={() => answerRandomQuestion(choice)}
               disabled={!!randomQuestionAnswer}
-              className="mr-3 accent-primaryBlue dark:accent-primaryGreen disabled:opacity-50"
+              className="mr-4 accent-primaryBlue dark:accent-primaryGreen disabled:opacity-50 w-5 h-5"
             />
-            <span className="font-medium mr-2">{choice.label}.</span>
-            <span>{choice.text}</span>
+            <span className="font-semibold mr-3 text-lg">{choice.label}.</span>
+            <span className="text-base">{choice.text}</span>
           </label>
         ))}
       </div>
 
       {randomQuestionAnswer && (
-        <div className="mt-6 p-4 rounded-[12px] bg-white dark:bg-DarkblackBorder shadow">
-          <div className={`text-center mb-4 ${randomQuestionCorrect ? 'text-primaryGreen dark:text-primaryGreen' : 'text-red-500 dark:text-red-500'}`}>
-            <h4 className="text-xl font-bold mb-2">
+        <div className="mt-8 p-6 rounded-2xl bg-gradient-to-r from-gray-50 to-gray-100 dark:from-DarkblackText dark:to-DarkblackBorder border border-gray-200 dark:border-DarkblackText">
+          <div className={`text-center mb-6 ${randomQuestionCorrect ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+            <div className="text-4xl mb-4">
+              {randomQuestionCorrect ? '✓' : '✗'}
+            </div>
+            <h4 className="text-xl font-bold mb-3">
               {randomQuestionCorrect ? 'Poprawnie!' : 'Niepoprawnie'}
             </h4>
-            <p className="text-sm opacity-75">
+            <p className="text-base opacity-80">
               {randomQuestionCorrect 
                 ? 'Świetna robota! Odpowiedziałeś poprawnie.' 
                 : 'Nie tym razem. Kontynuuj ćwiczenia!'}
             </p>
           </div>
           
-          <div className="grid grid-cols-2 mt-8 gap-3 justify-center">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <button
               onClick={() => getNewRandomQuestion()}
-              className="md:px-6 py-3 bg-primaryBlue dark:bg-primaryGreen hover:bg-secondaryBlue dark:hover:bg-secondaryGreen text-white rounded-[12px] transition-colors duration-200 font-medium cursor-pointer"
+              className="px-6 py-4 bg-gradient-to-r from-primaryBlue to-secondaryBlue dark:from-primaryGreen dark:to-secondaryGreen text-white font-semibold text-lg rounded-xl hover:shadow-xl hover:-translate-y-1 duration-300 transition-all cursor-pointer"
             >
               Nowe Pytanie
             </button>
             <button
               onClick={exitRandomQuestionMode}
-              className="cursor-pointer md:px-6 py-3 bg-DarkblackBorder dark:bg-DarkblackText text-white rounded-[12px] transition-colors duration-200 font-medium"
+              className="px-6 py-4 bg-gray-500 hover:bg-gray-600 text-white font-semibold text-lg rounded-xl hover:shadow-xl hover:-translate-y-1 duration-300 transition-all cursor-pointer"
             >
               Powrót
             </button>

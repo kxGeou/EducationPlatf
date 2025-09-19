@@ -1,7 +1,7 @@
 import { toast } from 'react-toastify';
 import LandingHeader from "../components/coursePage/LandingHeader";
-import Footer from "../components/homepage/Footer";
 import Header from "../components/homepage/Header";
+import Footer from "../components/homepage/Footer";
 import Error from "../components/systemLayouts/Error";
 import Loading from "../components/systemLayouts/Loading";
 import supabase from "../util/supabaseClient";
@@ -159,7 +159,7 @@ export default function CourseLandingPage({ isDark, setIsDark }) {
       className="w-full flex flex-col items-center dark:bg-blackText bg-gray-100"
     >
       <Header isDark={isDark} setIsDark={setIsDark} />
-
+      
       <section className="relative bg-gradient-to-br from-darkBlue to-primaryBlue dark:from-blackText dark:to-DarkblackText text-white py-24 w-full">
         <div className="max-w-[1100px] w-full mx-auto px-4 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-12">
           <div className="mt-8">
@@ -202,7 +202,7 @@ export default function CourseLandingPage({ isDark, setIsDark }) {
         </div>
       </section>
 
-      <main className="w-full max-w-[1100px] px-4">
+      <main className="w-full max-w-[1100px] px-4 mt-28">
         <section className="bg-white dark:bg-DarkblackText p-8 rounded-2xl shadow-md mt-12">
           <h2 className="text-2xl font-bold mb-6 dark:text-white">
             Czego się nauczysz
@@ -296,8 +296,8 @@ export default function CourseLandingPage({ isDark, setIsDark }) {
           </div>
         </section>
       </main>
-
-      <Footer/>
+      
+      <Footer />
     </div>
   );
 }

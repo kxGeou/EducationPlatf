@@ -29,11 +29,11 @@ function CourseInfo({ course, videos }) {
   console.log(course)
 
   return (
-    <div className="w-full h-full p-3 rounded-[12px] flex flex-col gap-8 justify-between shadow-lg transition-all">
+    <div className="w-full h-full p-3 rounded-[12px] flex flex-col gap-8 justify-between transition-all">
       <div>
 
         <span className="flex gap-2 text-lg items-center font-semibold border-l-4 px-3 border-primaryBlue dark:border-primaryGreen text-primaryBlue dark:text-primaryGreen mb-6">
-        Twoje zgłoszenia
+        Informacje o kursie
       </span>
 
       <div className="flex flex-col md:flex-row gap-8">

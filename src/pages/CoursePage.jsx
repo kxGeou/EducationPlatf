@@ -83,7 +83,7 @@ export default function CoursePage({ isDark, setIsDark }) {
           userDataModal={userDataModal}
         />
 
-        <main className="flex flex-col w-full items-start min-h-[98vh] bg-gray-50 dark:bg-DarkblackBorder rounded-[12px] p-2">
+        <main className="flex flex-col w-full items-start min-h-[98vh] bg-gray-100 dark:bg-DarkblackBorder rounded-[12px] p-2">
 
           {activeSection === "info" && (
             <CourseInfo course={course} videos={videos} />
@@ -105,7 +105,7 @@ export default function CoursePage({ isDark, setIsDark }) {
           {activeSection === "chart" && (
             <ChartPanel course={course} user={user} videos={videos} />
           )}
-
+    
           
         </main>
       </div>

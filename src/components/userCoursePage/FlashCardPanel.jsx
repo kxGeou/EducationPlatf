@@ -138,41 +138,37 @@ export default function FlashcardPanel({ courseId }) {
   };
 
   return (
-    <div className="w-full h-full rounded-[12px]">
+    <div className="w-full h-full rounded-[12px] p-3">
       {!selectedCategory ? (
-        <div>
-          <h2 className="text-lg md:text-2xl font-bold mb-2">Fiszki</h2>
-          <p className="max-w-[500px] opacity-75 text-lg w-full mb-6">
-            Fiszki to jeden z najbardziej efektywnych sposobów nauki, ponieważ
-            łączą w sobie aktywne przypominanie informacji z powtarzaniem w
-            odstępach czasowych.
-          </p>
-          <div>
-            {loading || authLoading ? (
-              <p className="text-gray-400">Ładowanie...</p>
-            ) : (
-              <div className="gap-6 bg-white dark:bg-DarkblackBorder min-h-[75vh] p-6 rounded-[12px]">
-                <h3 className="font-semibold mb-4 text-xl">
-                  Wybierz kategorie fiszek:
-                </h3>
+        <div className="w-full h-full rounded-[12px] p-3">
+          <span className="flex gap-2 text-lg items-center font-semibold border-l-4 px-3 border-primaryBlue dark:border-primaryGreen text-primaryBlue dark:text-primaryGreen mb-6">
+            Panel fiszek
+          </span>
+        
+          {loading || authLoading ? (
+            <p className="text-gray-400">Ładowanie...</p>
+          ) : (
+            <div>
+              <h3 className="font-semibold mb-4 text-xl">
+                Wybierz kategorie fiszek:
+              </h3>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                  {categories.map((cat) => (
-                    <button
-                      key={cat}
-                      onClick={() => setSelectedCategory(cat)}
-                      className="bg-white dark:bg-DarkblackText px-4 py-4 text-base md:py-6 md:text-lg font-semibold rounded-[12px] shadow-md border border-gray-100 dark:border-transparent cursor-pointer hover:bg-secondaryBlue/10 dark:hover:bg-blackText/75 transition"
-                    >
-                      {cat}
-                    </button>
-                  ))}
-                </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                {categories.map((cat) => (
+                  <button
+                    key={cat}
+                    onClick={() => setSelectedCategory(cat)}
+                    className="bg-white dark:bg-DarkblackText px-4 py-4 text-base md:py-6 md:text-lg font-semibold rounded-[12px] shadow-md border border-gray-100 dark:border-transparent cursor-pointer hover:bg-secondaryBlue/10 dark:hover:bg-blackText/75 transition"
+                  >
+                    {cat}
+                  </button>
+                ))}
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       ) : !showCard ? (
-        <div className="flex flex-col w-full bg-white dark:bg-DarkblackBorder  rounded-[12px] p-4 sm:p-6 min-h-[96vh]">
+        <div className="flex flex-col w-full">
           <button
             onClick={() => setSelectedCategory(null)}
             className="flex cursor-pointer items-center gap-1 text-md text-secondaryBlue dark:text-secondaryGreen mb-4 hover:underline"
@@ -180,8 +176,31 @@ export default function FlashcardPanel({ courseId }) {
             <ChevronLeft size={20} /> Powrót
           </button>
 
-          <h3 className="text-2xl font-bold mb-6">{selectedCategory}</h3>
+          <span className="flex gap-2 text-lg items-center font-semibold border-l-4 px-3 border-primaryBlue dark:border-primaryGreen text-primaryBlue dark:text-primaryGreen mb-6">
+            Nauka fiszek - {selectedCategory}
+          </span>
 
+          {/* Simple Progress Overview */}
+          <div className="bg-white dark:bg-DarkblackText border border-gray-200 dark:border-gray-700 rounded-lg p-4 mb-6">
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-sm text-gray-600 dark:text-gray-400">Postęp w tej kategorii:</span>
+              <span className="font-semibold">{totalCount ? Math.round((knownCount / totalCount) * 100) : 0}%</span>
+            </div>
+            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+              <div
+                className="bg-secondaryBlue dark:bg-secondaryGreen h-2 rounded-full transition-all duration-300"
+                style={{
+                  width: `${totalCount ? (knownCount / totalCount) * 100 : 0}%`,
+                }}
+              />
+            </div>
+            <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
+              <span>{knownCount} opanowane</span>
+              <span>{unknownCount} do nauki</span>
+            </div>
+          </div>
+
+          {/* Action Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 w-full">
             <div className="flex flex-col justify-between items-center bg-white dark:bg-DarkblackText dark:border-DarkblackText rounded-[16px] shadow p-4 sm:p-6 border border-gray-100">
               <h4 className="font-semibold text-lg mb-8 flex gap-2 items-center">

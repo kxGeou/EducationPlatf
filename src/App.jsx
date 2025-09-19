@@ -15,8 +15,8 @@ import TestResources from './pages/TestResources.jsx'
 import { useEffect, useState } from 'react'
 import { useAuthStore } from './store/authStore.js'; 
 import ScrollToTop from './scripts/scrollToTop.jsx'
-import PasswordResetForm from './components/auth/PasswordResetForm.jsx'
-import NewPassword from './components/auth/NewPassword.jsx'
+import PasswordResetPage from './pages/PasswordResetPage.jsx'
+import NewPasswordPage from './pages/NewPasswordPage.jsx'
 import ContactPage from './pages/ContactPage.jsx'
 import ReportPage from './pages/ReportPage.jsx'
 import Regulations from './pages/Regulations.jsx'
@@ -47,8 +47,8 @@ export default function App() {
         <Route path='/' element={<Home isDark={isDark} setIsDark={setIsDark} />} />
         <Route path='/authentication' element={<AuthPage isDark={isDark} setIsDark={setIsDark} />} />
         <Route path='/success' element={<Success />} />
-        <Route path='/update-password' element={<PasswordResetForm />} />
-        <Route path='/reset-password' element={<NewPassword />} />
+        <Route path='/update-password' element={<PasswordResetPage isDark={isDark} setIsDark={setIsDark} />} />
+        <Route path='/reset-password' element={<NewPasswordPage isDark={isDark} setIsDark={setIsDark} />} />
         <Route path='/user_page' element={<MyCourses  isDark={isDark} setIsDark={setIsDark}/>} />
         <Route path='/contact' element={<ContactPage  isDark={isDark} setIsDark={setIsDark}/>} />
         <Route path='/regulations' element={<Regulations  isDark={isDark} setIsDark={setIsDark}/>} />
