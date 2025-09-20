@@ -44,7 +44,7 @@ export default function VideoPanel({
                 <div
                   key={section}
                   onClick={() => setSelectedSection(section)}
-                  className="bg-white dark:bg-DarkblackBorder p-8 flex flex-col items-start justify-center w-full rounded-[12px] shadow cursor-pointer transition-all duration-200 hover:shadow-lg  dark:hover:bg-DarkblackText"
+                  className="bg-white dark:bg-DarkblackText p-8 flex flex-col items-start justify-center w-full rounded-[12px] shadow cursor-pointer transition-all duration-200 hover:shadow-lg  dark:hover:bg-DarkblackText"
                 >
                   <h3 className="text-2xl font-semibold mb-2">{section}</h3>
                   <p className="w-full max-w-[75%] font-semibold opacity-50">

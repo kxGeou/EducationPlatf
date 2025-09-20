@@ -4,6 +4,7 @@ import ChartPanel from "../components/userCoursePage/ChartPanel";
 import CourseInfo from "../components/userCoursePage/CourseInfo";
 import CourseSidebar from "../components/userCoursePage/CourseSidebar";
 import FlashcardPanel from "../components/userCoursePage/FlashCardPanel";
+import TaskPanel from "../components/userCoursePage/TaskPanel";
 import VideoPanel from "../components/userCoursePage/VideoPanel";
 import UserData from "../components/userPage/UserData";
 import { useAuthStore } from "../store/authStore";
@@ -102,6 +103,9 @@ export default function CoursePage({ isDark, setIsDark }) {
             <FlashcardPanel courseId={course.id} />
           )}
 
+          {activeSection === "tasks" && (
+            <TaskPanel courseId={course.id} />
+          )}
           {activeSection === "chart" && (
             <ChartPanel course={course} user={user} videos={videos} />
           )}

@@ -14,6 +14,7 @@ import {
   Menu,
   X,
   Notebook,
+  ListTodo,
 } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -36,6 +37,7 @@ export default function CourseSidebar({
     { icon: <Clapperboard size={20} />, label: "Wideo", key: "video" },
     { icon: <NotepadText size={20} />, label: "Fiszki", key: "flashcards" },
     { icon: <ChartColumnBig size={20} />, label: "Postęp", key: "chart" },
+    { icon: <ListTodo size={20} />, label: "Zadania", key: "tasks" },
     { icon: <Undo2 size={20} />, label: "Powrót", key: "back", highlight: true, action: () => navigate("/user_page") },
   ];
 
@@ -77,7 +79,7 @@ export default function CourseSidebar({
         }`}
       >
         <div>
-          <img src={MobileLogo} alt="Logo" className="w-10 mb-6 mt-4" />
+            <img src={MobileLogo} alt="Logo" className="w-10 mb-6 mt-4" />
           <div className="flex flex-col gap-3">
             {menuItems.map(item => (
               <SidebarButton
