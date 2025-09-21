@@ -22,6 +22,9 @@ function TaskPanel({ courseId }) {
     const [feedbackType, setFeedbackType] = useState(null); 
     const [feedbackMessage, setFeedbackMessage] = useState('');
     const [showRedirectAnimation, setShowRedirectAnimation] = useState(false);
+    const [showTranslationAnswers, setShowTranslationAnswers] = useState(false);
+    const [timer, setTimer] = useState(0);
+    const [showNextButton, setShowNextButton] = useState(false);
 
     useEffect(() => {
         if (courseId) {
@@ -34,7 +37,26 @@ function TaskPanel({ courseId }) {
         setShowFeedback(false);
         setSelectedAnswer(null);
         setShowRedirectAnimation(false);
+        setShowTranslationAnswers(false);
+        setTimer(0);
+        setShowNextButton(false);
     }, [currentTask])
+
+    useEffect(() => {
+        let interval;
+        if (timer > 0) {
+            interval = setInterval(() => {
+                setTimer(prev => {
+                    if (prev <= 1) {
+                        setShowNextButton(true);
+                        return 0;
+                    }
+                    return prev - 1;
+                });
+            }, 1000);
+        }
+        return () => clearInterval(interval);
+    }, [timer]);
 
     const handleAnswerSubmit = async () => {
         if (!selectedAnswer || !currentTask) return;
@@ -66,21 +88,14 @@ function TaskPanel({ courseId }) {
                 }
                 
                 setShowFeedback(true);
-                setSelectedAnswer(null);
+                setShowTranslationAnswers(true);
                 
-                if (!isAlreadyCompleted) {
-                    setShowRedirectAnimation(true);
-                }
-                
-                setTimeout(() => {
-                    setShowFeedback(false);
-                    setShowRedirectAnimation(false);
-                    getNextTask();
-                }, 3000);
+                setTimer(5);
             } else {
                 setFeedbackType('incorrect');
-                setFeedbackMessage('Niepoprawna odpowiedź. Spróbuj ponownie!');
+                setFeedbackMessage('Niepoprawna odpowiedź. Sprawdź tłumaczenia poniżej i spróbuj ponownie!');
                 setShowFeedback(true);
+                setShowTranslationAnswers(true);
             }
         } catch (error) {
             setFeedbackType('error');
@@ -89,6 +104,22 @@ function TaskPanel({ courseId }) {
         }
         
         setIsSubmitting(false);
+    };
+
+    const handleNextQuestion = () => {
+        setShowFeedback(false);
+        setShowTranslationAnswers(false);
+        setShowNextButton(false);
+        setSelectedAnswer(null);
+        getNextTask();
+    };
+
+    const handleTryAgain = () => {
+        setShowFeedback(false);
+        setShowTranslationAnswers(false);
+        setShowNextButton(false);
+        setSelectedAnswer(null);
+        setTimer(0);
     };
 
     const progressPercentage = tasks.length > 0 ? (completedTasks.length / tasks.length) * 100 : 0;
@@ -169,31 +200,74 @@ function TaskPanel({ courseId }) {
 
                     <div className="space-y-3 mb-6">
                         {currentTask.answers.map((answer, index) => (
-                            <button
-                                key={index}
-                                onClick={() => setSelectedAnswer(answer)}
-                                className={`w-full p-3 text-left rounded-lg border-2 transition-all ${
-                                    selectedAnswer === answer
-                                        ? 'border-primaryBlue dark:border-primaryGreen bg-blue-50 dark:bg-green-900/20'
-                                        : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
-                                }`}
-                            >
-                                {answer}
-                            </button>
+                            <div key={index}>
+                                <button
+                                    onClick={() => setSelectedAnswer(answer)}
+                                    className={`w-full p-3 text-left rounded-lg border-2 transition-all ${
+                                        selectedAnswer === answer
+                                            ? 'border-primaryBlue dark:border-primaryGreen bg-blue-50 dark:bg-green-900/20'
+                                            : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
+                                    }`}
+                                >
+                                    {answer}
+                                </button>
+                                {showTranslationAnswers && currentTask.answers_translation && currentTask.answers_translation[index] && (
+                                    <div className="p-2 mt-1 bg-blue-50 dark:bg-primaryGreen/20 rounded-lg border border-blue-200 dark:border-primaryGreen shadow-sm">
+                                        <div className="flex items-start gap-2">
+                                            <div>
+                                                <p className="text-xs font-medium text-primaryBlue dark:text-primaryGreen mb-1">
+                                                    Odpowiedź
+                                                </p>
+                                                <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+                                                    {currentTask.answers_translation[index]}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
                         ))}
                     </div>
 
-                    <button
-                        onClick={handleAnswerSubmit}
-                        disabled={!selectedAnswer || isSubmitting}
-                        className={`w-full py-3 px-6 rounded-lg font-semibold transition-all ${
-                            selectedAnswer && !isSubmitting
-                                ? 'bg-primaryBlue dark:bg-primaryGreen text-white hover:opacity-90'
-                                : 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed'
-                        }`}
-                    >
-                        {isSubmitting ? 'Sprawdzanie...' : 'Sprawdź odpowiedź'}
-                    </button>
+                    {!showFeedback ? (
+                        <button
+                            onClick={handleAnswerSubmit}
+                            disabled={!selectedAnswer || isSubmitting}
+                            className={`w-full py-3 px-6 rounded-lg font-semibold transition-all ${
+                                selectedAnswer && !isSubmitting
+                                    ? 'bg-primaryBlue dark:bg-primaryGreen text-white hover:opacity-90'
+                                    : 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed'
+                            }`}
+                        >
+                            {isSubmitting ? 'Sprawdzanie...' : 'Sprawdź odpowiedź'}
+                        </button>
+                    ) : (
+                        feedbackType === 'correct' ? (
+                            showNextButton && (
+                                <button
+                                    onClick={handleNextQuestion}
+                                    className="w-full py-3 px-6 rounded-lg font-semibold bg-primaryBlue dark:bg-primaryGreen text-white hover:opacity-90 transition-all"
+                                >
+                                    Następne pytanie
+                                </button>
+                            )
+                        ) : feedbackType === 'incorrect' ? (
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={handleTryAgain}
+                                    className="flex-1 py-3 px-6 rounded-lg font-semibold bg-gray-400 dark:bg-gray-600 text-white hover:opacity-90 transition-all"
+                                >
+                                    Spróbuj ponownie
+                                </button>
+                                <button
+                                    onClick={handleNextQuestion}
+                                    className="flex-1 py-3 px-6 rounded-lg font-semibold bg-primaryBlue dark:bg-primaryGreen text-white hover:opacity-90 transition-all"
+                                >
+                                    Następne pytanie
+                                </button>
+                            </div>
+                        ) : null
+                    )}
 
                     {showFeedback && (
                         <div className={`mt-4 p-4 rounded-lg border-2 transition-all duration-300 ${
@@ -247,14 +321,16 @@ function TaskPanel({ courseId }) {
                                     </p>
                                     {feedbackType === 'correct' && (
                                         <p className="text-sm text-green-700 dark:text-green-300 mt-1">
-                                            Przechodzisz do następnego zadania...
-                                            {showRedirectAnimation && (
-                                                <span className="ml-2 inline-flex">
-                                                    <span className="animate-bounce">.</span>
-                                                    <span className="animate-bounce" style={{ animationDelay: '0.1s' }}>.</span>
-                                                    <span className="animate-bounce" style={{ animationDelay: '0.2s' }}>.</span>
-                                                </span>
+                                            {timer > 0 ? (
+                                                <>Następne pytanie za {timer} sekund{timer === 1 ? 'ę' : timer < 5 ? 'y' : ''}...</>
+                                            ) : (
+                                                <>Kliknij przycisk poniżej, aby przejść do następnego pytania.</>
                                             )}
+                                        </p>
+                                    )}
+                                    {feedbackType === 'incorrect' && (
+                                        <p className="text-sm text-red-700 dark:text-red-300 mt-1">
+                                            Sprawdź tłumaczenia poniżej i wybierz jedną z opcji.
                                         </p>
                                     )}
                                 </div>
