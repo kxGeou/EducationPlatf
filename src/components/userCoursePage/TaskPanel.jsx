@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTasks } from '../../store/taskStore';
 import TaskFilterPanel from './TaskFilterPanel';
+import supabase from '../../util/supabaseClient';
 
 function TaskPanel({ courseId }) {
     const { 
@@ -8,10 +9,12 @@ function TaskPanel({ courseId }) {
         completedTasks, 
         currentTask, 
         hasSelectedStatus,
+        showCompletedTasks,
         fetchTasksByCourseId, 
         fetchCompletedTasks,
         submitTaskAnswer,
         getNextTask,
+        getFilteredTasks,
         loading, 
         error 
     } = useTasks();
@@ -25,6 +28,7 @@ function TaskPanel({ courseId }) {
     const [showTranslationAnswers, setShowTranslationAnswers] = useState(false);
     const [timer, setTimer] = useState(0);
     const [showNextButton, setShowNextButton] = useState(false);
+    const [correctAnswer, setCorrectAnswer] = useState(null);
 
     useEffect(() => {
         if (courseId) {
@@ -40,6 +44,7 @@ function TaskPanel({ courseId }) {
         setShowTranslationAnswers(false);
         setTimer(0);
         setShowNextButton(false);
+        setCorrectAnswer(null);
     }, [currentTask])
 
     useEffect(() => {
@@ -96,6 +101,10 @@ function TaskPanel({ courseId }) {
                 setFeedbackMessage('Niepoprawna odpowiedź. Sprawdź tłumaczenia poniżej i spróbuj ponownie!');
                 setShowFeedback(true);
                 setShowTranslationAnswers(true);
+                
+                // Fetch correct answer for translation display
+                const correctAns = await fetchCorrectAnswer(taskId);
+                setCorrectAnswer(correctAns);
             }
         } catch (error) {
             setFeedbackType('error');
@@ -122,7 +131,38 @@ function TaskPanel({ courseId }) {
         setTimer(0);
     };
 
+    const fetchCorrectAnswer = async (taskId) => {
+        try {
+            const { data, error } = await supabase
+                .from("tasks")
+                .select("correct_answer")
+                .eq("task_id", taskId)
+                .single();
+            
+            if (error) {
+                console.error("Error fetching correct answer:", error);
+                return null;
+            }
+            
+            return data.correct_answer;
+        } catch (error) {
+            console.error("Error fetching correct answer:", error);
+            return null;
+        }
+    };
+
+    const filteredTasks = getFilteredTasks();
     const progressPercentage = tasks.length > 0 ? (completedTasks.length / tasks.length) * 100 : 0;
+    
+    // Debug logging
+    console.log('TaskPanel Debug:', {
+        tasks: tasks.length,
+        completedTasks: completedTasks.length,
+        filteredTasks: filteredTasks.length,
+        showCompletedTasks,
+        hasSelectedStatus,
+        currentTask: !!currentTask
+    });
 
 
     return (
@@ -173,22 +213,31 @@ function TaskPanel({ courseId }) {
 
             {loading && <p>Ładowanie zadań...</p>}
             
-            {!loading && !error && tasks.length === 0 && hasSelectedStatus && (
-                <p>Brak zadań do wyświetlenia.</p>
-            )}
-            
-            {!loading && !error && tasks.length > 0 && completedTasks.length === tasks.length && hasSelectedStatus && (
+            {!loading && !error && filteredTasks.length === 0 && hasSelectedStatus && (
                 <div className="text-center py-8">
-                    <h3 className="text-xl font-semibold text-green-600 dark:text-green-400 mb-2">
-                        Gratulacje!
-                    </h3>
-                    <p className="text-gray-600 dark:text-gray-400">
-                        Ukończyłeś wszystkie zadania w tym kursie!
-                    </p>
+                    {tasks.length > 0 && completedTasks.length === tasks.length && !showCompletedTasks ? (
+                        <>
+                            <h3 className="text-xl font-semibold text-green-600 dark:text-green-400 mb-2">
+                                Gratulacje!
+                            </h3>
+                            <p className="text-gray-600 dark:text-gray-400">
+                                Ukończyłeś wszystkie zadania w tym kursie!
+                            </p>
+                        </>
+                    ) : (
+                        <>
+                            <h3 className="text-xl font-semibold text-gray-600 dark:text-gray-400 mb-2">
+                                Brak zadań do wyświetlenia
+                            </h3>
+                            <p className="text-gray-500 dark:text-gray-500">
+                                Nie ma zadań spełniających wybrane kryteria filtrów.
+                            </p>
+                        </>
+                    )}
                 </div>
             )}
             
-            {!loading && !error && currentTask && completedTasks.length < tasks.length && hasSelectedStatus && (
+            {!loading && !error && currentTask && filteredTasks.length > 0 && hasSelectedStatus && (
                 <div className="bg-white dark:bg-DarkblackText rounded-[16px] p-6 shadow-md">
                     <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-200">
                         {currentTask.topic}
@@ -212,11 +261,19 @@ function TaskPanel({ courseId }) {
                                     {answer}
                                 </button>
                                 {showTranslationAnswers && currentTask.answers_translation && currentTask.answers_translation[index] && (
-                                    <div className="p-2 mt-1 bg-blue-50 dark:bg-primaryGreen/20 rounded-lg border border-blue-200 dark:border-primaryGreen shadow-sm">
+                                    <div className={`p-2 mt-1 rounded-lg border shadow-sm ${
+                                        correctAnswer && answer === correctAnswer
+                                            ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800'
+                                            : 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800'
+                                    }`}>
                                         <div className="flex items-start gap-2">
                                             <div>
-                                                <p className="text-xs font-medium text-primaryBlue dark:text-primaryGreen mb-1">
-                                                    Odpowiedź
+                                                <p className={`text-xs font-medium mb-1 ${
+                                                    correctAnswer && answer === correctAnswer
+                                                        ? 'text-green-600 dark:text-green-400'
+                                                        : 'text-red-600 dark:text-red-400'
+                                                }`}>
+                                                    {correctAnswer && answer === correctAnswer ? 'Poprawna odpowiedź' : 'Niepoprawna odpowiedź'}
                                                 </p>
                                                 <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
                                                     {currentTask.answers_translation[index]}
