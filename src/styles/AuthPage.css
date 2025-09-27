@@ -40,6 +40,88 @@
   z-index: 2;
 }
 
+.blog-corner-gradient {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  pointer-events: none;
+  clip-path: polygon(0 0, 100% 0%, 100% 30%, 0 50%);
+  background: radial-gradient(
+    circle at top left,
+    #0cbb81 0%,
+    #0cbba9 50%,
+    #0cbb81 100%
+  );
+  background-size: 300% 300%;
+  animation: gradient-move 12s ease-in-out infinite alternate;
+  z-index: 2;
+}
+.resources-corner-gradient {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  pointer-events: none;
+  clip-path: polygon(0 0, 100% 0%, 100% 30%, 0 50%);
+  background: radial-gradient(
+    circle at top left,
+    #7a7cf8 0%,
+    #5194eb 25%,
+    #5194eb 50%,
+    #b48ef9 75%,
+    #9b66ff 100%
+  );
+  background-size: 300% 300%;
+  animation: gradient-move 12s ease-in-out infinite alternate;
+  z-index: 2;
+}
+.contact-corner-gradient {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  pointer-events: none;
+  clip-path: polygon(0 0, 100% 0%, 100% 30%, 0 50%);
+  background: radial-gradient(
+    circle at top left,
+    #325bfc 0%,
+    #5194eb 25%,
+    #5194eb 50%,
+    #3a8fff 75%,
+    #91c1ff 100%
+  );
+  background-size: 300% 300%;
+  animation: gradient-move 12s ease-in-out infinite alternate;
+  z-index: 2;
+}
+.exam-corner-gradient {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  pointer-events: none;
+  clip-path: polygon(0 0, 100% 0%, 100% 30%, 0 50%);
+  background: radial-gradient(
+    circle at top left,
+    #6132fc 0%,
+    #5156eb 25%,
+    #5194eb 50%,
+    #836dff 75%,
+    #91c1ff 100%
+  );
+  background-size: 300% 300%;
+  animation: gradient-move 12s ease-in-out infinite alternate;
+  z-index: 2;
+}
+
+
+
+
 @keyframes gradient-move {
   0% {
     background-position: 0% 0%;

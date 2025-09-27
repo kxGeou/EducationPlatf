@@ -1,5 +1,5 @@
-import Header from "../homepage/Header";
-import Footer from "../homepage/Footer";
+import Header from "../../ui/Header";
+import Footer from "../../ui/Footer";
 
 export default function PageLayout({ 
   children, 

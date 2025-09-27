@@ -1,27 +1,27 @@
 import { Routes, Route } from 'react-router-dom'
-import Success from './components/userPage/Success.jsx'
-import Home from './pages/Home.jsx'
-import MyCourses from './pages/MyCourses.jsx'
-import AuthPage from './pages/AuthPage.jsx'
-import CoursePage from './pages/CoursePage.jsx'
+import Success from './features/MyCoursesPage/components/Success.jsx'
+import Home from './features/HomePage/Home.jsx';
+import MyCourses from './features/MyCoursesPage/MyCourses.jsx'
+import AuthPage from './features/AuthPage/AuthPage.jsx'
+import CoursePage from './features/CoursePage/CoursePage.jsx'
 import { ToastContainer } from 'react-toastify';
-import CourseLandingPage from './pages/CourseLandingPage.jsx'
+import CourseLandingPage from './features/CoursePage/CourseLandingPage.jsx'
 import Loading from './components/systemLayouts/Loading.jsx'
 import Error from './components/systemLayouts/Error.jsx'
 import WrongPage from './components/systemLayouts/WrongPage.jsx'
-import BlogMainPage from './pages/BlogMainPage.jsx'
-import BlogPage from './pages/BlogPage.jsx'
-import TestResources from './pages/TestResources.jsx'
+import BlogMainPage from './features/BlogPage/BlogMainPage/BlogMainPage.jsx'
+import BlogPage from './features/BlogPage/BlogPage/BlogPage.jsx'
+import TestResources from './features/TestResourcesPage/TestResources.jsx'
 import { useEffect, useState } from 'react'
 import { useAuthStore } from './store/authStore.js'; 
 import ScrollToTop from './scripts/scrollToTop.jsx'
-import PasswordResetPage from './pages/PasswordResetPage.jsx'
-import NewPasswordPage from './pages/NewPasswordPage.jsx'
-import ContactPage from './pages/ContactPage.jsx'
-import ReportPage from './pages/ReportPage.jsx'
-import Regulations from './pages/Regulations.jsx'
-import FormPage from './pages/FormPage.jsx'
-import ExamPage from './pages/ExamPage.jsx'
+import PasswordResetPage from './features/AuthPage/PasswordResetPage.jsx'
+import NewPasswordPage from './features/AuthPage/NewPasswordPage.jsx'
+import ContactPage from './features/ContactPage/ContactPage.jsx'
+import ReportPage from './features/ReportPage/ReportPage.jsx'
+import Regulations from './features/AuthPage/Regulations.jsx'
+import FormPage from './features/FormPage/FormPage.jsx'
+import ExamPage from './features/ExamPage/ExamPage.jsx';
 export default function App() {
   const init = useAuthStore(state => state.init)
   const loading = useAuthStore(state => state.loading)
