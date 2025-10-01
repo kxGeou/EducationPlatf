@@ -69,7 +69,7 @@ export default function CoursePage({ isDark, setIsDark }) {
       data-theme={isDark ? "dark" : "light"}
       className=" flex justify-center bg-slate-300 dark:bg-blackText dark:text-white min-h-screen"
     >
-      <div className="flex flex-col md:flex-row h-full gap-4 w-full max-w-[1900px] min-h-screen p-2">
+      <div className="flex flex-col md:flex-row h-full gap-2 w-full max-w-[1900px] min-h-screen p-2">
         <CourseSidebar
           user={user}
           course={course}
@@ -108,6 +108,9 @@ export default function CoursePage({ isDark, setIsDark }) {
           )}
           {activeSection === "chart" && (
             <ChartPanel course={course} user={user} videos={videos} />
+          )}
+          {activeSection === "profile" && (
+            <UserData />
           )}
     
           

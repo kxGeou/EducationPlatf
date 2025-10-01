@@ -42,7 +42,7 @@ export default function CourseLandingPage({ isDark, setIsDark }) {
       setLoading(true);
 
       const { data: courseData, error: courseError } = await supabase
-        .from("courses")
+        .from("courses_template")
         .select("id, title, description, price_cents, image_url")
         .eq("id", id)
         .single();
@@ -57,7 +57,7 @@ export default function CourseLandingPage({ isDark, setIsDark }) {
 
       const { data: videosData } = await supabase
         .from("video_base")
-        .select("videoId, title, section_title, directUrl")
+        .select("videoId, title, section_title, section_id, directUrl")
         .eq("course_id", id)
         .order("section_title", { ascending: true })
         .order("order", { ascending: true });
@@ -80,7 +80,7 @@ export default function CourseLandingPage({ isDark, setIsDark }) {
       }
 
       const { data: otherCoursesData } = await supabase
-        .from("courses")
+        .from("courses_template")
         .select("id, title, description, price_cents, image_url")
         .neq("id", id)
         .limit(4);
@@ -94,51 +94,7 @@ export default function CourseLandingPage({ isDark, setIsDark }) {
   }, [id, user]);
 
   const handleBuy = async () => {
-    if (!user) {
-      toast.error("Musisz być zalogowany, żeby kupić kurs.");
-      return;
-    }
-
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-
-    if (!session) {
-      alert("Brak sesji. Zaloguj się ponownie.");
-      return;
-    }
-
-    const priceCents = course.price_cents * 100;
-    if (!priceCents || isNaN(priceCents) || priceCents < 200) {
-      alert("Cena kursu musi wynosić co najmniej 2 zł.");
-      return;
-    }
-
-    const res = await fetch(
-      "https://gkvjdemszxjmtxvxlnmr.supabase.co/functions/v1/create-checkout-session",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify({
-          user_id: user.id,
-          course_id: course.id,
-          course_title: course.title,
-          price_cents: priceCents,
-          success_url_base: window.location.origin,
-        }),
-      }
-    );
-
-    const data = await res.json();
-    if (res.ok && data.url) {
-      window.location.href = data.url;
-    } else {
-      toast.error("Błąd przy tworzeniu sesji płatności:", data);
-      alert("Coś poszło nie tak. Spróbuj ponownie.");
-    }
+    navigate(`/course/${course.id}`);
   };
 
   console.log(course)
@@ -168,28 +124,13 @@ export default function CourseLandingPage({ isDark, setIsDark }) {
             </h1>
             <p className="text-lg opacity-80 max-w-[600px]">{course.description}</p>
             <div className="mt-8 flex items-center gap-6">
-              {!alreadyBought && 
-               <p className="text-3xl font-semibold">
-                {course.price_cents} zł{" "}
-                <span className="ml-2 text-xl opacity-60 line-through">
-                  220 zł
-                </span>
-              </p>
-              }
-             
-              {!alreadyBought ? (
-                <button
-                  onClick={handleBuy}
-                  className="px-4 py-3 rounded-xl font-semibold bg-gradient-to-r from-secondaryBlue to-primaryBlue hover:scale-105 transition-all flex items-center gap-2 shadow-lg"
-                >
-                  <ShoppingBasket size={20} />
-                  Kup teraz
-                </button>
-              ) : (
-                <span className="px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white/70 cursor-not-allowed">
-                  Posiadasz ten kurs
-                </span>
-              )}
+              <button
+                onClick={handleBuy}
+                className="px-4 py-3 rounded-xl font-semibold bg-gradient-to-r from-secondaryBlue to-primaryBlue hover:scale-105 transition-all flex items-center gap-2 shadow-lg"
+              >
+                <ShoppingBasket size={20} />
+                Zobacz kurs
+              </button>
             </div>
           </div>  
 
@@ -356,7 +297,9 @@ function CourseSections({ videos, firstVideoId }) {
   };
 
   const handleVideoClick = (video) => {
-    setSelectedVideo(video);
+    if (video.videoId === firstVideoId) {
+      setSelectedVideo(video);
+    }
   };
 
   return (
@@ -376,23 +319,31 @@ function CourseSections({ videos, firstVideoId }) {
 
           {openSections[section] && (
             <ul className="bg-gray-200 dark:bg-DarkblackText py-3 px-4 flex flex-col gap-2">
-              {vids.map((video) => (
-                <li
-                  key={video.videoId}
-                  className="py-2 cursor-pointer flex justify-between items-center hover:bg-gray-100 dark:hover:bg-DarkblackBorder px-2 rounded-md transition-all"
-                  onClick={() => handleVideoClick(video)}
-                >
-                  <span className="flex gap-3 items-center dark:text-white/80">
-                    <MonitorPlay size={18} />
-                    {video.title}
-                  </span>
-                  {video.videoId === firstVideoId && (
-                    <span className="px-2 text-xs font-medium underline text-primaryBlue dark:text-primaryGreen">
-                      Podgląd
+              {vids.map((video) => {
+                const isFirstVideo = video.videoId === firstVideoId;
+                return (
+                  <li
+                    key={video.videoId}
+                    className={`py-2 flex justify-between items-center px-2 rounded-md transition-all ${
+                      isFirstVideo 
+                        ? "cursor-pointer hover:bg-gray-100 dark:hover:bg-DarkblackBorder" 
+                        : "cursor-not-allowed opacity-50"
+                    }`}
+                    onClick={() => handleVideoClick(video)}
+                  >
+                    <span className="flex gap-3 items-center dark:text-white/80">
+                      <MonitorPlay size={18} />
+                      {video.title}
+                      {!isFirstVideo && <span className="text-xs text-red-500">🔒</span>}
                     </span>
-                  )}
-                </li>
-              ))}
+                    {isFirstVideo && (
+                      <span className="px-2 text-xs font-medium underline text-primaryBlue dark:text-primaryGreen">
+                        Podgląd
+                      </span>
+                    )}
+                  </li>
+                );
+              })}
             </ul>
           )}
         </div>

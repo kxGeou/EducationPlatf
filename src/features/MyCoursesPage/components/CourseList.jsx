@@ -3,12 +3,14 @@ import { useCourseStore } from '../../../store/courseStore';
 import Error from '../../../components/systemLayouts/Error';
 import Loading from '../../../components/systemLayouts/Loading';
 import ReportPanel from "./ReportPanel";
-import { MessageCircleQuestionIcon, ShoppingCart } from "lucide-react";
+import { MessageCircleQuestionIcon, ShoppingCart, Star } from "lucide-react";
 import { memo, useMemo, useEffect, useCallback, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import BlogPanel from "./BlogPanel";
 import FormUserPage from "./FormUserPage";
 import IdeaPanel from "./IdeaPanel";
+import Leaderboard from "./Leaderboard";
+import UserData from "./UserData";
 
 const videoResources = [
   {
@@ -49,38 +51,50 @@ const videoResources = [
   },
 ];
 
-const ResourceVideo = memo(({ videoTitle, videoDescription, category }) => (
-  <div className="w-full text-blackText border border-gray-200 bg-white dark:border-DarkblackBorder dark:bg-blackText dark:text-white rounded-[12px] shadow-md transition-all duration-300 flex flex-col items-start justify-between p-4 ">
-    <div>
-      <span
-        className={`${category == "YouTube" && "text-red-500"} ${
-          category == "Tekst" && "text-blue-500"
+const ResourceVideo = memo(({ videoTitle, videoDescription, category }) => {
+  const userPoints = useAuthStore((state) => state.userPoints);
+  
+  return (
+    <div className="w-full text-blackText border border-gray-200 bg-white dark:border-DarkblackBorder dark:bg-blackText dark:text-white rounded-[12px] shadow-md transition-all duration-300 flex flex-col items-start justify-between p-4 ">
+      <div className="w-full">
+        <div className="flex items-center justify-between mb-2">
+          <span
+            className={`${category == "YouTube" && "text-red-500"} ${
+              category == "Tekst" && "text-blue-500"
+            } ${
+              category == "DokumentPDF" && "text-green-500"
+            } font-semibold text-sm`}
+          >
+            #{category}
+          </span>
+          <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-full">
+            <Star className="w-3 h-3 text-yellow-500" />
+            <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
+              {userPoints || 0} pkt
+            </span>
+          </div>
+        </div>
+        <h4 className="font-bold text-lg mt-1 w-full">{videoTitle}</h4>
+        <p className="text-sm opacity-70 break-words line-clamp-3 leading-snug">
+          {videoDescription}
+        </p>
+      </div>
+      <button
+        className={`
+          transition-transform duration-300 hover:-translate-y-1 hover:shadow-md
+          ${category == "YouTube" && "bg-red-500 text-white"} ${
+          category == "Tekst" && "bg-blue-500 text-white"
         } ${
-          category == "DokumentPDF" && "text-green-500"
-        } font-semibold text-sm`}
+          category == "DokumentPDF" && "bg-green-500 text-white"
+        } w-full p-2 font-semibold mt-6 cursor-pointer rounded-[8px]`}
       >
-        #{category}
-      </span>
-      <h4 className="font-bold text-lg mt-1 w-full">{videoTitle}</h4>
-      <p className="text-sm opacity-70 break-words line-clamp-3 leading-snug">
-        {videoDescription}
-      </p>
+        {category == "YouTube" && "Zobacz video"}
+        {category == "Tekst" && "Przeczytaj tekst"}
+        {category == "DokumentPDF" && "Zobacz dokument"}
+      </button>
     </div>
-    <button
-      className={`
-        transition-transform duration-300 hover:-translate-y-1 hover:shadow-md
-        ${category == "YouTube" && "bg-red-500 text-white"} ${
-        category == "Tekst" && "bg-blue-500 text-white"
-      } ${
-        category == "DokumentPDF" && "bg-green-500 text-white"
-      } w-full p-2 font-semibold mt-6 cursor-pointer rounded-[8px]`}
-    >
-      {category == "YouTube" && "Zobacz video"}
-      {category == "Tekst" && "Przeczytaj tekst"}
-      {category == "DokumentPDF" && "Zobacz dokument"}
-    </button>
-  </div>
-));
+  );
+});
 
 const CourseItem = memo(({ course, onClick }) => (
   <li className="flex flex-col sm:flex-row p-4 border rounded-[12px] bg-white border-blackText/10 dark:text-white dark:bg-DarkblackText shadow-md text-blackText gap-4">
@@ -189,10 +203,10 @@ function CourseList({ activePage, setTutorialVisible, tutorialVisible }) {
               {/* TWOJE KURSY */}
               {activePage === "courses" &&
                 (courses.length > 0 ? (
-                  <ul className="w-full flex flex-col gap-2 text-blackText">
+                  <div className="w-full flex flex-col gap-2 text-blackText">
                     <div className="w-full flex justify-between mt-2">
                       <span className="flex gap-2 text-lg items-center font-semibold border-l-4 px-3 border-primaryBlue dark:border-primaryGreen text-primaryBlue dark:text-primaryGreen mt-18 md:mt-0">
-                        Twoje kursy
+                        Wszystkie kursy
                       </span>
                       <span
                         className="text-primaryBlue cursor-pointer dark:text-primaryGreen"
@@ -204,12 +218,11 @@ function CourseList({ activePage, setTutorialVisible, tutorialVisible }) {
 
                     <div className="flex flex-col mt-8 sm:mt-12">
                       <h2 className="flex gap-2 items-center text-lg font-bold uppercase mb-4 dark:text-white">
-                        <ShoppingCart className="font-bold" /> Kursy które
-                        posiadasz :
+                        <ShoppingCart className="font-bold" /> Dostępne kursy :
                       </h2>
                       <div className="flex flex-col gap-8">{courseList}</div>
                     </div>
-                  </ul>
+                  </div>
                 ) : (
                   <div className="w-full min-h-[95vh] flex flex-col items-center justify-center gap-4">
                     <ShoppingCart
@@ -217,7 +230,7 @@ function CourseList({ activePage, setTutorialVisible, tutorialVisible }) {
                       className="opacity-50 text-blackText dark:text-white"
                     />
                     <p className="text-lg text-blackText dark:text-white">
-                      Nie posiadasz żadnych kursów
+                      Brak dostępnych kursów
                     </p>
                   </div>
                 ))}
@@ -271,8 +284,13 @@ function CourseList({ activePage, setTutorialVisible, tutorialVisible }) {
               {activePage === "forms" && <FormUserPage></FormUserPage>}
 
               {/* POMYSŁY  */}
-
               {activePage === "ideas" && <IdeaPanel></IdeaPanel>}
+
+              {/* RANKING */}
+              {activePage === "leaderboard" && <Leaderboard />}
+
+              {/* PROFIL */}
+              {activePage === "profile" && <UserData />}
             </div>
         </div>
       </div>

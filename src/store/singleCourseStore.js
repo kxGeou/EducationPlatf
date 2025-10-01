@@ -18,16 +18,11 @@ export const useSingleCourseStore = create((set) => ({
       return
     }
 
-    if (!purchasedCourses.includes(courseId)) {
-      set({ accessDenied: true, loading: false })
-      return
-    }
-
     set({ loading: true, course: null, videos: [], error: null, accessDenied: false })
 
     try {
       const { data: courseData, error: courseError } = await supabase
-        .from('courses')
+        .from('courses_template')
         .select('id, title, description, image_url')
         .eq('id', courseId)
         .single()
@@ -36,7 +31,7 @@ export const useSingleCourseStore = create((set) => ({
 
       const { data: videosData, error: videosError } = await supabase
         .from('video_base')
-        .select('videoId, title, directUrl, course_id, section_title, order, video_description, video_section_image,video_section_title, video_section_description')
+        .select('videoId, title, directUrl, course_id, section_id, section_title, order, video_description, video_section_image,video_section_title, video_section_description, section_description')
         .eq('course_id', courseId)
         .order('section_title', { ascending: true })
         .order('order', { ascending: true })

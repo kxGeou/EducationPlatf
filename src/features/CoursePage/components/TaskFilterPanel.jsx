@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useTasks } from '../../../store/taskStore';
+import { useAuthStore } from '../../../store/authStore';
 import CustomCheckbox from './CustomCheckbox';
+import { Lock } from 'lucide-react';
+import supabase from '../../../util/supabaseClient';
 
 function TaskFilterPanel() {
     const {
@@ -14,7 +17,9 @@ function TaskFilterPanel() {
         setSelectedTopics,
         setHasSelectedStatus,
         getFilteredTasks,
-        updateCurrentTask
+        updateCurrentTask,
+        isTopicAccessible,
+        getTopicSectionInfo
     } = useTasks();
 
     const [localFilters, setLocalFilters] = useState({
@@ -22,6 +27,8 @@ function TaskFilterPanel() {
         showAllTasks: showAllTasks,
         selectedTopics: [...selectedTopics]
     });
+    
+    const [sectionTitles, setSectionTitles] = useState({});
 
     useEffect(() => {
         setLocalFilters({
@@ -30,6 +37,31 @@ function TaskFilterPanel() {
             selectedTopics: [...selectedTopics]
         });
     }, [showCompletedTasks, showAllTasks, selectedTopics]);
+
+    useEffect(() => {
+        const fetchSectionTitles = async () => {
+            const lockedTopics = availableTopics.filter(topic => !isTopicAccessible(topic));
+            if (lockedTopics.length === 0) return;
+
+            try {
+                const { data, error } = await supabase
+                    .from('courses')
+                    .select('id, title');
+                
+                if (!error && data) {
+                    const titles = {};
+                    data.forEach(course => {
+                        titles[course.id] = course.title;
+                    });
+                    setSectionTitles(titles);
+                }
+            } catch (err) {
+                console.error('Error fetching section titles:', err);
+            }
+        };
+
+        fetchSectionTitles();
+    }, [availableTopics, isTopicAccessible]);
 
     const filteredTasks = getFilteredTasks();
 
@@ -105,7 +137,7 @@ function TaskFilterPanel() {
                         Tematy
                     </h4>
                     
-                    <div className="space-y-2 lg:space-y-3 h-full overflow-y-auto pr-2">
+                    <div className="space-y-2 lg:space-y-3">
                         <CustomCheckbox
                             checked={localFilters.selectedTopics.length === availableTopics.length}
                             onChange={(e) => {
@@ -127,27 +159,81 @@ function TaskFilterPanel() {
                         />
                         
                         <div className="ml-8 mt-4 space-y-4">
-                            {availableTopics.map((topic) => (
-                                <CustomCheckbox
-                                    key={topic}
-                                    checked={localFilters.selectedTopics.includes(topic)}
-                                    onChange={(e) => {
-                                        if (e.target.checked) {
-                                            setLocalFilters(prev => ({
-                                                ...prev,
-                                                selectedTopics: [...prev.selectedTopics, topic]
-                                            }));
-                                        } else {
-                                            setLocalFilters(prev => ({
-                                                ...prev,
-                                                selectedTopics: prev.selectedTopics.filter(t => t !== topic)
-                                            }));
-                                        }
-                                    }}
-                                    label={topic}
-                                    size="small"
-                                />
-                            ))}
+                            {availableTopics
+                                .sort((a, b) => {
+                                    const aAccessible = isTopicAccessible(a);
+                                    const bAccessible = isTopicAccessible(b);
+                                    if (aAccessible && !bAccessible) return -1;
+                                    if (!aAccessible && bAccessible) return 1;
+                                    return 0;
+                                })
+                                .map((topic) => {
+                                const isAccessible = isTopicAccessible(topic);
+                                
+                                const getSectionInfo = () => {
+                                    if (isAccessible) return null;
+                                    
+                                    const { allTasks } = useTasks.getState();
+                                    const { purchasedCourses } = useAuthStore.getState();
+                                    
+                                    const tasksWithTopic = allTasks.filter(task => task.topic === topic);
+                                    const lockedTasks = tasksWithTopic.filter(task => {
+                                        if (!task.section_id) return false;
+                                        return !purchasedCourses.includes(task.section_id);
+                                    });
+                                    
+                                    if (lockedTasks.length > 0) {
+                                        const sectionIds = [...new Set(lockedTasks.map(task => task.section_id).filter(Boolean))];
+                                        const sectionNames = sectionIds.map(id => sectionTitles[id] || `Sekcja ${id}`).join(', ');
+                                        return sectionNames;
+                                    }
+                                    
+                                    return null;
+                                };
+                                
+                                const sectionInfo = getSectionInfo();
+                                
+                                return (
+                                    <div key={topic} className="relative group">
+                                        {isAccessible ? (
+                                            <CustomCheckbox
+                                                checked={localFilters.selectedTopics.includes(topic)}
+                                                onChange={(e) => {
+                                                    if (e.target.checked) {
+                                                        setLocalFilters(prev => ({
+                                                            ...prev,
+                                                            selectedTopics: [...prev.selectedTopics, topic]
+                                                        }));
+                                                    } else {
+                                                        setLocalFilters(prev => ({
+                                                            ...prev,
+                                                            selectedTopics: prev.selectedTopics.filter(t => t !== topic)
+                                                        }));
+                                                    }
+                                                }}
+                                                label={topic}
+                                                size="small"
+                                            />
+                                        ) : (
+                                            <div className="flex items-center">
+                                                <Lock size={12} className="text-gray-500 mr-2" />
+                                                <span className="text-sm text-gray-500 dark:text-gray-400">{topic}</span>
+                                                
+                                                {/* Tooltip */}
+                                                <div className="absolute left-full ml-1 top-1/2 transform -translate-y-1/2 bg-gray-900 text-white text-xs rounded-lg px-3 py-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50 whitespace-nowrap">
+                                                    <div className="relative">
+                                                        <div className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-[3px] w-2 h-2 bg-gray-900 rotate-45"></div>
+                                                        <div className="font-medium">Sekcja zablokowana</div>
+                                                        <div className="text-gray-300">
+                                                            {sectionInfo ? `Kup ${sectionInfo} aby odblokować` : 'Kup sekcję aby odblokować'}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            })}
                         </div>
                     </div>
                 </div>

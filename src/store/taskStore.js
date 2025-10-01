@@ -6,6 +6,7 @@ export const useTasks = create((set, get) => ({
     loading: false,
     error: null,
     tasks: [],
+    allTasks: [], 
     completedTasks: [],
     currentTask: null,
     showCompletedTasks: false,
@@ -27,6 +28,9 @@ export const useTasks = create((set, get) => ({
 
     fetchTasksByCourseId: async (courseId) => {
         set({ loading: true, error: null });
+        
+        const { purchasedCourses } = useAuthStore.getState();
+        
         const {error, data} = await supabase
             .from("tasks")
             .select("*")
@@ -34,12 +38,21 @@ export const useTasks = create((set, get) => ({
         if(error) {
             console.error('Error fetching tasks by course ID:', error.message);
         } else {
-            set({ tasks: data || [] });
+            set({ allTasks: data || [] });
             
-            const topics = [...new Set(data?.map(task => task.topic).filter(Boolean))] || [];
+            const accessibleTasks = data?.filter(task => {
+                if (!task.section_id) {
+                    return true;
+                }
+                return purchasedCourses.includes(task.section_id);
+            }) || [];
+            
+            set({ tasks: accessibleTasks });
+            
+            const allTopics = [...new Set(data?.map(task => task.topic).filter(Boolean))] || [];
             set({ 
-                availableTopics: topics,
-                selectedTopics: topics 
+                availableTopics: allTopics,
+                selectedTopics: allTopics 
             });
             
             get().updateCurrentTask();
@@ -130,6 +143,10 @@ export const useTasks = create((set, get) => ({
 
                     set({ completedTasks: [...completedTasks, taskId.toString()] });
                     
+                    // Award points for completing exercise
+                    const { awardPoints } = useAuthStore.getState();
+                    awardPoints(15, 'exercise', taskId.toString(), courseId);
+                    
                     get().fetchCompletedTasks(courseId);
                 } else {
                 }
@@ -200,6 +217,49 @@ export const useTasks = create((set, get) => ({
 
     getNextTask: () => {
         return get().updateCurrentTask();
+    },
+
+    isTopicAccessible: (topic) => {
+        const { allTasks } = get();
+        const { purchasedCourses } = useAuthStore.getState();
+        
+        const tasksWithTopic = allTasks.filter(task => task.topic === topic);
+        return tasksWithTopic.some(task => {
+            if (!task.section_id) return true;
+            return purchasedCourses.includes(task.section_id);
+        });
+    },
+
+    getTopicSectionInfo: async (topic) => {
+        const { allTasks } = get();
+        const { purchasedCourses } = useAuthStore.getState();
+        
+        const tasksWithTopic = allTasks.filter(task => task.topic === topic);
+        const lockedTasks = tasksWithTopic.filter(task => {
+            if (!task.section_id) return false;
+            return !purchasedCourses.includes(task.section_id);
+        });
+        
+        if (lockedTasks.length > 0) {
+            const sectionIds = [...new Set(lockedTasks.map(task => task.section_id).filter(Boolean))];
+            
+            try {
+                const { data, error } = await supabase
+                    .from('courses')
+                    .select('id, title')
+                    .in('id', sectionIds);
+                
+                if (!error && data) {
+                    return data.map(course => course.title);
+                }
+            } catch (err) {
+                console.error('Error fetching section titles:', err);
+            }
+            
+            return sectionIds;
+        }
+        
+        return [];
     }
 
 }));

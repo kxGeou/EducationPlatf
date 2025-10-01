@@ -1,16 +1,15 @@
-import { X, Mail, BookOpen, LogOut, ShieldCheck, Key, Eye, EyeOff } from 'lucide-react'
+import { Mail, BookOpen, LogOut, ShieldCheck, Key, Eye, EyeOff, Star } from 'lucide-react'
 import React, { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
 import Avatar from 'boring-avatars'
 import { useAuthStore } from '../../../store/authStore';
 import { useCourseStore } from '../../../store/courseStore';
 import { toast } from 'react-toastify';
 import supabase from '../../../util/supabaseClient';
 
-function UserData({ userDataModal, setUserDataModal }) {
+function UserData() {
   const user = useAuthStore(state => state.user)
+  const userPoints = useAuthStore(state => state.userPoints)
   const logout = useAuthStore(state => state.logout)
-  const resetPassword = useAuthStore(state => state.resetPassword)
   const loading = useAuthStore(state => state.loading)
 
   const courses = useCourseStore(state => state.courses)
@@ -48,167 +47,145 @@ function UserData({ userDataModal, setUserDataModal }) {
     }
   }
   return (
-    <AnimatePresence>
-      {userDataModal && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed z-50 inset-0 bg-black/30 backdrop-blur-sm flex justify-center items-center p-4"
-        >
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{  opacity: 0 }}
-            transition={{ duration: 0.25, ease: 'easeOut' }}
-            className="w-full max-w-md bg-white dark:bg-DarkblackBorder dark:text-white rounded-2xl shadow-xl p-6 flex flex-col gap-6"
+    <div className="flex flex-col items-start w-full mt-2 px-3">
+      <span className="flex gap-2 text-lg items-center mt-1 font-semibold border-l-4 px-3 border-primaryBlue dark:border-primaryGreen text-primaryBlue dark:text-primaryGreen mb-12">
+        Profil użytkownika
+      </span>
+
+      <div className="w-full bg-white dark:bg-DarkblackText rounded-[12px] shadow-md p-6 mb-6">
+        <div className="flex items-center gap-6">
+          <Avatar
+            name={user?.user_metadata?.full_name || 'Użytkownik'}
+            colors={['#0056d6', '#669c35', '#ffffff', '#74a7fe', '#cce8b5']}
+            variant="beam"
+            size={80}
+          />
+          <div className="flex-1">
+            <h3 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">
+              {user?.user_metadata?.full_name || 'Nieznany użytkownik'}
+            </h3>
+            <p className="text-gray-600 dark:text-gray-400 mb-4">{user?.email || 'Brak e-maila'}</p>
+            <div className="flex items-center gap-2">
+              <Star className="w-5 h-5 text-yellow-500" />
+              <span className="text-lg font-bold text-gray-800 dark:text-white">{userPoints}</span>
+              <span className="text-gray-600 dark:text-gray-400">punktów</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Stats Grid */}
+      <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        <div className="bg-white dark:bg-DarkblackText rounded-[12px] shadow-md p-6">
+          <div className="flex items-center gap-3 mb-3">
+            <Mail className="w-6 h-6 text-primaryBlue dark:text-primaryGreen" />
+            <h4 className="font-semibold text-gray-800 dark:text-white">Email</h4>
+          </div>
+          <p className="text-sm text-gray-600 dark:text-gray-400">{user?.email || 'Brak'}</p>
+        </div>
+
+        <div className="bg-white dark:bg-DarkblackText rounded-[12px] shadow-md p-6">
+          <div className="flex items-center gap-3 mb-3">
+            <BookOpen className="w-6 h-6 text-primaryBlue dark:text-primaryGreen" />
+            <h4 className="font-semibold text-gray-800 dark:text-white">Kursy</h4>
+          </div>
+          {coursesLoading ? (
+            <p className="text-sm text-gray-400">Ładowanie...</p>
+          ) : error ? (
+            <p className="text-sm text-red-500">Błąd</p>
+          ) : (
+            <p className="text-sm text-gray-600 dark:text-gray-400">{courses?.length || 0}</p>
+          )}
+        </div>
+
+        <div className="bg-white dark:bg-DarkblackText rounded-[12px] shadow-md p-6">
+          <div className="flex items-center gap-3 mb-3">
+            <ShieldCheck
+              className={`w-6 h-6 ${user?.user_metadata?.email_verified ? 'text-green-500 dark:text-green-400' : 'text-red-500'}`}
+            />
+            <h4 className="font-semibold text-gray-800 dark:text-white">Status</h4>
+          </div>
+          <p
+            className={`text-sm font-medium ${
+              user?.user_metadata?.email_verified
+                ? 'text-green-600 dark:text-green-400'
+                : 'text-red-500'
+            }`}
           >
-            <div className="flex justify-between mb-2 items-start">
-              <div>
-                <h2 className="text-xl font-bold text-gray-800 dark:text-white/75">Dane użytkownika</h2>
-                <p className="text-sm text-gray-500 dark:text-white/50">Twoje informacje i status konta</p>
-              </div>
-              <X className="cursor-pointer text-gray-500 dark:text-white hover:text-black" onClick={() => setUserDataModal(false)} />
-            </div>
+            {user?.user_metadata?.email_verified ? 'Zweryfikowany' : 'Niezweryfikowany'}
+          </p>
+        </div>
+      </div>
 
-            <div className="flex items-center gap-4 border-b border-blackText/25 pb-4">
-              <Avatar
-                name={user?.user_metadata?.full_name || 'Użytkownik'}
-                colors={['#0056d6', '#669c35', '#ffffff', '#74a7fe', '#cce8b5']}
-                variant="beam"
-                size={64}
+      {/* Password Reset Section */}
+      <div className="w-full bg-white dark:bg-DarkblackText rounded-[12px] shadow-md p-6 mb-6">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <Key className="w-6 h-6 text-primaryBlue dark:text-primaryGreen" />
+            <h4 className="font-semibold text-gray-800 dark:text-white">Bezpieczeństwo</h4>
+          </div>
+          <button
+            onClick={() => setShowPasswordReset(!showPasswordReset)}
+            className="px-4 py-2 bg-primaryBlue dark:bg-primaryGreen text-white rounded-lg hover:bg-secondaryBlue dark:hover:bg-secondaryGreen transition-colors text-sm font-medium"
+          >
+            {showPasswordReset ? 'Anuluj' : 'Zmień hasło'}
+          </button>
+        </div>
+
+        {showPasswordReset && (
+          <div className="flex flex-col gap-4">
+            <div className="relative">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Wprowadź nowe hasło"
+                className="w-full p-3 pr-12 border border-gray-300 dark:border-gray-600 dark:bg-DarkblackText rounded-lg text-sm focus:ring-2 focus:ring-primaryBlue dark:focus:ring-primaryGreen focus:border-transparent"
               />
-              <div className="flex flex-col">
-                <span className="text-lg font-semibold text-gray-800 dark:text-white">
-                  {user?.user_metadata?.full_name || 'Nieznany użytkownik'}
-                </span>
-                <span className="text-sm text-gray-500 dark:text-white">{user?.email || 'Brak e-maila'}</span>
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-3 text-sm text-gray-600 dark:text-white">
-              <div className="flex items-center justify-between">
-                <span className="flex items-center gap-2">
-                  <Mail size={16} />
-                  Email:
-                </span>
-                <span className="font-medium text-gray-800 dark:text-white/75">{user?.email || 'Brak'}</span>
-              </div>
-
-              <div className="flex items-center justify-between ">
-                <span className="flex items-center gap-2">
-                  <BookOpen size={16} />
-                  Kursy:
-                </span>
-                {coursesLoading ? (
-                  <span className="italic text-gray-400 ">Ładowanie...</span>
-                ) : error ? (
-                  <span className="text-red-500">Błąd</span>
-                ) : (
-                  <span className="font-medium text-gray-800 dark:text-white/75">{courses?.length || 0}</span>
-                )}
-              </div>
-
-              <div className="flex items-center justify-between">
-                <span className="flex items-center gap-2">
-                  <ShieldCheck
-                    size={16}
-                    className={user?.user_metadata?.email_verified ? 'text-green-500 dark:text-green-400' : 'text-red-500'}
-                  />
-                  Status:
-                </span>
-                <span
-                  className={
-                    user?.user_metadata?.email_verified
-                      ? 'text-green-600 font-medium dark:text-green-400'
-                      : 'text-red-500 font-medium'
-                  }
-                >
-                  {user?.user_metadata?.email_verified ? 'Zweryfikowany' : 'Niezweryfikowany'}
-                </span>
-              </div>
-            </div>
-
-            {/* Password Reset Section */}
-            <div className="pt-4 border-t border-blackText/25">
-              <div className="flex items-center justify-between mb-3">
-                <span className="flex items-center gap-2 text-sm text-gray-600 dark:text-white">
-                  <Key size={16} />
-                  Bezpieczeństwo:
-                </span>
-                <button
-                  onClick={() => setShowPasswordReset(!showPasswordReset)}
-                  className="text-xs text-primaryBlue dark:text-primaryGreen hover:underline"
-                >
-                  {showPasswordReset ? 'Anuluj' : 'Zmień hasło'}
-                </button>
-              </div>
-
-              {showPasswordReset && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="flex flex-col gap-3"
-                >
-                  <div className="relative">
-                    <input
-                      type={showPassword ? 'text' : 'password'}
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      placeholder="Wprowadź nowe hasło"
-                      className="w-full p-2 pr-10 border border-gray-300 dark:border-DarkblackBorder dark:bg-DarkblackBorder/50 rounded bg-gray-50 sm:bg-transparent text-sm"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-                    >
-                      {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                    </button>
-                  </div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    Hasło musi mieć co najmniej 6 znaków
-                  </p>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={handlePasswordReset}
-                      disabled={loading || password.length < 6}
-                      className="flex-1 bg-primaryBlue dark:bg-primaryGreen dark:hover:bg-secondaryGreen text-white px-3 py-2 rounded text-sm transition disabled:opacity-50 disabled:cursor-not-allowed hover:bg-secondaryBlue"
-                    >
-                      {loading ? 'Zapisywanie...' : 'Zapisz hasło'}
-                    </button>
-                    <button
-                      onClick={() => {
-                        setShowPasswordReset(false)
-                        setPassword('')
-                        setShowPassword(false)
-                      }}
-                      className="px-3 py-2 border border-gray-300 dark:border-DarkblackBorder rounded text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-DarkblackBorder/50 transition"
-                    >
-                      Anuluj
-                    </button>
-                  </div>
-                </motion.div>
-              )}
-            </div>
-
-            <div className="pt-6 border-t border-blackText/25 flex justify-end">
               <button
-                onClick={() => {
-                  logout()
-                  setUserDataModal(false)
-                }}
-                className="flex items-center gap-2 bg-red-500 cursor-pointer hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm transition"
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
               >
-                <LogOut size={16} />
-                Wyloguj się
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
-          </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              Hasło musi mieć co najmniej 6 znaków
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={handlePasswordReset}
+                disabled={loading || password.length < 6}
+                className="flex-1 bg-primaryBlue dark:bg-primaryGreen text-white px-4 py-2 rounded-lg text-sm font-medium transition disabled:opacity-50 disabled:cursor-not-allowed hover:bg-secondaryBlue dark:hover:bg-secondaryGreen"
+              >
+                {loading ? 'Zapisywanie...' : 'Zapisz hasło'}
+              </button>
+              <button
+                onClick={() => {
+                  setShowPasswordReset(false)
+                  setPassword('')
+                  setShowPassword(false)
+                }}
+                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
+              >
+                Anuluj
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className="w-full bg-white dark:bg-DarkblackText rounded-[12px] shadow-md p-6">
+        <button
+          onClick={logout}
+          className="w-full flex items-center justify-center gap-3 bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-lg font-medium transition-colors cursor-pointer"
+        >
+          <LogOut size={20} />
+          Wyloguj się
+        </button>
+      </div>
+    </div>
   )
 }
 

@@ -13,9 +13,8 @@ export default function Courses() {
       try {
         setLoading(true);
         const { data, error } = await supabase
-          .from("courses")
-          .select("*")
-          .order("created_at", { ascending: false });
+          .from("courses_template")
+          .select("id, title, description, price_cents, image_url");
 
         if (error) throw error;
         setCourses(data || []);

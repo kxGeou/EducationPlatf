@@ -8,6 +8,7 @@ export const useAuthStore = create(
     (set, get) => ({
       user: null,
       purchasedCourses: [],
+      userPoints: 0,
       loading: false,
       userProgress: {},
       userFlashcards: {},
@@ -20,14 +21,17 @@ export const useAuthStore = create(
         try {
           const { data, error } = await supabase
             .from("users")
-            .select("purchased_courses")
+            .select("purchased_courses, points")
             .eq("id", userId)
             .single();
 
           if (error) throw error;
-          set({ purchasedCourses: data?.purchased_courses || [] });
+          set({ 
+            purchasedCourses: data?.purchased_courses || [],
+            userPoints: data?.points || 0
+          });
         } catch (err) {
-          set({ purchasedCourses: [], error: err.message });
+          set({ purchasedCourses: [], userPoints: 0, error: err.message });
         }
       },
 
@@ -73,7 +77,7 @@ export const useAuthStore = create(
         }
       },
 
-      saveVideoProgress: async (userId, videoId, watched) => {
+      saveVideoProgress: async (userId, videoId, watched, courseId = null) => {
         try {
           const { error } = await supabase
             .from("user_video_progress")
@@ -86,6 +90,14 @@ export const useAuthStore = create(
           set((state) => ({
             userProgress: { ...state.userProgress, [videoId]: watched },
           }));
+
+          // Award points for watching video (only once per video)
+          if (watched) {
+            const { userProgress } = get();
+            if (!userProgress[videoId]) {
+              get().awardPoints(10, 'video', videoId, courseId);
+            }
+          }
         } catch (err) {
           toast.error("Błąd zapisu postępu wideo:", err.message);
           console.log(err.message)
@@ -108,6 +120,72 @@ export const useAuthStore = create(
           }));
         } catch (err) {
           toast.error("Błąd zapisywania postępu fiszki");
+        }
+      },
+
+      awardPoints: async (points, sourceType, sourceId, courseId = null) => {
+        try {
+          const { user } = get();
+          if (!user) return;
+
+          // Check if points have already been awarded for this source
+          const { data: existingPoints, error: checkError } = await supabase
+            .from('points_earned')
+            .select('id')
+            .eq('user_id', user.id)
+            .eq('source_type', sourceType)
+            .eq('source_id', sourceId)
+            .single();
+
+          if (checkError && checkError.code !== 'PGRST116') { // PGRST116 means no rows found
+            throw checkError;
+          }
+
+          if (existingPoints) {
+            // Points already awarded for this source, do nothing
+            return;
+          }
+
+          // Insert points earned record
+          const { error: insertError } = await supabase
+            .from('points_earned')
+            .insert({
+              user_id: user.id,
+              points: points,
+              source_type: sourceType,
+              source_id: sourceId,
+              course_id: courseId
+            });
+
+          if (insertError) throw insertError;
+
+          // Get current points and update
+          const { data: currentUser, error: fetchError } = await supabase
+            .from('users')
+            .select('points')
+            .eq('id', user.id)
+            .single();
+
+          if (fetchError) throw fetchError;
+
+          const newPoints = (currentUser?.points || 0) + points;
+
+          const { error: updateError } = await supabase
+            .from('users')
+            .update({ points: newPoints })
+            .eq('id', user.id);
+
+          if (updateError) throw updateError;
+
+          // Update local points
+          set((state) => ({
+            userPoints: state.userPoints + points
+          }));
+
+          // Show success message
+          toast.success(`+${points} punktów!`);
+        } catch (err) {
+          console.error("Error awarding points:", err);
         }
       },
 

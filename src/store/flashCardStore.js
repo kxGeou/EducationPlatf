@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import supabase from '../util/supabaseClient'
+import { useAuthStore } from './authStore'
 
 export const useFlashcardStore = create((set, get) => ({
   categories: [],
@@ -84,6 +85,15 @@ export const useFlashcardStore = create((set, get) => ({
       set((state) => ({
         progress: { ...state.progress, [flashcardId]: status },
       }))
+
+      // Award points for remembering flashcard (only once per flashcard)
+      if (status === 'remembered') {
+        const { progress } = get();
+        if (progress[flashcardId] !== 'remembered') {
+          const { awardPoints } = useAuthStore.getState();
+          awardPoints(5, 'flashcard', flashcardId, courseId);
+        }
+      }
     }
     return !error
   },

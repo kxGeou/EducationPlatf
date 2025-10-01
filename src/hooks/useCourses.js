@@ -16,8 +16,8 @@ export function useCourses() {
 
     setLoading(true);
     supabase
-      .from("courses")
-      .select("id, title, description, section_title, section_description, difficulty, time_to_complete")
+      .from("courses_template")
+      .select("id, title, description, price_cents, image_url")
       .in("id", purchasedCourses)
       .then(({ data, error }) => {
         if (error) {

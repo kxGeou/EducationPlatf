@@ -16,20 +16,21 @@ import {
   Menu,
   ListCheck,
   PenBoxIcon,
+  Trophy,
+  Star,
 } from "lucide-react";
 import React, { useState, useEffect } from "react";
 
 function Navigation({
   activePage,
   setActivePage,
-  userDataModal,
-  setUserDataModal,
   isDark,
   setIsDark,
 }) {
   const [isOpen, setIsOpen] = useState(true);
   const [mobileOpen, setMobileOpen] = useState(false);
   const user = useAuthStore((state) => state.user);
+  const userPoints = useAuthStore((state) => state.userPoints);
 
   const polls = usePollStore((s) => s.polls);
   const fetchPolls = usePollStore((s) => s.fetchPolls);
@@ -137,7 +138,16 @@ function Navigation({
                 >
                   <PenBoxIcon size={20} />
                   Pomysły
-                
+                </span>
+                <span
+                  onClick={() => setActivePage("leaderboard")}
+                  className={`cursor-pointer flex items-center gap-2 transition-discrete duration-200 ${
+                    activePage === "leaderboard" &&
+                    "border-l-6 px-2 border-secondaryBlue text-secondaryBlue dark:border-primaryGreen dark:text-primaryGreen"
+                  }`}
+                >
+                  <Trophy size={20} />
+                  Ranking
                 </span>
               </div>
             </div>
@@ -145,8 +155,8 @@ function Navigation({
               <div className="flex flex-col gap-4">
                 <div
                   className="flex gap-4 items-center cursor-pointer"
-                  onClick={() => setUserDataModal(!userDataModal)}
-                  aria-label="Otwórz dane użytkownika"
+                  onClick={() => setActivePage("profile")}
+                  aria-label="Otwórz profil użytkownika"
                   role="button"
                 >
                   <Avatar
@@ -161,9 +171,15 @@ function Navigation({
                     variant="beam"
                     size={30}
                   />
-                  <span className="opacity-85">
-                    {user?.user_metadata?.full_name || "Użytkownik"}
-                  </span>
+                  <div className="flex flex-col items-start">
+                    <span className="opacity-85 text-sm">
+                      {user?.user_metadata?.full_name || "Użytkownik"}
+                    </span>
+                    <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                      <Star size={12} className="text-yellow-500" />
+                      {userPoints || 0} pkt
+                    </span>
+                  </div>
                 </div>
                 <span
                   onClick={() => {
@@ -262,14 +278,23 @@ function Navigation({
                 >
                   <PenBoxIcon size={22} />
                 </span>
+                <span
+                  onClick={() => setActivePage("leaderboard")}
+                  className={`cursor-pointer ${
+                    activePage === "leaderboard" &&
+                    "text-secondaryBlue dark:text-primaryGreen"
+                  }`}
+                >
+                  <Trophy size={22} />
+                </span>
               </div>
             </div>
             <div>
               <div className="flex flex-col gap-4">
                 <div
                   className="flex gap-4 items-center cursor-pointer"
-                  onClick={() => setUserDataModal(!userDataModal)}
-                  aria-label="Otwórz dane użytkownika"
+                  onClick={() => setActivePage("profile")}
+                  aria-label="Otwórz profil użytkownika"
                   role="button"
                 >
                   <Avatar
@@ -284,6 +309,15 @@ function Navigation({
                     variant="beam"
                     size={30}
                   />
+                  <div className="flex flex-col items-start">
+                    <span className="opacity-85 text-sm">
+                      {user?.user_metadata?.full_name || "Użytkownik"}
+                    </span>
+                    <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                      <Star size={12} className="text-yellow-500" />
+                      {userPoints || 0} pkt
+                    </span>
+                  </div>
                 </div>
                 <span
                   onClick={() => {
@@ -422,7 +456,18 @@ function Navigation({
               }`}
             >
               <PenBoxIcon size={20} /> Pomysły
-              
+            </span>
+            <span
+              onClick={() => {
+                setActivePage("leaderboard");
+                setMobileOpen(false);
+              }}
+              className={`cursor-pointer flex items-center gap-2 ${
+                activePage === "leaderboard" &&
+                "text-secondaryBlue dark:text-primaryGreen"
+              }`}
+            >
+              <Trophy size={20} /> Ranking
             </span>
           </div>
 
@@ -430,7 +475,7 @@ function Navigation({
             <div
               className="flex gap-3 items-center cursor-pointer"
               onClick={() => {
-                setUserDataModal(!userDataModal);
+                setActivePage("profile");
                 setMobileOpen(false);
               }}
             >
@@ -446,7 +491,15 @@ function Navigation({
                 variant="beam"
                 size={30}
               />
-              <span>{user?.user_metadata?.full_name || "Użytkownik"}</span>
+              <div className="flex flex-col items-start">
+                <span className="text-sm">
+                  {user?.user_metadata?.full_name || "Użytkownik"}
+                </span>
+                <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                  <Star size={12} className="text-yellow-500" />
+                  {userPoints || 0} pkt
+                </span>
+              </div>
             </div>
 
             <span

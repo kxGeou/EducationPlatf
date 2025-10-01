@@ -8,7 +8,6 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 export default function MyCourses({ isDark, setIsDark }) {
-  const [userDataModal, setUserDataModal] = useState(false);
   const [activePage, setActivePage] = useState("courses");
   const user = useAuthStore((state) => state.user);
   const loading = useAuthStore((state) => state.loading);
@@ -25,8 +24,6 @@ export default function MyCourses({ isDark, setIsDark }) {
             <Navigation
               activePage={activePage}
               setActivePage={setActivePage}
-              userDataModal={userDataModal}
-              setUserDataModal={setUserDataModal}
               isDark={isDark}
               setIsDark={setIsDark}
             ></Navigation>
@@ -35,12 +32,6 @@ export default function MyCourses({ isDark, setIsDark }) {
           </div>
         </div>
 
-        {userDataModal && (
-          <UserData
-            userDataModal={userDataModal}
-            setUserDataModal={setUserDataModal}
-          />
-        )}
 
       </div>
         <Tutorial isDark={isDark} tutorialVisible={tutorialVisible} setTutorialVisible={setTutorialVisible}></Tutorial>

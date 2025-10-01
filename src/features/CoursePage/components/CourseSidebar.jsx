@@ -15,6 +15,7 @@ import {
   X,
   Notebook,
   ListTodo,
+  User,
 } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -107,12 +108,11 @@ export default function CourseSidebar({
             <span>Tryb {isDark ? "jasny" : "ciemny"}</span>
           </div>
           <UserPanel
-            user={user}
+           user={user}
             isDark={isDark}
             setIsDark={setIsDark}
-            setUserDataModal={setUserDataModal}
-            userDataModal={userDataModal}
-            showSidebar={true}
+            showSidebar={showSidebar}
+            setActiveSection={setActiveSection}
           />
         </div>
       </aside>
@@ -180,13 +180,12 @@ export default function CourseSidebar({
             user={user}
             isDark={isDark}
             setIsDark={setIsDark}
-            setUserDataModal={setUserDataModal}
-            userDataModal={userDataModal}
             showSidebar={showSidebar}
+            setActiveSection={setActiveSection}
           />
            <div
             onClick={toggleTheme}
-            className={`cursor-pointer mt-3 mb-3 transition-all ${
+            className={`cursor-pointer mt-4 transition-all ${
               showSidebar && "bg-secondaryBlue w-full py-3 flex items-center justify-center text-white rounded-[12px]"
             }`}
             title="Przełącz tryb jasny/ciemny"

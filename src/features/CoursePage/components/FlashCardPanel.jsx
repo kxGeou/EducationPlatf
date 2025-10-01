@@ -146,10 +146,13 @@ export default function FlashcardPanel({ courseId }) {
           </span>
         
           {loading || authLoading ? (
-            <p className="text-gray-400">Ładowanie...</p>
+            <div className="flex items-center justify-center h-32">
+              <div className="w-8 h-8 border-2 border-primaryBlue dark:border-primaryGreen border-t-transparent rounded-full animate-spin"></div>
+              <span className="ml-3 text-gray-600 dark:text-gray-400">Ładowanie...</span>
+            </div>
           ) : (
             <div>
-              <h3 className="font-semibold mb-4 text-xl">
+              <h3 className="font-semibold mb-4 text-xl text-gray-800 dark:text-white">
                 Wybierz kategorie fiszek:
               </h3>
 
@@ -158,7 +161,7 @@ export default function FlashcardPanel({ courseId }) {
                   <button
                     key={cat}
                     onClick={() => setSelectedCategory(cat)}
-                    className="bg-white dark:bg-DarkblackText px-4 py-4 text-base md:py-6 md:text-lg font-semibold rounded-[12px] shadow-md border border-gray-100 dark:border-transparent cursor-pointer hover:bg-secondaryBlue/10 dark:hover:bg-blackText/75 transition"
+                    className="bg-white dark:bg-DarkblackText px-4 py-4 text-base font-semibold rounded-[12px] shadow-sm border border-gray-100 dark:border-transparent cursor-pointer hover:translate-y-1 hover:shadow-md transition"
                   >
                     {cat}
                   </button>
@@ -180,7 +183,6 @@ export default function FlashcardPanel({ courseId }) {
             Nauka fiszek - {selectedCategory}
           </span>
 
-          {/* Simple Progress Overview */}
           <div className="bg-white dark:bg-DarkblackText border border-gray-200 dark:border-gray-700 rounded-lg p-4 mb-6">
             <div className="flex justify-between items-center mb-2">
               <span className="text-sm text-gray-600 dark:text-gray-400">Postęp w tej kategorii:</span>
@@ -200,9 +202,8 @@ export default function FlashcardPanel({ courseId }) {
             </div>
           </div>
 
-          {/* Action Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 w-full">
-            <div className="flex flex-col justify-between items-center bg-white dark:bg-DarkblackText dark:border-DarkblackText rounded-[16px] shadow p-4 sm:p-6 border border-gray-100">
+            <div className="flex flex-col justify-between items-center bg-white dark:bg-DarkblackText dark:border-DarkblackText rounded-[16px] shadow p-4 border border-gray-100">
               <h4 className="font-semibold text-lg mb-8 flex gap-2 items-center">
                 <ArrowUpZA className="text-primaryBlue"></ArrowUpZA> Wszystkie
                 fiszki
@@ -241,7 +242,7 @@ export default function FlashcardPanel({ courseId }) {
               </button>
             </div>
 
-            <div className="flex flex-col justify-between items-center dark:bg-DarkblackText dark:border-DarkblackText bg-white rounded-[16px] shadow-md px-4 py-6  border border-gray-100">
+            <div className="flex flex-col justify-between items-center dark:bg-DarkblackText dark:border-DarkblackText bg-white rounded-[16px] shadow-md p-4 border border-gray-100">
               <h4 className="font-semibold text-lg mb-8 flex gap-2 items-center">
                 <Check className="text-primaryGreen"></Check> Potrafisz
               </h4>
@@ -258,7 +259,7 @@ export default function FlashcardPanel({ courseId }) {
               </button>
             </div>
 
-            <div className="flex flex-col justify-between items-center bg-white dark:bg-DarkblackText dark:border-DarkblackText rounded-[16px] shadow p-4 sm:p-6 border border-gray-100">
+            <div className="flex flex-col justify-between items-center bg-white dark:bg-DarkblackText dark:border-DarkblackText rounded-[16px] shadow p-4 border border-gray-100">
               <h4 className="font-semibold text-lg mb-8 flex gap-2 items-center">
                 <X className="text-red-500"></X> Nie potrafisz
               </h4>
@@ -283,32 +284,35 @@ export default function FlashcardPanel({ courseId }) {
           initial="initial"
           animate="animate"
           exit="exit"
-          className="flex flex-col items-center justify-center h-full gap-6 text-center px-4"
+          className="flex flex-col items-center justify-center h-full gap-4 lg:gap-6 text-center px-4"
         >
-          <h2 className="text-2xl font-bold">Gratulacje 🎉</h2>
-          <p className="text-gray-600 dark:text-gray-300">
+          <div className="w-16 h-16 lg:w-20 lg:h-20 bg-gradient-to-br from-primaryBlue to-secondaryBlue dark:from-primaryGreen dark:to-secondaryGreen rounded-full flex items-center justify-center mb-4">
+            <Trophy size={32} className="text-white" />
+          </div>
+          <h2 className="text-xl lg:text-2xl font-bold text-gray-800 dark:text-white">Gratulacje! 🎉</h2>
+          <p className="text-sm lg:text-base text-gray-600 dark:text-gray-300 max-w-md">
             Ukończyłeś wszystkie fiszki w tej sesji!
           </p>
 
-          <div className="flex flex-wrap gap-6 justify-center mt-4">
-            <div className="flex flex-col items-center bg-green-100 dark:bg-green-900/40 px-4 py-2 rounded-xl shadow">
-              <Trophy className="mb-1" size={28} />
-              <span className="font-bold text-lg">{knownCount}</span>
-              <span className="text-sm">Opanowane</span>
+          <div className="flex flex-wrap gap-4 lg:gap-6 justify-center mt-4">
+            <div className="flex flex-col items-center bg-gradient-to-br from-green-500/10 to-green-600/10 dark:from-green-500/20 dark:to-green-600/20 px-4 py-3 rounded-xl border border-green-200 dark:border-green-600">
+              <Trophy className="mb-2 text-green-500 dark:text-green-400" size={24} />
+              <span className="font-bold text-lg text-green-600 dark:text-green-400">{knownCount}</span>
+              <span className="text-xs lg:text-sm text-gray-600 dark:text-gray-400">Opanowane</span>
             </div>
-            <div className="flex flex-col items-center bg-red-100 dark:bg-red-900/40 px-4 py-2 rounded-xl shadow">
-              <Frown className="mb-1" size={28} />
-              <span className="font-bold text-lg">{unknownCount}</span>
-              <span className="text-sm">Do nauki</span>
+            <div className="flex flex-col items-center bg-gradient-to-br from-red-500/10 to-red-600/10 dark:from-red-500/20 dark:to-red-600/20 px-4 py-3 rounded-xl border border-red-200 dark:border-red-600">
+              <Frown className="mb-2 text-red-500 dark:text-red-400" size={24} />
+              <span className="font-bold text-lg text-red-600 dark:text-red-400">{unknownCount}</span>
+              <span className="text-xs lg:text-sm text-gray-600 dark:text-gray-400">Do nauki</span>
             </div>
           </div>
 
-          <div className="flex flex-wrap gap-4 mt-6 justify-center">
+          <div className="flex flex-col sm:flex-row gap-3 lg:gap-4 mt-6 justify-center w-full max-w-md">
             <button
               onClick={restartSession}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-secondaryBlue text-white cursor-pointer hover:bg-primaryBlue/90 transition"
+              className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-primaryBlue dark:bg-primaryGreen hover:bg-secondaryBlue dark:hover:bg-secondaryGreen text-white cursor-pointer transition-all duration-200 font-medium text-sm lg:text-base shadow-sm hover:shadow-md"
             >
-              <RotateCcw size={20} /> Zagraj od nowa
+              <RotateCcw size={18} /> Zagraj od nowa
             </button>
             <button
               onClick={() => {
@@ -316,7 +320,7 @@ export default function FlashcardPanel({ courseId }) {
                 setSessionFinished(false);
                 setCurrentIndex(0);
               }}
-              className="px-4 py-2 rounded-xl bg-gray-200 dark:bg-blackText hover:dark:bg-DarkblackText cursor-pointer hover:bg-gray-300 transition"
+              className="px-4 py-3 rounded-xl bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 cursor-pointer transition-all duration-200 font-medium text-sm lg:text-base text-gray-700 dark:text-gray-300"
             >
               Powrót do listy
             </button>
@@ -349,7 +353,7 @@ export default function FlashcardPanel({ courseId }) {
                   className="relative w-full max-w-xl h-64 sm:h-72 bg-white dark:bg-DarkblackBorder rounded-[16px] shadow-lg select-none flex justify-center items-center px-4 sm:px-8 cursor-pointer"
                   animate={flipped ? "back" : "front"}
                   variants={flipVariants}
-                  transition={{ duration: 0.6 }}
+                  transition={{ duration: 0.3, ease: "easeInOut" }}
                   style={{ transformStyle: "preserve-3d" }}
                   onClick={() => setFlipped((prev) => !prev)}
                 >
@@ -360,9 +364,11 @@ export default function FlashcardPanel({ courseId }) {
                       WebkitBackfaceVisibility: "hidden",
                     }}
                   >
-                    <h4 className="text-sm text-gray-500 dark:text-gray-400 mb-2">
-                      Fiszka {currentIndex + 1} z {filteredFlashcards.length}
-                    </h4>
+                    <div className="absolute top-4 left-4 bg-primaryBlue/10 dark:bg-primaryGreen/10 px-3 py-1 rounded-full">
+                      <h4 className="text-xs text-primaryBlue dark:text-primaryGreen font-medium">
+                        Fiszka {currentIndex + 1} z {filteredFlashcards.length}
+                      </h4>
+                    </div>
                     <div className="text-2xl sm:text-3xl font-bold text-blackText dark:text-white text-center">
                       {currentCard.question}
                     </div>
@@ -376,9 +382,11 @@ export default function FlashcardPanel({ courseId }) {
                       WebkitBackfaceVisibility: "hidden",
                     }}
                   >
-                    <h4 className="text-sm text-gray-500 dark:text-gray-400 mb-2">
-                      Odpowiedź
-                    </h4>
+                    <div className="absolute top-4 left-4 bg-green-500/10 dark:bg-green-400/10 px-3 py-1 rounded-full">
+                      <h4 className="text-xs text-green-600 dark:text-green-400 font-medium">
+                        Odpowiedź
+                      </h4>
+                    </div>
                     <div className="text-lg sm:text-2xl font-semibold text-secondaryBlue dark:text-primaryGreen text-center whitespace-pre-line">
                       {currentCard.answer}
                     </div>

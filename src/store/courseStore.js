@@ -16,14 +16,10 @@ export const useCourseStore = create((set) => ({
     set({ loading: true, error: null })
 
     try {
-      const { data: allCourses, error } = await supabase.from('courses').select('*')
+      const { data: allCourses, error } = await supabase.from('courses_template').select('*')
       if (error) throw error
 
-      const filtered = allCourses.filter((course) =>
-        purchasedCourses.includes(course.id)
-      )
-
-      set({ courses: filtered })
+      set({ courses: allCourses })
     } catch (err) {
       toast.error('Nie udało się załadować kursów')
       set({ error: err.message, courses: [] })
@@ -36,7 +32,7 @@ export const useCourseStore = create((set) => ({
     set({ loading: true, error: null })
 
     try {
-      const { data, error } = await supabase.from('courses').select('*')
+      const { data, error } = await supabase.from('courses_template').select('*')
       if (error) throw error
 
       set({ courses: data })
