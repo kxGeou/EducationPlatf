@@ -16,6 +16,7 @@ import {
   Notebook,
   ListTodo,
   User,
+  ShoppingBag,
 } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -36,6 +37,7 @@ export default function CourseSidebar({
   const menuItems = [
     { icon: <SearchCode size={20} />, label: "Informacje", key: "info" },
     { icon: <Clapperboard size={20} />, label: "Wideo", key: "video" },
+    { icon: <ShoppingBag size={20} />, label: "Sklep", key: "shop" },
     { icon: <NotepadText size={20} />, label: "Fiszki", key: "flashcards" },
     { icon: <ChartColumnBig size={20} />, label: "Postęp", key: "chart" },
     { icon: <ListTodo size={20} />, label: "Zadania", key: "tasks" },

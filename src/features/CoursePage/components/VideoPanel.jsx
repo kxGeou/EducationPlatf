@@ -1,5 +1,5 @@
 import { useAuthStore } from '../../../store/authStore';
-import { ChevronLeft, Lock, ShoppingBasket } from "lucide-react";
+import { ChevronLeft, Lock, ShoppingBasket, Clapperboard, Check } from "lucide-react";
 import { useState } from "react";
 import React from 'react';
 import { useParams } from "react-router-dom";
@@ -12,9 +12,9 @@ export default function VideoPanel({
   currentVideo,
   setCurrentVideo,
   HlsPlayer,
+  setActiveSection,
 }) {
   const [selectedSection, setSelectedSection] = useState(null);
-  const [sectionPrices, setSectionPrices] = useState({});
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [reviewVideoId, setReviewVideoId] = useState(null);
   const [reviewVideoTitle, setReviewVideoTitle] = useState('');
@@ -27,6 +27,15 @@ export default function VideoPanel({
     acc[section].push(video);
     return acc;
   }, {});
+
+  // Sortuj sekcje według kolejności (order) z video_base
+  const sortedSections = Object.keys(groupedVideos).sort((a, b) => {
+    const sectionA = groupedVideos[a][0];
+    const sectionB = groupedVideos[b][0];
+    const orderA = sectionA?.order || 999;
+    const orderB = sectionB?.order || 999;
+    return orderA - orderB;
+  });
 
   const getRandomGradient = (index) => {
     const gradients = [
@@ -42,34 +51,12 @@ export default function VideoPanel({
     return gradients[index % gradients.length];
   };
 
-  const fetchSectionPrices = async () => {
-    const sectionIds = Object.values(groupedVideos).map(sectionVideos => sectionVideos[0]?.section_id).filter(Boolean);
-    if (sectionIds.length === 0) return;
-
-    try {
-      const { data, error } = await supabase
-        .from('courses')
-        .select('id, price_cents')
-        .in('id', sectionIds);
-
-      if (!error && data) {
-        const prices = {};
-        data.forEach(course => {
-          prices[course.id] = course.price_cents;
-        });
-        setSectionPrices(prices);
-      }
-    } catch (err) {
-      console.error('Error fetching section prices:', err);
-    }
-  };
-
-  React.useEffect(() => {
-    fetchSectionPrices();
-  }, [videos]);
 
   const handleToggleWatched = async (videoId, checked) => {
     if (!user) return;
+    
+    // Always save progress first (this awards 10 points for checkbox)
+    saveVideoProgress(user.id, videoId, checked, courseId);
     
     if (checked) {
       try {
@@ -90,8 +77,6 @@ export default function VideoPanel({
         console.error('Error checking review:', err);
       }
     }
-    
-    saveVideoProgress(user.id, videoId, checked, courseId);
   };
 
   const hasSectionAccess = (sectionId, sectionIndex = 0) => {
@@ -100,88 +85,6 @@ export default function VideoPanel({
     return purchasedCourses.includes(sectionId);
   };
 
-  const canPurchaseSection = (currentSectionId, currentSectionIndex) => {
-    if (purchasedCourses.includes(currentSectionId)) {
-      return false;
-    }
-
-    if (currentSectionIndex === 0) {
-      return true;
-    }
-
-    if (currentSectionIndex > 0) {
-      const sectionKeys = Object.keys(groupedVideos);
-      const previousSectionKey = sectionKeys[currentSectionIndex - 1];
-      const previousSectionVideos = groupedVideos[previousSectionKey];
-
-      if (previousSectionVideos && previousSectionVideos.length > 0) {
-        const previousSectionId = previousSectionVideos[0]?.section_id;
-
-        if (previousSectionId && purchasedCourses.includes(previousSectionId)) {
-          return true;
-        }
-      }
-    }
-    return false;
-  };
-
-  const handleSectionPurchase = async (sectionId) => {
-    if (!user) {
-      toast.error("Musisz być zalogowany, żeby kupić sekcję.");
-      return;
-    }
-
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-
-    if (!session) {
-      toast.error("Brak sesji. Zaloguj się ponownie.");
-      return;
-    }
-
-    const { data: courseData, error: courseError } = await supabase
-      .from('courses')
-      .select('id, title, price_cents')
-      .eq('id', sectionId)
-      .single();
-
-    if (courseError || !courseData) {
-      toast.error("Nie udało się pobrać informacji o kursie.");
-      return;
-    }
-
-    const priceCents = courseData.price_cents * 100;
-    if (!priceCents || isNaN(priceCents) || priceCents < 200) {
-      toast.error("Cena kursu musi wynosić co najmniej 2 zł.");
-      return;
-    }
-
-    const res = await fetch(
-      "https://gkvjdemszxjmtxvxlnmr.supabase.co/functions/v1/create-checkout-session",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify({
-          user_id: user.id,
-          course_id: courseData.id,
-          course_title: courseData.title,
-          price_cents: priceCents,
-          success_url_base: window.location.origin,
-        }),
-      }
-    );
-
-    const data = await res.json();
-    if (res.ok && data.url) {
-      window.location.href = data.url;
-    } else {
-      toast.error("Błąd przy tworzeniu sesji płatności:", data);
-    }
-  };
 
   return (
     <div className="w-full ">
@@ -191,8 +94,8 @@ export default function VideoPanel({
             Panel wideo
           </span>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {Object.keys(groupedVideos).map((section, sectionIndex) => {
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {sortedSections.map((section, sectionIndex) => {
               const videosInSection = groupedVideos[section];
               const watchedCount = videosInSection.filter(
                 (v) => userProgress[v.videoId]
@@ -200,13 +103,12 @@ export default function VideoPanel({
               
               const sectionId = videosInSection[0]?.section_id;
               const hasAccess = hasSectionAccess(sectionId, sectionIndex);
-              const canBuy = canPurchaseSection(sectionId, sectionIndex);
 
               return (
                 <div
                   key={section}
-                  className={`bg-white dark:bg-DarkblackText flex flex-col items-start justify-between w-full rounded-[12px] shadow-md transition-all duration-200 hover:shadow-lg hover:-translate-y-1 dark:hover:bg-DarkblackText min-h-[200px] overflow-hidden ${
-                    hasAccess ? 'cursor-pointer' : 'cursor-not-allowed opacity-75'
+                  className={`w-full h-80 rounded-[12px] overflow-hidden shadow-lg transition-all duration-200 ${
+                    hasAccess ? 'cursor-pointer' : 'cursor-not-allowed'
                   }`}
                   onClick={() => {
                     if (hasAccess) {
@@ -218,71 +120,90 @@ export default function VideoPanel({
                     }
                   }}
                 >
-                  <div className={`w-full h-6 bg-gradient-to-r ${getRandomGradient(sectionIndex)}`}></div>
-                  
-                  <div className="w-full p-6">
-                    <div className="flex items-center gap-2 mb-3">
-                      <h3 className="text-lg font-semibold line-clamp-2">{section}</h3>
-                      {!hasAccess && <Lock size={16} className="text-gray-500" />}
+                  {/* Sekcja z wyróżnieniem dostępu */}
+                  <div className={`flex flex-col h-full transition-all duration-200 ${
+                    hasAccess 
+                      ? 'bg-white dark:bg-DarkblackText shadow-lg' 
+                      : 'bg-gray-100 dark:bg-gray-800 shadow-md opacity-75'
+                  }`}>
+                    {/* Wyższy gradient z tytułem */}
+                    <div className={`w-full h-12 bg-gradient-to-r ${getRandomGradient(sectionIndex)} flex items-center justify-center`}>
+                      <h3 className="text-white font-bold text-lg drop-shadow-lg">{section}</h3>
                     </div>
                     
-                    {videosInSection[0]?.section_description && (
-                      <p className="text-sm opacity-70 mb-3 line-clamp-2">
-                        {videosInSection[0].section_description}
+                    <div className="flex-1 p-4 flex flex-col">
+                      {videosInSection[0]?.section_description && (
+                        <p className={`text-sm mb-3 line-clamp-2 flex-1 ${
+                          hasAccess ? 'opacity-70' : 'opacity-50'
+                        }`}>
+                          {videosInSection[0].section_description}
+                        </p>
+                      )}
+                      
+                      <p className={`text-sm mb-3 ${
+                        hasAccess ? 'opacity-60' : 'opacity-40'
+                      }`}>
+                        {videosInSection.length} lekcji wideo
                       </p>
-                    )}
-                    
-                    <p className="text-sm opacity-60 mb-4 line-clamp-3">
-                      {videosInSection.length} lekcji wideo
-                    </p>
-                    
-                    {sectionId && sectionPrices[sectionId] && !hasAccess && (
-                      <div className="mb-4">
-                        <span className="text-lg font-bold text-primaryBlue dark:text-primaryGreen">
-                          {sectionPrices[sectionId]} zł
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                  
-                  <div className="w-full px-6 pb-6 mt-auto">
-                    {hasAccess ? (
-                      <>
+                      
+                      <div className="mt-auto">
                         <div className="flex justify-between items-center mb-2">
-                          <span className="text-xs text-blackText/50 dark:text-white/50">
+                          <span className={`text-xs ${
+                            hasAccess ? 'text-blackText/50 dark:text-white/50' : 'text-gray-400 dark:text-gray-500'
+                          }`}>
                             Postęp
                           </span>
-                          <span className="text-xs font-medium text-blackText/70 dark:text-white/70">
-                            {Math.round((watchedCount / videosInSection.length) * 100) || 0}%
+                          <span className={`text-xs font-medium ${
+                            hasAccess ? 'text-blackText/70 dark:text-white/70' : 'text-gray-400 dark:text-gray-500'
+                          }`}>
+                            {hasAccess ? Math.round((watchedCount / videosInSection.length) * 100) || 0 : 0}%
                           </span>
                         </div>
                         <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2 overflow-hidden">
                           <div
-                            className="bg-secondaryBlue dark:bg-secondaryGreen h-2 rounded-full transition-all duration-300"
+                            className={`h-2 rounded-full transition-all duration-300 ${
+                              hasAccess 
+                                ? 'bg-secondaryBlue dark:bg-secondaryGreen' 
+                                : 'bg-gray-300 dark:bg-gray-500'
+                            }`}
                             style={{
-                              width: `${(watchedCount / videosInSection.length) * 100 || 0}%`,
+                              width: `${hasAccess ? (watchedCount / videosInSection.length) * 100 || 0 : 0}%`,
                             }}
                           ></div>
                         </div>
-                      </>
-                    ) : (
-                      canBuy ? (
+                      </div>
+                    </div>
+                    
+                    {/* Przycisk na samym dole - różny w zależności od dostępu */}
+                    <div className="p-4 pt-1">
+                      {hasAccess ? (
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            handleSectionPurchase(sectionId);
+                            setSelectedSection(section);
+                            const firstVideo = videosInSection[0];
+                            if (firstVideo) {
+                              setCurrentVideo(firstVideo);
+                            }
                           }}
-                          className="w-full py-3 bg-gradient-to-r from-blue-600 to-blue-700 dark:from-primaryGreen dark:to-secondaryGreen hover:from-blue-700 hover:to-blue-800 dark:hover:from-primaryGreen dark:hover:to-secondaryGreen flex items-center justify-center gap-2 rounded-[8px] text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+                          className="w-full py-2.5 bg-primaryBlue dark:bg-primaryGreen text-white font-semibold rounded-lg transition-all duration-200 flex items-center justify-center gap-2 text-sm hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
                         >
-                          <ShoppingBasket size={16} />
-                          Kup sekcję
+                          <Clapperboard size={14} />
+                          Otwórz sekcję
                         </button>
                       ) : (
-                        <div className="w-full py-3 text-sm text-gray-500 dark:text-gray-400 text-center bg-gray-100 dark:bg-gray-700 rounded-[8px]">
-                          Kup poprzednią sekcję, aby odblokować
-                        </div>
-                      )
-                    )}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setActiveSection('shop');
+                          }}
+                          className="w-full py-2.5 bg-primaryBlue dark:bg-primaryGreen text-white font-semibold rounded-lg transition-all duration-200 flex items-center justify-center gap-2 text-sm hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
+                        >
+                          <ShoppingBasket size={14} />
+                          Przejdź do sklepu
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
               );
@@ -381,14 +302,14 @@ export default function VideoPanel({
                       <div className="text-3xl lg:text-5xl mb-3 lg:mb-4">🔒</div>
                       <h3 className="text-lg lg:text-2xl font-bold mb-2 lg:mb-3">Sekcja zablokowana</h3>
                       <p className="text-xs lg:text-sm opacity-80 mb-4 lg:mb-6 max-w-md">
-                        Ta sekcja wideo wymaga zakupu. Kup sekcję, aby uzyskać dostęp do wszystkich lekcji.
+                        Ta sekcja wideo wymaga zakupu pakietu. Przejdź do sekcji Sklep, aby kupić dostęp.
                       </p>
                       <button
-                        onClick={() => handleSectionPurchase(currentVideo.section_id)}
+                        onClick={() => setActiveSection('shop')}
                         className="px-4 lg:px-6 py-2 lg:py-3 bg-gradient-to-r from-blue-600 to-blue-700 dark:from-primaryGreen dark:to-secondaryGreen hover:from-blue-700 hover:to-blue-800 dark:hover:from-primaryGreen dark:hover:to-secondaryGreen text-white rounded-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-200 text-sm lg:text-base"
                       >
                         <ShoppingBasket size={16} className="inline mr-2 lg:w-4 lg:h-5" />
-                        Kup sekcję
+                        Przejdź do sklepu
                       </button>
                     </div>
                   </div>
@@ -439,6 +360,7 @@ export default function VideoPanel({
         onClose={() => setShowReviewModal(false)}
         videoId={reviewVideoId}
         videoTitle={reviewVideoTitle}
+        courseId={courseId}
       />
     </div>
   );

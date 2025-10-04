@@ -72,9 +72,12 @@ export default function CourseLandingPage({ isDark, setIsDark }) {
           .eq("id", user.id)
           .single();
 
-        if (userData?.purchased_courses?.includes(id)) {
-          setAlreadyBought(true);
-        }
+        // Sprawdź czy użytkownik ma dostęp do jakichkolwiek sekcji tego kursu
+        const userPurchasedCourses = userData?.purchased_courses || [];
+        const courseSectionIds = videosData?.map(video => video.section_id).filter(Boolean) || [];
+        const hasAccess = courseSectionIds.some(sectionId => userPurchasedCourses.includes(sectionId));
+        
+        setAlreadyBought(hasAccess);
       } else {
         setAlreadyBought(false);
       }

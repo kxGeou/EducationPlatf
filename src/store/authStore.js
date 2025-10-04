@@ -9,9 +9,11 @@ export const useAuthStore = create(
       user: null,
       purchasedCourses: [],
       userPoints: 0,
+      maturaDate: null,
       loading: false,
       userProgress: {},
       userFlashcards: {},
+      userPointsEarned: {}, // Track which videos/flashcards already earned points
       error: null,
       initialized: false,
 
@@ -21,17 +23,18 @@ export const useAuthStore = create(
         try {
           const { data, error } = await supabase
             .from("users")
-            .select("purchased_courses, points")
+            .select("purchased_courses, points, matura_date")
             .eq("id", userId)
             .single();
 
           if (error) throw error;
           set({ 
             purchasedCourses: data?.purchased_courses || [],
-            userPoints: data?.points || 0
+            userPoints: data?.points || 0,
+            maturaDate: data?.matura_date || null
           });
         } catch (err) {
-          set({ purchasedCourses: [], userPoints: 0, error: err.message });
+          set({ purchasedCourses: [], userPoints: 0, maturaDate: null, error: err.message });
         }
       },
 
@@ -91,11 +94,21 @@ export const useAuthStore = create(
             userProgress: { ...state.userProgress, [videoId]: watched },
           }));
 
-          // Award points for watching video (only once per video)
+          // Award points for checking checkbox (only once per video)
           if (watched) {
-            const { userProgress } = get();
-            if (!userProgress[videoId]) {
+            const { userPointsEarned } = get();
+            const pointsKey = `video_${videoId}`;
+            
+            if (!userPointsEarned[pointsKey]) {
+              console.log(`Awarding 10 points for video ${videoId} - checkbox checked`);
               get().awardPoints(10, 'video', videoId, courseId);
+              
+              // Mark as points earned
+              set((state) => ({
+                userPointsEarned: { ...state.userPointsEarned, [pointsKey]: true }
+              }));
+            } else {
+              console.log(`Video ${videoId} already earned checkbox points - no points awarded`);
             }
           }
         } catch (err) {
@@ -104,7 +117,7 @@ export const useAuthStore = create(
         }
       },
 
-      saveFlashcardProgress: async (userId, flashcardId, status) => {
+      saveFlashcardProgress: async (userId, flashcardId, status, courseId = null) => {
         try {
           const { data, error } = await supabase
             .from("user_flashcard_progress")
@@ -118,8 +131,50 @@ export const useAuthStore = create(
               [flashcardId]: status,
             },
           }));
+
+          // Award points for marking flashcard as "known" (only once per flashcard)
+          if (status === "known") {
+            const { userPointsEarned } = get();
+            const pointsKey = `flashcard_${flashcardId}`;
+            
+            if (!userPointsEarned[pointsKey]) {
+              console.log(`Awarding 5 points for flashcard ${flashcardId} - marked as known`);
+              get().awardPoints(5, 'flashcard', flashcardId, courseId);
+              
+              // Mark as points earned
+              set((state) => ({
+                userPointsEarned: { ...state.userPointsEarned, [pointsKey]: true }
+              }));
+            } else {
+              console.log(`Flashcard ${flashcardId} already earned points - no points awarded`);
+            }
+          }
         } catch (err) {
           toast.error("Błąd zapisywania postępu fiszki");
+        }
+      },
+
+      awardPointsForReview: async (videoId, courseId = null) => {
+        try {
+          const { user } = get();
+          if (!user) return;
+
+          const { userPointsEarned } = get();
+          const pointsKey = `review_${videoId}`;
+          
+          if (!userPointsEarned[pointsKey]) {
+            console.log(`Awarding 20 points for video review ${videoId}`);
+            get().awardPoints(20, 'review', videoId, courseId);
+            
+            // Mark as points earned
+            set((state) => ({
+              userPointsEarned: { ...state.userPointsEarned, [pointsKey]: true }
+            }));
+          } else {
+            console.log(`Video ${videoId} already earned review points - no points awarded`);
+          }
+        } catch (err) {
+          console.error("Error awarding review points:", err);
         }
       },
 
@@ -128,38 +183,9 @@ export const useAuthStore = create(
           const { user } = get();
           if (!user) return;
 
-          // Check if points have already been awarded for this source
-          const { data: existingPoints, error: checkError } = await supabase
-            .from('points_earned')
-            .select('id')
-            .eq('user_id', user.id)
-            .eq('source_type', sourceType)
-            .eq('source_id', sourceId)
-            .single();
+          console.log(`Attempting to award ${points} points for ${sourceType} ${sourceId}`);
 
-          if (checkError && checkError.code !== 'PGRST116') { // PGRST116 means no rows found
-            throw checkError;
-          }
-
-          if (existingPoints) {
-            // Points already awarded for this source, do nothing
-            return;
-          }
-
-          // Insert points earned record
-          const { error: insertError } = await supabase
-            .from('points_earned')
-            .insert({
-              user_id: user.id,
-              points: points,
-              source_type: sourceType,
-              source_id: sourceId,
-              course_id: courseId
-            });
-
-          if (insertError) throw insertError;
-
-          // Get current points and update
+          // Get current points and update directly
           const { data: currentUser, error: fetchError } = await supabase
             .from('users')
             .select('points')
@@ -179,13 +205,15 @@ export const useAuthStore = create(
 
           // Update local points
           set((state) => ({
-            userPoints: state.userPoints + points
+            userPoints: newPoints
           }));
 
           // Show success message
           toast.success(`+${points} punktów!`);
+          console.log(`Successfully awarded ${points} points. New total: ${newPoints}`);
         } catch (err) {
           console.error("Error awarding points:", err);
+          toast.error("Błąd przyznawania punktów");
         }
       },
 
@@ -207,6 +235,7 @@ export const useAuthStore = create(
               purchasedCourses: [],
               userProgress: {},
               userFlashcards: {},
+              maturaDate: null,
             });
           }
         } catch (error) {
@@ -229,6 +258,7 @@ export const useAuthStore = create(
               purchasedCourses: [],
               userProgress: {},
               userFlashcards: {},
+              maturaDate: null,
             });
           }
           set({ initialized: true });
@@ -364,6 +394,40 @@ export const useAuthStore = create(
           return true;
         } catch (err) {
           toast.error("Wystąpił błąd podczas zmiany hasła");
+          set({ error: err.message, loading: false });
+          return false;
+        }
+      },
+
+      updateMaturaDate: async (maturaDate) => {
+        const { user, maturaDate: currentMaturaDate } = get();
+        if (!user) return false;
+
+        // Prevent changing matura date if already set
+        if (currentMaturaDate) {
+          toast.error("Data matury może być ustawiona tylko raz");
+          return false;
+        }
+
+        set({ loading: true, error: null });
+        try {
+          const { error } = await supabase
+            .from('users')
+            .update({ matura_date: maturaDate })
+            .eq('id', user.id);
+
+          if (error) {
+            toast.error("Błąd aktualizacji daty matury: " + error.message);
+            set({ error: error.message, loading: false });
+            return false;
+          }
+
+          set({ maturaDate: maturaDate });
+          toast.success("Data matury została ustawiona pomyślnie!");
+          set({ loading: false });
+          return true;
+        } catch (err) {
+          toast.error("Wystąpił błąd podczas aktualizacji daty matury");
           set({ error: err.message, loading: false });
           return false;
         }

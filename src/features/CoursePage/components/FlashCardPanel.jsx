@@ -127,7 +127,7 @@ export default function FlashcardPanel({ courseId }) {
 
   const markFlashcard = async (status, cardId) => {
     if (!user) return;
-    await saveFlashcardProgress(user.id, cardId, status);
+    await saveFlashcardProgress(user.id, cardId, status, courseId);
     setCurrentIndex((i) => i + 1);
   };
 

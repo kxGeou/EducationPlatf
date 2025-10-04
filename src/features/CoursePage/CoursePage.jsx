@@ -6,6 +6,7 @@ import CourseSidebar from "./components/CourseSidebar";
 import FlashcardPanel from "./components/FlashCardPanel";
 import TaskPanel from "./components/TaskPanel";
 import VideoPanel from "./components/VideoPanel";
+import ShopPanel from "./components/ShopPanel";
 import UserData from "../MyCoursesPage/components/UserData";
 import { useAuthStore } from '../../store/authStore';
 import { useSingleCourseStore } from '../../store/singleCourseStore';
@@ -95,6 +96,14 @@ export default function CoursePage({ isDark, setIsDark }) {
               currentVideo={currentVideo}
               setCurrentVideo={setCurrentVideo}
               HlsPlayer={HlsPlayer}
+              isDark={isDark}
+              setActiveSection={setActiveSection}
+            />
+          )}
+
+          {activeSection === "shop" && (
+            <ShopPanel
+              course={course}
               isDark={isDark}
             />
           )}

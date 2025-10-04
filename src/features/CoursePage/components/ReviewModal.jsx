@@ -12,12 +12,12 @@ const emojiRatings = [
   { emoji: '🤩', value: 5, label: 'Doskonałe', color: 'from-primaryGreen to-secondaryGreen' }
 ];
 
-export default function ReviewModal({ isOpen, onClose, videoId, videoTitle }) {
+export default function ReviewModal({ isOpen, onClose, videoId, videoTitle, courseId }) {
   const [selectedRating, setSelectedRating] = useState(null);
   const [reviewText, setReviewText] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
-  const { user } = useAuthStore();
+  const { user, awardPointsForReview } = useAuthStore();
 
   // Reset form when modal opens
   useEffect(() => {
@@ -54,6 +54,9 @@ export default function ReviewModal({ isOpen, onClose, videoId, videoTitle }) {
       if (error) {
         throw error;
       }
+
+      // Award points for review submission
+      awardPointsForReview(videoId, courseId);
 
       setShowSuccess(true);
       setTimeout(() => {
