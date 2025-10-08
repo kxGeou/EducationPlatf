@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import supabase from '../util/supabaseClient'
 import { useAuthStore } from './authStore'
-import { toast } from 'react-toastify';
+import { toast } from '../utils/toast';
 
 export const useSingleCourseStore = create((set) => ({
   course: null,

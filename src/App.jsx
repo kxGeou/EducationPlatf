@@ -4,7 +4,6 @@ import Home from './features/HomePage/Home.jsx';
 import MyCourses from './features/MyCoursesPage/MyCourses.jsx'
 import AuthPage from './features/AuthPage/AuthPage.jsx'
 import CoursePage from './features/CoursePage/CoursePage.jsx'
-import { ToastContainer } from 'react-toastify';
 import CourseLandingPage from './features/CoursePage/CourseLandingPage.jsx'
 import Loading from './components/systemLayouts/Loading.jsx'
 import Error from './components/systemLayouts/Error.jsx'
@@ -18,18 +17,17 @@ import ScrollToTop from './scripts/scrollToTop.jsx'
 import PasswordResetPage from './features/AuthPage/PasswordResetPage.jsx'
 import NewPasswordPage from './features/AuthPage/NewPasswordPage.jsx'
 import ContactPage from './features/ContactPage/ContactPage.jsx'
-import ReportPage from './features/ReportPage/ReportPage.jsx'
+import AdminPage from './features/AdminPage/AdminPage.jsx'
 import Regulations from './features/AuthPage/Regulations.jsx'
-import FormPage from './features/FormPage/FormPage.jsx'
-import ExamPage from './features/ExamPage/ExamPage.jsx';
-export default function App() {
+import ExamPage from './features/ExamPage/ExamPage.jsx'
+import { ToastProvider, useToast } from './context/ToastContext.jsx'
+import ToastContainer from './components/ui/ToastContainer.jsx'
+import FloatingNotificationBubble from './components/ui/FloatingNotificationBubble.jsx'
+function AppContent({ isDark, setIsDark }) {
   const init = useAuthStore(state => state.init)
   const loading = useAuthStore(state => state.loading)
   const user = useAuthStore(state => state.user)
-  const [isDark, setIsDark] = useState(() => {
-    const theme = localStorage.getItem("theme");
-    return theme === "dark" ? true : false;
-  });
+  const { toasts, removeToast } = useToast()
 
   useEffect(() => {
     init()
@@ -41,7 +39,11 @@ export default function App() {
 
   return (
     <>
-      <ToastContainer />
+      <ToastContainer 
+        toasts={toasts} 
+        onRemove={removeToast} 
+        isDark={isDark} 
+      />
       <ScrollToTop />
       <Routes>
         <Route path='/' element={<Home isDark={isDark} setIsDark={setIsDark} />} />
@@ -59,11 +61,25 @@ export default function App() {
         <Route path='/blog' element={<BlogMainPage isDark={isDark} setIsDark={setIsDark} />} />
         <Route path='/blog/:id' element={<BlogPage isDark={isDark} setIsDark={setIsDark} />} />
         <Route path='/zasoby' element={<TestResources isDark={isDark} setIsDark={setIsDark}/>} />
-        <Route path='/reports' element={<ReportPage isDark={isDark}></ReportPage>}></Route>
-        <Route path='/formPage' element={<FormPage isDark={isDark} setIsDark={setIsDark}></FormPage>}></Route>
+        <Route path='/admin' element={<AdminPage isDark={isDark} setIsDark={setIsDark}></AdminPage>}></Route>
         <Route path='/exam' element={<ExamPage isDark={isDark} setIsDark={setIsDark}></ExamPage>}></Route>
         <Route path='/*' element={<WrongPage isDark={isDark} setIsDark={setIsDark} />} />
       </Routes>
+      
+      <FloatingNotificationBubble isDark={isDark} />
     </>
+  )
+}
+
+export default function App() {
+  const [isDark, setIsDark] = useState(() => {
+    const theme = localStorage.getItem("theme");
+    return theme === "dark" ? true : false;
+  });
+
+  return (
+    <ToastProvider>
+      <AppContent isDark={isDark} setIsDark={setIsDark} />
+    </ToastProvider>
   )
 }

@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { ShoppingBasket, Check } from 'lucide-react';
-import { toast } from 'react-toastify';
+import { useToast } from '../../../context/ToastContext';
 import { useAuthStore } from '../../../store/authStore';
 import supabase from '../../../util/supabaseClient';
 
-export default function ShopPanel({ course, isDark }) {
-  const { user, purchasedCourses, fetchUserData } = useAuthStore();
+export default function ShopPanel({ course, isDark, setActivePage }) {
+  const toast = useToast();
+  const { user, purchasedCourses, fetchUserData, canPurchaseCourses, maturaDate } = useAuthStore();
   const [coursePackages, setCoursePackages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [packageDetails, setPackageDetails] = useState({});
@@ -110,6 +111,12 @@ export default function ShopPanel({ course, isDark }) {
       return;
     }
 
+    // Check if user has set matura date
+    if (!canPurchaseCourses()) {
+      toast.error("Musisz ustawić datę matury w profilu, aby móc kupować kursy.");
+      return;
+    }
+
     const {
       data: { session },
     } = await supabase.auth.getSession();
@@ -176,6 +183,7 @@ export default function ShopPanel({ course, isDark }) {
         Sklep
       </span>
 
+
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {coursePackages.map((pkg, index) => {
           const isPurchased = purchasedCourses.includes(pkg.id);
@@ -185,7 +193,9 @@ export default function ShopPanel({ course, isDark }) {
           // Sprawdź czy poprzedni pakiet został zakupiony
           const previousPackage = index > 0 ? coursePackages[index - 1] : null;
           const previousPackagePurchased = previousPackage ? purchasedCourses.includes(previousPackage.id) : true;
+          const hasMaturaDate = canPurchaseCourses();
           const canPurchase = isPurchased || (index === 0) || previousPackagePurchased;
+          const canPurchaseWithMatura = canPurchase && hasMaturaDate;
 
           return (
             <div
@@ -194,7 +204,7 @@ export default function ShopPanel({ course, isDark }) {
                 isPurchased 
                   ? 'bg-green-50/30 dark:bg-green-900/10' 
                   : 'bg-gray-50/50 dark:bg-gray-800/50 shadow-gray-200 dark:shadow-gray-700'
-              } ${!canPurchase ? 'opacity-60' : ''}`}
+              } ${!canPurchaseWithMatura ? 'opacity-60' : ''}`}
             >
               {/* Top Banner */}
               <div className={`relative h-16 bg-gradient-to-r ${getRandomGradient(index)} overflow-hidden`}>
@@ -260,13 +270,20 @@ export default function ShopPanel({ course, isDark }) {
                   <div className="w-full py-2.5 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-lg text-center font-semibold text-sm shadow-sm border border-green-200 dark:border-green-700">
                     ✓ Zakupione
                   </div>
-                ) : canPurchase ? (
+                ) : canPurchaseWithMatura ? (
                   <button
                     onClick={() => handlePackagePurchase(pkg.id)}
                     className="w-full py-2.5 bg-primaryBlue dark:bg-primaryGreen text-white rounded-lg font-semibold text-sm shadow-lg transition-all duration-200 flex items-center justify-center gap-2 hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
                   >
                     <ShoppingBasket size={16} />
                     Dodaj do koszyka
+                  </button>
+                ) : !hasMaturaDate ? (
+                  <button
+                    onClick={() => setActivePage("profile")}
+                    className="w-full py-2.5 bg-orange-200 dark:bg-orange-800 text-orange-800 dark:text-orange-200 rounded-lg text-center font-semibold text-sm hover:bg-orange-300 dark:hover:bg-orange-700 transition-colors cursor-pointer"
+                  >
+                    Ustaw datę matury w profilu
                   </button>
                 ) : (
                   <div className="w-full py-2.5 bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400 rounded-lg text-center font-semibold text-sm">

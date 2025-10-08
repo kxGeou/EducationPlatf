@@ -18,6 +18,7 @@ import {
   PenBoxIcon,
   Trophy,
   Star,
+  LayoutDashboard,
 } from "lucide-react";
 import React, { useState, useEffect } from "react";
 
@@ -73,6 +74,16 @@ function Navigation({
               <hr className="w-full h-[1px] bg-slate-400 opacity-20 my-4" />
 
               <div className="flex flex-col gap-5 w-full">
+                <span
+                  onClick={() => setActivePage("dashboard")}
+                  className={`cursor-pointer flex items-center gap-2 transition-discrete duration-200 ${
+                    activePage === "dashboard" &&
+                    "border-l-6 px-2 border-secondaryBlue text-secondaryBlue dark:border-primaryGreen dark:text-primaryGreen"
+                  }`}
+                >
+                  <LayoutDashboard size={20} />
+                  Statystyki
+                </span>
                 <span
                   onClick={() => setActivePage("courses")}
                   className={`cursor-pointer flex items-center gap-2 transition-discrete duration-200 ${
@@ -218,6 +229,15 @@ function Navigation({
               <hr className="w-full h-[1px] bg-slate-400 dark:bg-slate-200 opacity-20 dark:opacity-40 my-4" />
 
               <div className="flex flex-col gap-5 items-center w-full">
+                <span
+                  onClick={() => setActivePage("dashboard")}
+                  className={`cursor-pointer ${
+                    activePage === "dashboard" &&
+                    "text-secondaryBlue dark:text-primaryGreen"
+                  }`}
+                >
+                  <LayoutDashboard size={22} />
+                </span>
                 <span
                   onClick={() => setActivePage("courses")}
                   className={`cursor-pointer ${
@@ -379,6 +399,18 @@ function Navigation({
           </div>
 
           <div className="flex flex-col gap-5 p-4">
+            <span
+              onClick={() => {
+                setActivePage("dashboard");
+                setMobileOpen(false);
+              }}
+              className={`cursor-pointer flex items-center gap-2 ${
+                activePage === "dashboard" &&
+                "text-secondaryBlue dark:text-primaryGreen"
+              }`}
+            >
+              <LayoutDashboard size={20} /> Statystyki
+            </span>
             <span
               onClick={() => {
                 setActivePage("courses");

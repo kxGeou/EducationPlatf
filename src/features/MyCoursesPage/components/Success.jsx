@@ -2,8 +2,9 @@ import { useEffect } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import supabase from '../../../util/supabaseClient'
 import { Cog } from 'lucide-react'
-import { toast } from 'react-toastify';
+import { useToast } from '../../../context/ToastContext';
 export default function Success() {
+  const toast = useToast();
   const [params] = useSearchParams()
   const navigate = useNavigate()
 

@@ -105,6 +105,7 @@ export default function CoursePage({ isDark, setIsDark }) {
             <ShopPanel
               course={course}
               isDark={isDark}
+              setActivePage={() => window.location.href = '/user_page?section=profile'}
             />
           )}
 

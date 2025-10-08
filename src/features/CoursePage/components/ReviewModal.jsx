@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { X, Send, Star, Heart } from 'lucide-react';
 import supabase from '../../../util/supabaseClient';
 import { useAuthStore } from '../../../store/authStore';
-import { toast } from 'react-toastify';
+import { useToast } from '../../../context/ToastContext';
 
 const emojiRatings = [
   { emoji: '😞', value: 1, label: 'Bardzo złe', color: 'from-red-500 to-red-600' },
@@ -13,6 +13,7 @@ const emojiRatings = [
 ];
 
 export default function ReviewModal({ isOpen, onClose, videoId, videoTitle, courseId }) {
+  const toast = useToast();
   const [selectedRating, setSelectedRating] = useState(null);
   const [reviewText, setReviewText] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);

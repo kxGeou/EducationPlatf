@@ -2,7 +2,7 @@ import ContactHero from "./components/ContactHero";
 import PageLayout from '../../components/systemLayouts/PageLayout';
 import { LoaderCircle, ChevronDown, Check } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
-import { toast } from "react-toastify";
+import { useToast } from '../../context/ToastContext';
 import Gmail from '../../assets/gmail.svg';
 import supabase from '../../util/supabaseClient';
 import '../../styles/AuthPage.css';
@@ -135,6 +135,7 @@ function Calendly() {
 }
 
 function ContactPage({ isDark, setIsDark }) {
+  const toast = useToast();
   const [formData, setFormData] = useState({ email: "", name: "", phone: "", topic: "", message: "" });
   const [loading, setLoading] = useState(false);
 

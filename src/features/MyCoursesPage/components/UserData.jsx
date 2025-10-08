@@ -3,16 +3,18 @@ import React, { useState, useEffect } from 'react'
 import Avatar from 'boring-avatars'
 import { useAuthStore } from '../../../store/authStore';
 import { useCourseStore } from '../../../store/courseStore';
-import { toast } from 'react-toastify';
+import { useToast } from '../../../context/ToastContext';
 import supabase from '../../../util/supabaseClient';
 
 function UserData() {
+  const toast = useToast();
   const user = useAuthStore(state => state.user)
   const userPoints = useAuthStore(state => state.userPoints)
   const maturaDate = useAuthStore(state => state.maturaDate)
   const logout = useAuthStore(state => state.logout)
   const updateMaturaDate = useAuthStore(state => state.updateMaturaDate)
   const loading = useAuthStore(state => state.loading)
+  const cleanupPurchasedCourses = useAuthStore(state => state.cleanupPurchasedCourses)
 
   const courses = useCourseStore(state => state.courses)
   const coursesLoading = useCourseStore(state => state.loading)
@@ -75,6 +77,26 @@ function UserData() {
     }
   }
 
+  const handleTestCleanup = async () => {
+    if (!user) {
+      toast.error('Musisz być zalogowany')
+      return
+    }
+
+    const confirmed = window.confirm(
+      'Czy na pewno chcesz wyczyścić wszystkie zakupione kursy? Ta operacja jest nieodwracalna.'
+    )
+    
+    if (!confirmed) return
+
+    const success = await cleanupPurchasedCourses()
+    if (success) {
+      toast.success('Kursy zostały wyczyszczone pomyślnie!')
+    } else {
+      toast.error('Błąd podczas czyszczenia kursów')
+    }
+  }
+
   useEffect(() => {
     if (maturaDate) {
       // Extract year from date (YYYY-MM-DD format)
@@ -132,7 +154,7 @@ function UserData() {
             <p className="text-sm text-gray-600 dark:text-gray-400">Ustawiona data:</p>
             <p className="text-lg font-semibold text-gray-800 dark:text-white">{maturaDate.split('-')[0]}</p>
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-              Data matury może być ustawiona tylko raz
+              Data matury może być ustawiona tylko raz. Kursy zostaną automatycznie usunięte w czerwcu {maturaDate.split('-')[0]}.
             </p>
           </div>
         )}
@@ -160,7 +182,7 @@ function UserData() {
               </select>
             </div>
             <p className="text-xs text-gray-500 dark:text-gray-400">
-              Możesz ustawić datę matury maksymalnie 3 lata w przód
+              Możesz ustawić datę matury maksymalnie 3 lata w przód. Kursy zostaną automatycznie usunięte w czerwcu wybranego roku.
             </p>
             <div className="flex gap-3">
               <button
@@ -284,6 +306,29 @@ function UserData() {
             </div>
           </div>
         )}
+      </div>
+
+      {/* Test Cleanup Button */}
+      <div className="w-full bg-white dark:bg-DarkblackText rounded-[12px] shadow-md p-6 mb-6">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <div className="w-6 h-6 text-orange-500">
+              <svg fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <h4 className="font-semibold text-gray-800 dark:text-white">Test funkcji</h4>
+          </div>
+        </div>
+        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+          Przycisk testowy do sprawdzenia funkcji czyszczenia zakupionych kursów.
+        </p>
+        <button
+          onClick={handleTestCleanup}
+          className="w-full bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+        >
+          Wyczyść zakupione kursy (TEST)
+        </button>
       </div>
 
       <div className="w-full bg-white dark:bg-DarkblackText rounded-[12px] shadow-md p-6">

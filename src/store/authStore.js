@@ -1,5 +1,5 @@
 import supabase from "../util/supabaseClient";
-import { toast } from 'react-toastify';
+import { toast } from '../utils/toast';
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
@@ -229,6 +229,11 @@ export const useAuthStore = create(
             await get().fetchUserData(session.user.id);
             await get().fetchUserProgress(session.user.id);
             await get().fetchUserFlashcards(session.user.id);
+            
+            // Check if courses should be cleaned up (in June of matura year)
+            if (get().shouldCleanupCourses()) {
+              await get().cleanupPurchasedCourses();
+            }
           } else {
             set({
               user: null,
@@ -251,6 +256,11 @@ export const useAuthStore = create(
               await get().fetchUserData(session.user.id);
               await get().fetchUserProgress(session.user.id);
               await get().fetchUserFlashcards(session.user.id);
+              
+              // Check if courses should be cleaned up (in June of matura year)
+              if (get().shouldCleanupCourses()) {
+                await get().cleanupPurchasedCourses();
+              }
             }, 100); 
           } else {
             set({
@@ -322,6 +332,12 @@ export const useAuthStore = create(
           await get().fetchUserData(data.user.id);
           await get().fetchUserProgress(data.user.id);
           await get().fetchUserFlashcards(data.user.id);
+          
+          // Initialize notifications for the logged-in user
+          const { useNotificationStore } = await import('./notificationStore');
+          const notificationStore = useNotificationStore.getState();
+          await notificationStore.fetchNotifications(data.user.id);
+          
           toast.success("Zalogowano pomyślnie.");
           set({ loading: false });
           return true;
@@ -335,6 +351,12 @@ export const useAuthStore = create(
       logout: async () => {
         try {
           await supabase.auth.signOut();
+          
+          // Clear notifications store
+          const { useNotificationStore } = await import('./notificationStore');
+          const notificationStore = useNotificationStore.getState();
+          notificationStore.set({ notifications: [], userNotifications: [], unreadCount: 0 });
+          
           set({
             user: null,
             purchasedCourses: [],
@@ -429,6 +451,57 @@ export const useAuthStore = create(
         } catch (err) {
           toast.error("Wystąpił błąd podczas aktualizacji daty matury");
           set({ error: err.message, loading: false });
+          return false;
+        }
+      },
+
+      // Check if user can purchase courses (must have matura_date set)
+      canPurchaseCourses: () => {
+        const { maturaDate } = get();
+        return !!maturaDate;
+      },
+
+      // Get matura year from date
+      getMaturaYear: () => {
+        const { maturaDate } = get();
+        if (!maturaDate) return null;
+        return parseInt(maturaDate.split('-')[0]);
+      },
+
+      // Check if user's courses should be cleaned up (called in June)
+      shouldCleanupCourses: () => {
+        const { maturaDate } = get();
+        if (!maturaDate) return false;
+        
+        const maturaYear = parseInt(maturaDate.split('-')[0]);
+        const currentYear = new Date().getFullYear();
+        const currentMonth = new Date().getMonth(); // 0-11, where 5 = June
+        
+        // Clean up in June of the matura year
+        return currentYear === maturaYear && currentMonth === 5; // May = 5, June = 5
+      },
+
+      // Cleanup purchased courses (for current matura year)
+      cleanupPurchasedCourses: async () => {
+        const { user } = get();
+        if (!user) return false;
+
+        try {
+          const { error } = await supabase
+            .from('users')
+            .update({ purchased_courses: [] })
+            .eq('id', user.id);
+
+          if (error) {
+            console.error("Error cleaning up purchased courses:", error);
+            return false;
+          }
+
+          set({ purchasedCourses: [] });
+          toast.info("Twoje zakupione kursy zostały wyczyszczone zgodnie z datą matury.");
+          return true;
+        } catch (err) {
+          console.error("Error cleaning up purchased courses:", err);
           return false;
         }
       },

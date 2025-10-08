@@ -4,7 +4,7 @@ import { useState } from "react";
 import React from 'react';
 import { useParams } from "react-router-dom";
 import supabase from '../../../util/supabaseClient';
-import { toast } from 'react-toastify';
+import { useToast } from '../../../context/ToastContext';
 import ReviewModal from './ReviewModal';
 
 export default function VideoPanel({
@@ -14,6 +14,7 @@ export default function VideoPanel({
   HlsPlayer,
   setActiveSection,
 }) {
+  const toast = useToast();
   const [selectedSection, setSelectedSection] = useState(null);
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [reviewVideoId, setReviewVideoId] = useState(null);

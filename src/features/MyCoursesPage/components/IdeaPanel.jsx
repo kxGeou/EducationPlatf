@@ -1,10 +1,11 @@
 import { useAuthStore } from '../../../store/authStore';
 import React, { useState } from "react";
 import { useIdeaStore } from '../../../store/ideaStore';
-import { toast } from "react-toastify";
+import { useToast } from '../../../context/ToastContext';
 import { Loader2Icon } from "lucide-react";
 
 function IdeaPanel() {
+  const toast = useToast();
   const [showOption, setShowOption] = useState(false);
   const options = ["Design", "Funkcjonalność", "Inne"];
   const { user } = useAuthStore();

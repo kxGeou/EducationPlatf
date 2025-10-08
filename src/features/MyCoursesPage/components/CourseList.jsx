@@ -11,6 +11,7 @@ import FormUserPage from "./FormUserPage";
 import IdeaPanel from "./IdeaPanel";
 import Leaderboard from "./Leaderboard";
 import UserData from "./UserData";
+import Dashboard from "./Dashboard";
 
 const videoResources = [
   {
@@ -151,7 +152,7 @@ const CourseItem = memo(({ course, onClick }) => (
   </li>
 ));
 
-function CourseList({ activePage, setTutorialVisible, tutorialVisible }) {
+function CourseList({ activePage, setActivePage, setTutorialVisible, tutorialVisible }) {
   const user = useAuthStore((state) => state.user);
   const authLoading = useAuthStore((state) => state.loading);
   const {
@@ -174,7 +175,10 @@ function CourseList({ activePage, setTutorialVisible, tutorialVisible }) {
     [navigate]
   );
 
-  if (!user) navigate("/authentication");
+  if (!user) {
+    navigate("/authentication");
+    return null;
+  }
 
   const courseList = useMemo(
     () =>
@@ -200,6 +204,11 @@ function CourseList({ activePage, setTutorialVisible, tutorialVisible }) {
         <div className="flex-1 order-1 lg:order-2">
           <div className="flex flex-col items-center w-full bg-gray-50 shadow-md relative dark:bg-DarkblackBorder py-2 px-4 sm:px-6 min-h-screen md:min-h-[98vh] rounded-[12px]">
               
+              {/* DASHBOARD */}
+              {activePage === "dashboard" && (
+                <Dashboard />
+              )}
+
               {/* TWOJE KURSY */}
               {activePage === "courses" &&
                 (courses.length > 0 ? (
@@ -287,7 +296,7 @@ function CourseList({ activePage, setTutorialVisible, tutorialVisible }) {
               {activePage === "ideas" && <IdeaPanel></IdeaPanel>}
 
               {/* RANKING */}
-              {activePage === "leaderboard" && <Leaderboard />}
+              {activePage === "leaderboard" && <Leaderboard setActivePage={setActivePage} />}
 
               {/* PROFIL */}
               {activePage === "profile" && <UserData />}

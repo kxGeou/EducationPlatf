@@ -2,11 +2,13 @@ import { useEffect, useState } from "react";
 import supabase from '../../../util/supabaseClient';
 import CourseCard from "./CourseCard";
 import { ShoppingBag } from "lucide-react";
+import { useAuthStore } from '../../../store/authStore';
 
 export default function Courses() {
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { user, canPurchaseCourses } = useAuthStore();
 
   useEffect(() => {
     async function fetchCourses() {

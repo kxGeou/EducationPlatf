@@ -71,7 +71,7 @@ export default function Reviews() {
         ))}
       </ul>
 
-      <button className="cursor-pointer w-full bg-darkBlue dark:text-blackText dark:bg-primaryGreen hover:-translate-y-1 text-white py-3 font-semibold rounded-[12px] mt-8 max-w-[50%] transition-all md:mt-12 duration-300">
+      <button className="cursor-pointer w-full bg-darkBlue dark:text-blackText dark:bg-primaryGreen hover:-translate-y-1 text-white py-3 font-semibold rounded-[12px] mt-8 max-w-[50%] transition-all md:mt-12 duration-300 shadow-lg hover:shadow-xl">
         Więcej opinii...
       </button>
     </section>

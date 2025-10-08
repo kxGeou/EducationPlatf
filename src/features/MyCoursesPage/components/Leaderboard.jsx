@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Trophy, Medal, Award, Star, Crown, Users, ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
+import { Trophy, Medal, Award, Star, Crown, Users, ChevronLeft, ChevronRight, Calendar, User } from 'lucide-react';
 import supabase from '../../../util/supabaseClient';
 import { useAuthStore } from '../../../store/authStore';
 import Avatar from 'boring-avatars';
 
-const Leaderboard = () => {
+const Leaderboard = ({ setActivePage }) => {
   const [leaderboard, setLeaderboard] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -141,6 +141,7 @@ const Leaderboard = () => {
         </h2>
       </div>
 
+
       {!maturaDate && (
         <div className="w-full">
           <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-800 rounded-[12px] p-8 text-center">
@@ -161,7 +162,9 @@ const Leaderboard = () => {
               </div>
               
               {/* Call to action */}
-              <div className="bg-white dark:bg-DarkblackText rounded-[8px] p-4 border border-gray-200 dark:border-gray-700">
+              <div
+               onClick={() => setActivePage("profile")}
+              className="bg-white dark:bg-DarkblackText rounded-[8px] p-4 border border-gray-200 dark:border-gray-700">
                 <div className="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-400">
                   <Calendar className="w-4 h-4 text-primaryBlue dark:text-primaryGreen" />
                   <span>Przejdź do profilu → Ustaw datę matury</span>
@@ -264,6 +267,15 @@ const Leaderboard = () => {
               </div>
               <p className="text-xs text-gray-500 dark:text-gray-400">punktów</p>
             </div>
+
+            {/* Profile Button */}
+            <button
+              onClick={() => setActivePage('profile')}
+              className="ml-3 p-2 text-gray-600 dark:text-gray-400 hover:text-primaryBlue dark:hover:text-primaryGreen hover:bg-gray-100 dark:hover:bg-gray-600 rounded-lg transition-colors"
+              title="Przejdź do profilu"
+            >
+              <User className="w-4 h-4" />
+            </button>
           </div>
         ))}
           </div>

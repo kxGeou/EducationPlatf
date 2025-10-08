@@ -1,4 +1,4 @@
-import { toast } from 'react-toastify';
+import { useToast } from '../../context/ToastContext';
 import LandingHeader from "./components/LandingHeader";
 import Header from '../../ui/Header';
 import Footer from '../../ui/Footer';
@@ -24,6 +24,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useAuthStore } from '../../store/authStore';
 
 export default function CourseLandingPage({ isDark, setIsDark }) {
+  const toast = useToast();
   const { id } = useParams();
   const user = useAuthStore((state) => state.user);
   const navigate = useNavigate();
@@ -72,7 +73,6 @@ export default function CourseLandingPage({ isDark, setIsDark }) {
           .eq("id", user.id)
           .single();
 
-        // Sprawdź czy użytkownik ma dostęp do jakichkolwiek sekcji tego kursu
         const userPurchasedCourses = userData?.purchased_courses || [];
         const courseSectionIds = videosData?.map(video => video.section_id).filter(Boolean) || [];
         const hasAccess = courseSectionIds.some(sectionId => userPurchasedCourses.includes(sectionId));

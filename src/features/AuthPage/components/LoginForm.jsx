@@ -3,7 +3,7 @@ import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { toast } from 'react-toastify';
+import { useToast } from '../../../context/ToastContext';
 import { Eye, EyeOff } from 'lucide-react'
 
 import { useAuthStore } from '../../../store/authStore';
@@ -14,6 +14,7 @@ const loginSchema = z.object({
 })
 
 export default function LoginForm() {
+  const toast = useToast();
   const {
     register,
     trigger,

@@ -5,13 +5,21 @@ import UserData from "./components/UserData";
 import UserHeader from "./components/UserHeader";
 import { useAuthStore } from '../../store/authStore';
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 export default function MyCourses({ isDark, setIsDark }) {
   const [activePage, setActivePage] = useState("courses");
   const user = useAuthStore((state) => state.user);
   const loading = useAuthStore((state) => state.loading);
   const [tutorialVisible, setTutorialVisible] = useState(true);
+  const [searchParams] = useSearchParams();
+
+  useEffect(() => {
+    const section = searchParams.get('section');
+    if (section && ['courses', 'resources', 'reports', 'blogs', 'forms', 'ideas', 'leaderboard', 'profile'].includes(section)) {
+      setActivePage(section);
+    }
+  }, [searchParams]);
 
   return (
     <div
@@ -28,7 +36,7 @@ export default function MyCourses({ isDark, setIsDark }) {
               setIsDark={setIsDark}
             ></Navigation>
 
-            <CourseList activePage={activePage} setTutorialVisible={setTutorialVisible} tutorialVisible={tutorialVisible}/>
+            <CourseList activePage={activePage} setActivePage={setActivePage} setTutorialVisible={setTutorialVisible} tutorialVisible={tutorialVisible}/>
           </div>
         </div>
 

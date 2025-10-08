@@ -17,7 +17,7 @@ function AboutPlatform() {
             Dostosujemy zajęcia do Twojego poziomu i celu - matura, egzamin zawodowy, poprawka lub bieżące zaległości.
           </Description>
         </div>
-        <button className="mt-6 w-full bg-primaryBlue dark:bg-primaryGreen font-semibold text-white dark:text-blackText py-2 md:py-3 rounded-[12px] cursor-pointer hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-primaryBlue transition-transform duration-200" onClick={() => navigate("/contact")}>
+        <button className="mt-6 w-full bg-primaryBlue dark:bg-primaryGreen font-semibold text-white dark:text-blackText py-2 md:py-3 rounded-[12px] cursor-pointer hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-primaryBlue transition-transform duration-200 shadow-lg hover:shadow-xl" onClick={() => navigate("/contact")}>
           Zapisz się już teraz
         </button>
       </div>

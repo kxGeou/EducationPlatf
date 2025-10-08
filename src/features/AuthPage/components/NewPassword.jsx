@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { toast } from 'react-toastify';
+import { useToast } from '../../../context/ToastContext';
 import { useAuthStore } from '../../../store/authStore';
 import supabase from '../../../util/supabaseClient';
 import { Eye, EyeOff } from 'lucide-react'
 
 export default function NewPassword() {
+  const toast = useToast();
   const [newPassword, setNewPassword] = useState('')
   const [loading, setLoading] = useState(true)
   const [sessionSet, setSessionSet] = useState(false)

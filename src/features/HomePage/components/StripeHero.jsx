@@ -111,7 +111,7 @@ export default function StripeHero() {
             Jeśli chcesz być o krok przed innymi - to miejsce dla Ciebie.
           </p>
           <button
-            className="bg-primaryGreen dark:text-black hover:-translate-y-1 transition-discrete duration-300 cursor-pointer text-white font-semibold px-4 py-2 rounded-md"
+            className="bg-primaryGreen text-black hover:-translate-y-1 transition-discrete duration-300 cursor-pointer font-semibold px-4 py-2 rounded-md"
             onClick={() => navigate("/blog")}
           >
             Zobacz blogi »

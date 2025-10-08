@@ -31,7 +31,7 @@ function Hero() {
 
           <a
             href="#kursy"
-            className="bg-primaryBlue font-semibold cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:bg-secondaryBlue dark:bg-primaryGreen dark:hover:bg-secondaryGreen w-[75%] py-3 text-white rounded-[12px] dark:text-blackText text-center"
+            className="bg-primaryBlue font-semibold cursor-pointer transition-all duration-300 hover:-translate-y-1 shadow-lg hover:shadow-xl hover:bg-secondaryBlue dark:bg-primaryGreen dark:hover:bg-secondaryGreen w-[75%] py-3 text-white rounded-[12px] dark:text-blackText text-center"
           >
             Zobacz kursy
           </a>

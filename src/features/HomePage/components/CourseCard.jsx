@@ -11,7 +11,7 @@ export default function CourseCard({ course }) {
   return (
     <div
       onClick={handleClick}
-      className="group relative flex flex-col md:flex-row cursor-pointer rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 bg-white dark:bg-DarkblackBorder hover:-translate-y-1"
+      className="group relative flex flex-col md:flex-row cursor-pointer rounded-2xl overflow-hidden shadow-lg hover:shadow-lg transition-all duration-300 border border-gray-100 bg-white  dark:border-DarkblackBorder dark:bg-DarkblackBorder dark:text-white  hover:-translate-y-1"
     >
       <img
         src={course.image_url}

@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import supabase from '../util/supabaseClient'
-import { toast } from 'react-toastify';
+import { toast } from '../utils/toast';
 
 
 export const useBlogStore = create((set) => ({

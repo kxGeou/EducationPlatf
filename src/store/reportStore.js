@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import supabase from '../util/supabaseClient'
-import { toast } from 'react-toastify'
+import { toast } from '../utils/toast'
 import { useAuthStore } from "./authStore";
 
 export const useReports = create((set, get) => ({
