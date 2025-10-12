@@ -5,6 +5,7 @@ import { useAuthStore } from '../../../store/authStore';
 import { useCourseStore } from '../../../store/courseStore';
 import { useToast } from '../../../context/ToastContext';
 import supabase from '../../../util/supabaseClient';
+import ConfirmationModal from '../../../components/ui/ConfirmationModal';
 
 function UserData() {
   const toast = useToast();
@@ -25,6 +26,7 @@ function UserData() {
   const [password, setPassword] = useState('')
   const [showMaturaDate, setShowMaturaDate] = useState(false)
   const [maturaDateInput, setMaturaDateInput] = useState('')
+  const [showMaturaConfirmation, setShowMaturaConfirmation] = useState(false)
 
   const handlePasswordReset = async () => {
     if (!password) {
@@ -53,7 +55,7 @@ function UserData() {
     }
   }
 
-  const handleMaturaDateUpdate = async () => {
+  const handleMaturaDateUpdate = () => {
     if (!maturaDateInput) {
       toast.error('Wybierz datę matury')
       return
@@ -67,13 +69,21 @@ function UserData() {
       return
     }
 
-    // Convert year to full date format (YYYY-05-01 - typical matura time)
-    const fullDate = `${selectedYear}-05-01`
+    // Pokaż modal potwierdzenia
+    setShowMaturaConfirmation(true)
+  }
+
+  const handleMaturaDateConfirm = async () => {
+    const selectedYear = parseInt(maturaDateInput)
+    
+    // Convert year to full date format (YYYY-07-01 - July instead of May)
+    const fullDate = `${selectedYear}-07-01`
 
     const success = await updateMaturaDate(fullDate)
     if (success) {
       setShowMaturaDate(false)
       setMaturaDateInput('')
+      setShowMaturaConfirmation(false)
     }
   }
 
@@ -154,7 +164,7 @@ function UserData() {
             <p className="text-sm text-gray-600 dark:text-gray-400">Ustawiona data:</p>
             <p className="text-lg font-semibold text-gray-800 dark:text-white">{maturaDate.split('-')[0]}</p>
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-              Data matury może być ustawiona tylko raz. Kursy zostaną automatycznie usunięte w czerwcu {maturaDate.split('-')[0]}.
+              Data matury może być ustawiona tylko raz. Kursy zostaną automatycznie usunięte w lipcu {maturaDate.split('-')[0]}.
             </p>
           </div>
         )}
@@ -182,7 +192,7 @@ function UserData() {
               </select>
             </div>
             <p className="text-xs text-gray-500 dark:text-gray-400">
-              Możesz ustawić datę matury maksymalnie 3 lata w przód. Kursy zostaną automatycznie usunięte w czerwcu wybranego roku.
+              Możesz ustawić datę matury maksymalnie 3 lata w przód. Kursy zostaną automatycznie usunięte w lipcu wybranego roku.
             </p>
             <div className="flex gap-3">
               <button
@@ -340,6 +350,25 @@ function UserData() {
           Wyloguj się
         </button>
       </div>
+
+      {/* Modal potwierdzenia daty matury */}
+      <ConfirmationModal
+        isOpen={showMaturaConfirmation}
+        onClose={() => setShowMaturaConfirmation(false)}
+        onConfirm={handleMaturaDateConfirm}
+        title="Potwierdzenie daty matury"
+        message={`Czy na pewno chcesz ustawić datę matury na ${maturaDateInput}?
+
+⚠️ UWAGA: W lipcu ${maturaDateInput} wszystkie Twoje kursy zostaną automatycznie usunięte!
+
+Ta operacja jest nieodwracalna i data matury może być ustawiona tylko raz.
+
+Jeśli jesteś pewien swojej decyzji, kliknij "Potwierdź".`}
+        confirmText="Potwierdź"
+        cancelText="Anuluj"
+        type="warning"
+        isLoading={loading}
+      />
     </div>
   )
 }

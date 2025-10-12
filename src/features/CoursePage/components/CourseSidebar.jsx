@@ -31,7 +31,7 @@ export default function CourseSidebar({
   setUserDataModal,
 }) {
   const navigate = useNavigate();
-  const [showSidebar, setShowSidebar] = useState(false);
+  const [showSidebar, setShowSidebar] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const menuItems = [
@@ -125,7 +125,7 @@ export default function CourseSidebar({
       <aside
         data-theme={isDark ? "dark" : "light"}
         className={`
-          hidden md:flex h-[98vh] rounded-[12px] bg-white dark:bg-DarkblackBorder shadow-md
+          hidden md:flex h-[99vh] rounded-[12px] bg-white dark:bg-DarkblackBorder shadow-md
           flex-col justify-between p-4 transition-all duration-300 overflow-hidden sticky top-0 
           ${showSidebar ? "w-[17.5rem]" : "w-[4.5rem]"}
         `}

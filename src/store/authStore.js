@@ -230,7 +230,7 @@ export const useAuthStore = create(
             await get().fetchUserProgress(session.user.id);
             await get().fetchUserFlashcards(session.user.id);
             
-            // Check if courses should be cleaned up (in June of matura year)
+            // Check if courses should be cleaned up (in July of matura year)
             if (get().shouldCleanupCourses()) {
               await get().cleanupPurchasedCourses();
             }
@@ -257,7 +257,7 @@ export const useAuthStore = create(
               await get().fetchUserProgress(session.user.id);
               await get().fetchUserFlashcards(session.user.id);
               
-              // Check if courses should be cleaned up (in June of matura year)
+              // Check if courses should be cleaned up (in July of matura year)
               if (get().shouldCleanupCourses()) {
                 await get().cleanupPurchasedCourses();
               }
@@ -468,17 +468,17 @@ export const useAuthStore = create(
         return parseInt(maturaDate.split('-')[0]);
       },
 
-      // Check if user's courses should be cleaned up (called in June)
+      // Check if user's courses should be cleaned up (called in July)
       shouldCleanupCourses: () => {
         const { maturaDate } = get();
         if (!maturaDate) return false;
         
         const maturaYear = parseInt(maturaDate.split('-')[0]);
         const currentYear = new Date().getFullYear();
-        const currentMonth = new Date().getMonth(); // 0-11, where 5 = June
+        const currentMonth = new Date().getMonth(); // 0-11, where 6 = July
         
-        // Clean up in June of the matura year
-        return currentYear === maturaYear && currentMonth === 5; // May = 5, June = 5
+        // Clean up in July of the matura year
+        return currentYear === maturaYear && currentMonth === 6; // July = 6
       },
 
       // Cleanup purchased courses (for current matura year)

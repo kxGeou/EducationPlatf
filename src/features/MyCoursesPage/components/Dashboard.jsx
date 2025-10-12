@@ -4,10 +4,13 @@ import { useCourseStore } from '../../../store/courseStore'
 import { CalendarDays, Flame, PlayCircle, ShoppingBag, Clock, Star } from 'lucide-react'
 
 function StreakHeatmap({ streakDaysSet }) {
-  const weeks = 26
+  const weeks = 52 // Pełny rok - 52 tygodnie
   const today = new Date()
+  
+  // Oblicz początek roku (1 stycznia)
+  const startOfYear = new Date(today.getFullYear(), 0, 1)
   const mondayThisWeek = (() => {
-    const d = new Date(today)
+    const d = new Date(startOfYear)
     const day = d.getDay() === 0 ? 7 : d.getDay() // 1..7 with Monday=1
     d.setDate(d.getDate() - (day - 1))
     d.setHours(0, 0, 0, 0)
@@ -16,7 +19,7 @@ function StreakHeatmap({ streakDaysSet }) {
 
   const weekColumns = Array.from({ length: weeks }).map((_, wIdx) => {
     const start = new Date(mondayThisWeek)
-    start.setDate(mondayThisWeek.getDate() - (weeks - 1 - wIdx) * 7)
+    start.setDate(mondayThisWeek.getDate() + wIdx * 7)
     const days = Array.from({ length: 7 }).map((__, i) => {
       const d = new Date(start)
       d.setDate(start.getDate() + i)
@@ -28,41 +31,60 @@ function StreakHeatmap({ streakDaysSet }) {
   })
 
   const monthShort = ['Sty', 'Lut', 'Mar', 'Kwi', 'Maj', 'Cze', 'Lip', 'Sie', 'Wrz', 'Paź', 'Lis', 'Gru']
+  const dayShort = ['P', 'W', 'Ś', 'C', 'P', 'S', 'N'] // Poniedziałek do Niedzieli
+  
+  // Etykiety miesięcy - pokazuj dla każdego miesiąca
   const monthLabels = weekColumns.map((week, idx) => {
     const firstDay = week[0].d
-    const isMonthStart = firstDay.getDate() <= 7 // first week of a month
+    const isMonthStart = firstDay.getDate() <= 7 // pierwszy tydzień miesiąca
     return isMonthStart ? monthShort[firstDay.getMonth()] : ''
   })
 
   return (
-    <div className="flex flex-col gap-2">
-      <div className="flex gap-[2px]">
-        {weekColumns.map((week, wIdx) => (
-          <div key={wIdx} className="flex flex-col gap-[2px]">
-            {week.map((cell, i) => (
-              <div
-                key={cell.key}
-                title={cell.key}
-                className={`w-[10px] h-[10px] rounded-[2px] border border-blackText/10 dark:border-white/10 ${
-                  cell.active
-                    ? 'bg-primaryBlue dark:bg-primaryGreen'
-                    : 'bg-gray-300 dark:bg-DarkblackText'
-                }`}
-              />
-            ))}
+    <div className="flex gap-2">
+      {/* Dni tygodnia */}
+      <div className="flex flex-col gap-[2px] text-[10px] text-gray-500 select-none">
+        {dayShort.map((day, i) => (
+          <div key={i} className="h-[10px] flex items-center justify-center text-[8px]">
+            {day}
           </div>
         ))}
       </div>
-      <div className="flex text-[10px] text-gray-500 gap-[2px] select-none">
-        {monthLabels.map((m, i) => (
-          <div key={i} className="w-[10px] text-center">{m}</div>
-        ))}
-      </div>
-      <div className="flex items-center gap-2 text-xs text-gray-500">
-        <span>Aktywność</span>
-        <div className="flex items-center gap-1">
-          <div className="w-3 h-3 rounded-[2px] bg-gray-300 dark:bg-DarkblackText border border-blackText/10 dark:border-white/10"/>
-          <div className="w-3 h-3 rounded-[2px] bg-primaryBlue dark:bg-primaryGreen"/>
+      
+      {/* Kalendarz */}
+      <div className="flex flex-col gap-2">
+        <div className="flex gap-[2px]">
+          {weekColumns.map((week, wIdx) => (
+            <div key={wIdx} className="flex flex-col gap-[2px]">
+              {week.map((cell, i) => (
+                <div
+                  key={cell.key}
+                  title={cell.key}
+                  className={`w-[10px] h-[10px] rounded-[2px] border border-blackText/10 dark:border-white/10 ${
+                    cell.active
+                      ? 'bg-primaryBlue dark:bg-primaryGreen'
+                      : 'bg-gray-300 dark:bg-DarkblackText'
+                  }`}
+                />
+              ))}
+            </div>
+          ))}
+        </div>
+        
+        {/* Etykiety miesięcy */}
+        <div className="flex text-[10px] text-gray-500 gap-[2px] select-none">
+          {monthLabels.map((m, i) => (
+            <div key={i} className="w-[10px] text-center">{m}</div>
+          ))}
+        </div>
+        
+        {/* Legenda */}
+        <div className="flex items-center gap-2 text-xs text-gray-500">
+          <span>Aktywność</span>
+          <div className="flex items-center gap-1">
+            <div className="w-3 h-3 rounded-[2px] bg-gray-300 dark:bg-DarkblackText border border-blackText/10 dark:border-white/10"/>
+            <div className="w-3 h-3 rounded-[2px] bg-primaryBlue dark:bg-primaryGreen"/>
+          </div>
         </div>
       </div>
     </div>

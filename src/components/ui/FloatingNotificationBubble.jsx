@@ -109,8 +109,6 @@ export default function FloatingNotificationBubble({ isDark }) {
     return `${Math.floor(diff / 86400)} dni temu`
   }
 
-  if (!user) return null
-
   return (
     <div
     data-theme={isDark ? "dark" : "light"}
@@ -124,7 +122,7 @@ export default function FloatingNotificationBubble({ isDark }) {
           <div className="absolute inset-0 bg-gradient-to-br from-white/25 to-transparent dark:from-white/15 dark:to-transparent rounded-full pointer-events-none"></div>
           
           <Bell className="w-5 h-5 relative z-10" />
-          {unreadCount > 0 && (
+          {user && unreadCount > 0 && (
             <span className="absolute -top-2 -right-2 bg-red-500  text-white text-[10px] rounded-full h-5 w-5 flex items-center justify-center font-bold shadow-xl z-[100] border border-white/80 min-w-[1.25rem] min-h-[1.25rem]">
               {unreadCount > 9 ? '9+' : unreadCount}
             </span>
@@ -152,7 +150,26 @@ export default function FloatingNotificationBubble({ isDark }) {
 
           {/* Content */}
           <div className="max-h-[60vh] sm:max-h-80 overflow-y-auto overscroll-contain">
-            {loading ? (
+            {!user ? (
+              <div className="p-6 text-center">
+                <Bell size={48} className="mx-auto mb-4 text-gray-400 dark:text-gray-500" />
+                <h4 className="font-semibold text-gray-800 dark:text-white mb-2">
+                  Zaloguj się, aby zobaczyć powiadomienia
+                </h4>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                  Zaloguj się do swojego konta, aby otrzymywać i przeglądać powiadomienia o nowych materiałach i aktualizacjach.
+                </p>
+                <button
+                  onClick={() => {
+                    setIsOpen(false);
+                    window.location.href = '/authentication';
+                  }}
+                  className="bg-primaryBlue dark:bg-primaryGreen text-white px-6 py-2 rounded-lg font-medium hover:opacity-90 transition-opacity"
+                >
+                  Zaloguj się
+                </button>
+              </div>
+            ) : loading ? (
               <div className="p-3 text-center text-gray-500 dark:text-gray-400 text-sm">
                 Ładowanie...
               </div>
@@ -218,7 +235,7 @@ export default function FloatingNotificationBubble({ isDark }) {
             )}
           </div>
 
-          {notifications.length > 0 && (
+          {user && notifications.length > 0 && (
             <div className="relative border-t border-white/30 dark:border-white/15 bg-gradient-to-r from-white/15 to-transparent dark:from-white/10 dark:to-transparent backdrop-blur-sm">
               <div className="text-xs md:text-sm  text-gray-800 dark:text-gray-200 text-center font-semibold">
                 {unreadCount > 0 ? `${unreadCount} nieprzeczytanych` : 'Wszystkie przeczytane'}

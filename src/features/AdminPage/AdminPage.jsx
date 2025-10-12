@@ -16,11 +16,13 @@ import {
   BarChart3,
   Star,
   Video,
-  Bell
+  Bell,
+  FileText
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useToast } from "../../context/ToastContext";
 import NotificationManagement from "./components/NotificationManagement";
+import supabase from "../../util/supabaseClient";
 
 function timeAgo(dateString) {
   const now = new Date();
@@ -55,6 +57,12 @@ export default function AdminPage({ isDark, setIsDark }) {
   // Video reviews state
   const [selectedVideoReviews, setSelectedVideoReviews] = useState(null);
   const [sectionFilter, setSectionFilter] = useState("all");
+  
+  // Task answers state
+  const [taskAnswers, setTaskAnswers] = useState([]);
+  const [taskAnswersLoading, setTaskAnswersLoading] = useState(false);
+  const [taskAnswersFilter, setTaskAnswersFilter] = useState("all");
+  const [selectedTaskAnswer, setSelectedTaskAnswer] = useState(null);
 
   // Store hooks
   const { fetchReports, reports, updateStatus, addAnswer } = useReports();
@@ -83,6 +91,87 @@ export default function AdminPage({ isDark, setIsDark }) {
   ];
 
 
+  // Funkcja do pobierania odpowiedzi na zadania
+  const fetchTaskAnswers = async () => {
+    setTaskAnswersLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('video_tasks_answers')
+        .select(`
+          *,
+          video_tasks!inner(
+            task_id,
+            topic,
+            task,
+            course_id,
+            video_id
+          )
+        `)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      // Pobierz dane użytkowników osobno
+      const userIds = [...new Set(data?.map(answer => answer.user_id) || [])];
+      let users = {};
+      
+      if (userIds.length > 0) {
+        const { data: usersData, error: usersError } = await supabase
+          .from('users')
+          .select('id, user_name, email')
+          .in('id', userIds);
+
+        if (!usersError && usersData) {
+          usersData.forEach(user => {
+            users[user.id] = user;
+          });
+        }
+      }
+
+      // Połącz dane
+      const enrichedData = data?.map(answer => ({
+        ...answer,
+        users: users[answer.user_id] || null
+      })) || [];
+
+      setTaskAnswers(enrichedData);
+    } catch (err) {
+      console.error('Error fetching task answers:', err);
+      toast.error('Nie udało się załadować odpowiedzi na zadania');
+    } finally {
+      setTaskAnswersLoading(false);
+    }
+  };
+
+  // Funkcja do aktualizacji statusu odpowiedzi
+  const updateTaskAnswerStatus = async (answerId, newStatus) => {
+    try {
+      const { error } = await supabase
+        .from('video_tasks_answers')
+        .update({ 
+          status: newStatus,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', answerId);
+
+      if (error) throw error;
+      
+      // Aktualizuj lokalny stan
+      setTaskAnswers(prev => 
+        prev.map(answer => 
+          answer.id === answerId 
+            ? { ...answer, status: newStatus, updated_at: new Date().toISOString() }
+            : answer
+        )
+      );
+      
+      toast.success('Status odpowiedzi został zaktualizowany');
+    } catch (err) {
+      console.error('Error updating task answer status:', err);
+      toast.error('Nie udało się zaktualizować statusu odpowiedzi');
+    }
+  };
+
   const handleLogin = () => {
     if (password === "1234") {
       setAccessGranted(true);
@@ -90,6 +179,7 @@ export default function AdminPage({ isDark, setIsDark }) {
       fetchPolls();
       fetchIdea();
       fetchVideoData();
+      fetchTaskAnswers();
     } else {
       toast.error("Niepoprawne hasło");
     }
@@ -130,6 +220,25 @@ export default function AdminPage({ isDark, setIsDark }) {
   const filteredReports = reports.filter(
     (r) => statusFilter === "all" || r.status === statusFilter
   );
+
+  // Helper functions for task answers
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'pending': return 'bg-yellow-100 text-yellow-600';
+      case 'approved': return 'bg-green-100 text-green-600';
+      case 'rejected': return 'bg-red-100 text-red-600';
+      default: return 'bg-gray-100 text-gray-600';
+    }
+  };
+
+  const getStatusLabel = (status) => {
+    switch (status) {
+      case 'pending': return 'Oczekujące';
+      case 'approved': return 'Zaakceptowane';
+      case 'rejected': return 'Odrzucone';
+      default: return 'Nieznany';
+    }
+  };
 
   // Helper function to render stars using Star components
   const renderStars = (rating) => {
@@ -255,6 +364,20 @@ export default function AdminPage({ isDark, setIsDark }) {
             <span className="text-sm sm:text-base">Recenzje wideo</span>
             <span className="bg-white/20 dark:bg-black/20 px-2 py-1 rounded-full text-xs font-bold">
               {videoReviews.length}
+            </span>
+          </button>
+          <button
+            onClick={() => setActiveSection("taskAnswers")}
+            className={`flex items-center justify-center gap-2 px-4 sm:px-6 py-3 rounded-xl transition-all duration-300 font-medium ${
+              activeSection === "taskAnswers"
+                ? "bg-gradient-to-r from-primaryBlue to-secondaryBlue text-white dark:from-primaryGreen dark:to-secondaryBlue shadow-xl"
+                : "bg-gray-100 dark:bg-DarkblackBorder text-gray-700 dark:text-gray-300 hover:bg-primaryBlue/10 dark:hover:bg-primaryGreen/10"
+            }`}
+          >
+            <FileText size={16} className="sm:w-5 sm:h-5" />
+            <span className="text-sm sm:text-base">Odpowiedzi na zadania</span>
+            <span className="bg-white/20 dark:bg-black/20 px-2 py-1 rounded-full text-xs font-bold">
+              {taskAnswers.length}
             </span>
           </button>
           <button
@@ -504,6 +627,169 @@ export default function AdminPage({ isDark, setIsDark }) {
                   </div>
                 ))}
               </div>
+            )}
+          </div>
+        )}
+
+        {/* Task Answers Section */}
+        {activeSection === "taskAnswers" && (
+          <div className="space-y-4 sm:space-y-6">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+              <h2 className="font-bold text-xl sm:text-2xl text-blackText dark:text-white flex items-center gap-2">
+                <FileText size={20} className="sm:w-6 sm:h-6" />
+                Odpowiedzi na zadania ({taskAnswers.length})
+              </h2>
+              <div className="dropdown relative">
+                <button
+                  onClick={() => setOpenFilter((prev) => !prev)}
+                  className="flex items-center justify-between gap-2 px-4 py-2 bg-white border border-gray-200 dark:bg-DarkblackBorder dark:border-0 dark:text-white rounded-xl shadow-sm hover:shadow-md transition text-sm w-full sm:w-auto"
+                >
+                  {taskAnswersFilter === "all" ? "Wszystkie statusy" : taskAnswersFilter}
+                  <ChevronDown className="w-4 h-4 text-gray-500 dark:text-white/80" />
+                </button>
+                {openFilter && (
+                  <div className="absolute top-full right-0 mt-2 w-48 bg-white dark:bg-DarkblackBorder dark:border-DarkblackText rounded-lg shadow-xl border border-gray-200 z-[9999]">
+                    <div
+                      onClick={() => {
+                        setTaskAnswersFilter("all");
+                        setOpenFilter(false);
+                      }}
+                      className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-DarkblackText cursor-pointer text-sm text-blackText dark:text-white transition-colors"
+                    >
+                      Wszystkie statusy
+                    </div>
+                    <div
+                      onClick={() => {
+                        setTaskAnswersFilter("pending");
+                        setOpenFilter(false);
+                      }}
+                      className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-DarkblackText cursor-pointer text-sm text-blackText dark:text-white transition-colors"
+                    >
+                      Oczekujące
+                    </div>
+                    <div
+                      onClick={() => {
+                        setTaskAnswersFilter("approved");
+                        setOpenFilter(false);
+                      }}
+                      className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-DarkblackText cursor-pointer text-sm text-blackText dark:text-white transition-colors"
+                    >
+                      Zaakceptowane
+                    </div>
+                    <div
+                      onClick={() => {
+                        setTaskAnswersFilter("rejected");
+                        setOpenFilter(false);
+                      }}
+                      className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-DarkblackText cursor-pointer text-sm text-blackText dark:text-white transition-colors"
+                    >
+                      Odrzucone
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {taskAnswersLoading ? (
+              <div className="flex justify-center items-center h-32">
+                <div className="text-center">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primaryBlue dark:border-primaryGreen mx-auto mb-2"></div>
+                  <p className="text-gray-600 dark:text-gray-400">Ładowanie odpowiedzi...</p>
+                </div>
+              </div>
+            ) : (
+              <>
+                {taskAnswers
+                  .filter(answer => taskAnswersFilter === "all" || answer.status === taskAnswersFilter)
+                  .length > 0 ? (
+                  <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
+                    {taskAnswers
+                      .filter(answer => taskAnswersFilter === "all" || answer.status === taskAnswersFilter)
+                      .map((answer, index) => {
+
+                        return (
+                          <div
+                            key={answer.id}
+                            className="bg-white/80 dark:bg-DarkblackBorder backdrop-blur-md p-4 sm:p-6 rounded-2xl shadow-lg border border-gray-100 dark:border-DarkblackText flex flex-col justify-between transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
+                          >
+                            {/* Status dropdown at the top */}
+                            <div className="flex justify-between items-start mb-4">
+                              <h3 className="text-lg sm:text-xl font-semibold text-blackText dark:text-white flex-1">
+                                {answer.video_tasks?.topic || 'Brak tematu'}
+                              </h3>
+                              <div className="dropdown relative ml-4">
+                                <button
+                                  onClick={() =>
+                                    setOpenDropdown(
+                                      openDropdown === answer.id ? null : answer.id
+                                    )
+                                  }
+                                  className={`flex items-center gap-2 px-3 py-2 rounded-full text-xs font-medium tracking-wide ${getStatusColor(answer.status)}`}
+                                >
+                                  {getStatusLabel(answer.status)}
+                                  <ChevronDown className="w-4 h-4" />
+                                </button>
+                                {openDropdown === answer.id && (
+                                  <div className="absolute top-full right-0 mt-2 w-40 bg-white dark:bg-DarkblackBorder rounded-lg shadow-xl border border-gray-100 dark:border-DarkblackText py-2 flex flex-col gap-2 z-[9999]">
+                                    {['pending', 'approved', 'rejected'].map((status) => (
+                                      <div
+                                        key={status}
+                                        onClick={() => {
+                                          updateTaskAnswerStatus(answer.id, status);
+                                          setOpenDropdown(null);
+                                        }}
+                                        className="px-4 py-2 cursor-pointer text-sm hover:bg-gray-100 dark:hover:bg-DarkblackText text-blackText dark:text-white"
+                                      >
+                                        {getStatusLabel(status)}
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                            
+                            <div className="mb-4">
+                              <p className="text-gray-500 text-sm mb-1 dark:text-primaryGreen/75">
+                                <span className="font-medium">Użytkownik:</span>{" "}
+                                {answer.users?.user_name || answer.users?.email || 'Nieznany'}
+                              </p>
+                              <p className="text-gray-500 text-sm mb-2 dark:text-primaryGreen/75">
+                                <span className="font-medium">Email:</span>{" "}
+                                {answer.users?.email || 'Brak'}
+                              </p>
+                              <p className="text-gray-600 text-sm leading-relaxed dark:text-white/75 mb-3">
+                                <span className="font-medium">Treść zadania:</span><br />
+                                {answer.video_tasks?.task || 'Brak treści zadania'}
+                              </p>
+                              <div className="p-3 bg-blue-50 border dark:bg-blue-200 dark:border-0 border-blue-200 rounded-lg text-sm">
+                                <p className="font-medium text-blue-700 dark:text-blue-800 mb-2">
+                                  Odpowiedź ucznia:
+                                </p>
+                                <p className="text-gray-700 dark:text-gray-800 whitespace-pre-wrap">{answer.answer}</p>
+                              </div>
+                            </div>
+
+                            <div className="flex justify-between items-center mt-6">
+                              <div className="flex flex-col text-xs text-gray-400 dark:text-gray-500">
+                                <span>#{index + 1}</span>
+                                <span>{timeAgo(answer.created_at)}</span>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                  </div>
+                ) : (
+                  <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+                    <FileText size={48} className="mx-auto mb-4 opacity-50" />
+                    <p className="text-lg">
+                      {taskAnswersFilter === "all" 
+                        ? "Brak odpowiedzi na zadania do wyświetlenia" 
+                        : `Brak odpowiedzi ze statusem "${getStatusLabel(taskAnswersFilter)}"`}
+                    </p>
+                  </div>
+                )}
+              </>
             )}
           </div>
         )}
