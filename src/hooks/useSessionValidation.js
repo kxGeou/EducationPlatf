@@ -12,16 +12,9 @@ export const useSessionValidation = () => {
     return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
   };
 
-  // Pobieranie informacji o urządzeniu
+  // Proste informacje o urządzeniu
   const getDeviceInfo = () => {
     return {
-      userAgent: navigator.userAgent,
-      platform: navigator.platform,
-      language: navigator.language,
-      screen: {
-        width: screen.width,
-        height: screen.height
-      },
       timestamp: new Date().toISOString()
     };
   };
@@ -38,8 +31,6 @@ export const useSessionValidation = () => {
           user_id: userId,
           session_token: sessionToken,
           device_info: deviceInfo,
-          ip_address: null, // Można dodać logikę do pobierania IP
-          user_agent: navigator.userAgent,
           is_active: true
         })
         .select()

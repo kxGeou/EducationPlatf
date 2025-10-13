@@ -354,13 +354,6 @@ export const useAuthStore = create(
           // Utwórz nową sesję
           const sessionToken = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
           const deviceInfo = {
-            userAgent: navigator.userAgent,
-            platform: navigator.platform,
-            language: navigator.language,
-            screen: {
-              width: screen.width,
-              height: screen.height
-            },
             timestamp: new Date().toISOString()
           };
 
@@ -370,7 +363,6 @@ export const useAuthStore = create(
               user_id: data.user.id,
               session_token: sessionToken,
               device_info: deviceInfo,
-              user_agent: navigator.userAgent,
               is_active: true
             });
 
@@ -608,13 +600,6 @@ export const useAuthStore = create(
           // Wymuś wylogowanie z innych urządzeń
           const sessionToken = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
           const deviceInfo = {
-            userAgent: navigator.userAgent,
-            platform: navigator.platform,
-            language: navigator.language,
-            screen: {
-              width: screen.width,
-              height: screen.height
-            },
             timestamp: new Date().toISOString()
           };
 
@@ -634,7 +619,6 @@ export const useAuthStore = create(
               user_id: sessionConflict.user.id,
               session_token: sessionToken,
               device_info: deviceInfo,
-              user_agent: navigator.userAgent,
               is_active: true
             });
 

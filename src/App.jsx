@@ -24,7 +24,6 @@ import { ToastProvider, useToast } from './context/ToastContext.jsx'
 import ToastContainer from './components/ui/ToastContainer.jsx'
 import FloatingNotificationBubble from './components/ui/FloatingNotificationBubble.jsx'
 import { useSessionValidation } from './hooks/useSessionValidation.js'
-import SessionBlockedModal from './components/ui/SessionBlockedModal.jsx'
 function AppContent({ isDark, setIsDark }) {
   const init = useAuthStore(state => state.init)
   const loading = useAuthStore(state => state.loading)
@@ -33,11 +32,7 @@ function AppContent({ isDark, setIsDark }) {
   
   // Walidacja sesji
   const { 
-    isValidating, 
-    sessionBlocked, 
-    validateCurrentSession,
-    forceLogoutOtherDevices,
-    logoutFromCurrentSession 
+    validateCurrentSession
   } = useSessionValidation()
 
   useEffect(() => {
@@ -50,19 +45,6 @@ function AppContent({ isDark, setIsDark }) {
       validateCurrentSession()
     }
   }, [user, loading, validateCurrentSession])
-
-  const handleForceLogout = async () => {
-    const success = await forceLogoutOtherDevices()
-    if (success) {
-      // Po wymuszeniu wylogowania, spróbuj ponownie zalogować
-      validateCurrentSession()
-    }
-  }
-
-  const handleCloseSessionModal = () => {
-    // Wyloguj użytkownika jeśli sesja jest zablokowana
-    logoutFromCurrentSession()
-  }
 
   if (loading) {
     return <Loading /> 
@@ -98,15 +80,6 @@ function AppContent({ isDark, setIsDark }) {
       </Routes>
       
       <FloatingNotificationBubble isDark={isDark} />
-      
-      {/* Modal zablokowanej sesji */}
-      <SessionBlockedModal
-        isOpen={sessionBlocked}
-        onClose={handleCloseSessionModal}
-        onForceLogout={handleForceLogout}
-        existingSession={null}
-        isProcessing={isValidating}
-      />
     </>
   )
 }
