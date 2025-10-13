@@ -1,4 +1,4 @@
-import { Mail, BookOpen, LogOut, ShieldCheck, Key, Eye, EyeOff, Star, Calendar } from 'lucide-react'
+import { Mail, BookOpen, LogOut, ShieldCheck, Key, Eye, EyeOff, Star, Calendar, Smartphone } from 'lucide-react'
 import React, { useState, useEffect } from 'react'
 import Avatar from 'boring-avatars'
 import { useAuthStore } from '../../../store/authStore';
@@ -6,6 +6,7 @@ import { useCourseStore } from '../../../store/courseStore';
 import { useToast } from '../../../context/ToastContext';
 import supabase from '../../../util/supabaseClient';
 import ConfirmationModal from '../../../components/ui/ConfirmationModal';
+import SessionManagementModal from '../../../components/ui/SessionManagementModal';
 
 function UserData() {
   const toast = useToast();
@@ -27,6 +28,7 @@ function UserData() {
   const [showMaturaDate, setShowMaturaDate] = useState(false)
   const [maturaDateInput, setMaturaDateInput] = useState('')
   const [showMaturaConfirmation, setShowMaturaConfirmation] = useState(false)
+  const [showSessionManagement, setShowSessionManagement] = useState(false)
 
   const handlePasswordReset = async () => {
     if (!password) {
@@ -341,6 +343,25 @@ function UserData() {
         </button>
       </div>
 
+      {/* Session Management Section */}
+      <div className="w-full bg-white dark:bg-DarkblackText rounded-[12px] shadow-md p-6 mb-6">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <Smartphone className="w-6 h-6 text-primaryBlue dark:text-primaryGreen" />
+            <h4 className="font-semibold text-gray-800 dark:text-white">Zarządzanie sesjami</h4>
+          </div>
+          <button
+            onClick={() => setShowSessionManagement(true)}
+            className="px-4 py-2 bg-primaryBlue dark:bg-primaryGreen text-white rounded-lg hover:bg-secondaryBlue dark:hover:bg-secondaryGreen transition-colors text-sm font-medium"
+          >
+            Zarządzaj
+          </button>
+        </div>
+        <p className="text-sm text-gray-600 dark:text-gray-400">
+          Sprawdź i zarządzaj aktywnymi sesjami na różnych urządzeniach. Możesz wylogować się z innych urządzeń.
+        </p>
+      </div>
+
       <div className="w-full bg-white dark:bg-DarkblackText rounded-[12px] shadow-md p-6">
         <button
           onClick={logout}
@@ -368,6 +389,12 @@ Jeśli jesteś pewien swojej decyzji, kliknij "Potwierdź".`}
         cancelText="Anuluj"
         type="warning"
         isLoading={loading}
+      />
+
+      {/* Modal zarządzania sesjami */}
+      <SessionManagementModal
+        isOpen={showSessionManagement}
+        onClose={() => setShowSessionManagement(false)}
       />
     </div>
   )

@@ -7,6 +7,7 @@ import { useToast } from '../../../context/ToastContext';
 import { Eye, EyeOff } from 'lucide-react'
 
 import { useAuthStore } from '../../../store/authStore';
+import SessionBlockedModal from '../../../components/ui/SessionBlockedModal';
 
 const loginSchema = z.object({
   email: z.string().email({ message: 'Niepoprawny adres email' }),
@@ -24,8 +25,11 @@ export default function LoginForm() {
   const navigate = useNavigate()
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
+  const [isProcessingForceLogout, setIsProcessingForceLogout] = useState(false)
   const loginUser = useAuthStore((state) => state.login) 
   const user = useAuthStore((state) => state.user);
+  const sessionConflict = useAuthStore((state) => state.sessionConflict);
+  const resolveSessionConflict = useAuthStore((state) => state.resolveSessionConflict);
 
   // Handle navigation when user is already logged in
   useEffect(() => {
@@ -50,15 +54,35 @@ export default function LoginForm() {
     setLoading(true)
     const { email, password } = getValues()
 
-    const success = await loginUser({ email, password })
+    const result = await loginUser({ email, password })
     setLoading(false)
 
-    if (success) {
+    if (result === true) {
       navigate('/')
+    } else if (result === 'session_conflict') {
+      // Konflikt sesji - modal zostanie wyświetlony automatycznie
     }
   }
 
+  const handleForceLogout = async () => {
+    setIsProcessingForceLogout(true)
+    try {
+      const success = await resolveSessionConflict()
+      if (success) {
+        navigate('/')
+      }
+    } finally {
+      setIsProcessingForceLogout(false)
+    }
+  }
+
+  const handleCloseSessionModal = () => {
+    // Wyczyść konflikt sesji bez logowania
+    useAuthStore.getState().set({ sessionConflict: null })
+  }
+
   return (
+    <>
     <form
       onSubmit={(e) => {
         e.preventDefault()
@@ -110,5 +134,15 @@ export default function LoginForm() {
 </p>
 
     </form>
+
+    {/* Modal konfliktu sesji */}
+    <SessionBlockedModal
+      isOpen={!!sessionConflict}
+      onClose={handleCloseSessionModal}
+      onForceLogout={handleForceLogout}
+      existingSession={sessionConflict?.existingSession}
+      isProcessing={isProcessingForceLogout}
+    />
+    </>
   )
 }
