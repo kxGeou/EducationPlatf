@@ -227,37 +227,53 @@ export const useAuthStore = create(
           if (session?.user) {
             // Sprawdź ważność sesji w bazie danych
             const sessionToken = localStorage.getItem('session_token');
-            if (sessionToken) {
-              const { data: sessionData, error: sessionError } = await supabase
-                .from('user_sessions')
-                .select('*')
-                .eq('session_token', sessionToken)
-                .eq('is_active', true)
-                .gt('last_activity', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
-                .single();
-
-              if (sessionError || !sessionData) {
-                // Sesja jest nieprawidłowa - wyloguj użytkownika
-                console.log('Sesja nieprawidłowa - wylogowywanie');
-                await supabase.auth.signOut();
-                localStorage.removeItem('session_token');
-                set({
-                  user: null,
-                  purchasedCourses: [],
-                  userProgress: {},
-                  userFlashcards: {},
-                  maturaDate: null,
-                });
-                set({ loading: false, initialized: true });
-                return;
-              }
-
-              // Aktualizuj ostatnią aktywność sesji
-              await supabase
-                .from('user_sessions')
-                .update({ last_activity: new Date().toISOString() })
-                .eq('session_token', sessionToken);
+            
+            if (!sessionToken) {
+              // Brak tokenu sesji - wyloguj użytkownika
+              console.log('⚠️ No session token found - logging out');
+              await supabase.auth.signOut();
+              localStorage.removeItem('auth-storage');
+              set({
+                user: null,
+                purchasedCourses: [],
+                userProgress: {},
+                userFlashcards: {},
+                maturaDate: null,
+              });
+              set({ loading: false, initialized: true });
+              return;
             }
+
+            const { data: sessionData, error: sessionError } = await supabase
+              .from('user_sessions')
+              .select('*')
+              .eq('session_token', sessionToken)
+              .eq('is_active', true)
+              .gt('last_activity', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
+              .single();
+
+            if (sessionError || !sessionData) {
+              // Sesja jest nieprawidłowa - wyloguj użytkownika
+              console.log('⚠️ Invalid session - logging out');
+              await supabase.auth.signOut();
+              localStorage.removeItem('session_token');
+              localStorage.removeItem('auth-storage');
+              set({
+                user: null,
+                purchasedCourses: [],
+                userProgress: {},
+                userFlashcards: {},
+                maturaDate: null,
+              });
+              set({ loading: false, initialized: true });
+              return;
+            }
+
+            // Aktualizuj ostatnią aktywność sesji
+            await supabase
+              .from('user_sessions')
+              .update({ last_activity: new Date().toISOString() })
+              .eq('session_token', sessionToken);
 
             set({ user: session.user });
             await get().fetchUserData(session.user.id);
@@ -291,36 +307,51 @@ export const useAuthStore = create(
             setTimeout(async () => {
               // Sprawdź ważność sesji w bazie danych
               const sessionToken = localStorage.getItem('session_token');
-              if (sessionToken) {
-                const { data: sessionData, error: sessionError } = await supabase
-                  .from('user_sessions')
-                  .select('*')
-                  .eq('session_token', sessionToken)
-                  .eq('is_active', true)
-                  .gt('last_activity', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
-                  .single();
-
-                if (sessionError || !sessionData) {
-                  // Sesja jest nieprawidłowa - wyloguj użytkownika
-                  console.log('Sesja nieprawidłowa w onAuthStateChange - wylogowywanie');
-                  await supabase.auth.signOut();
-                  localStorage.removeItem('session_token');
-                  set({
-                    user: null,
-                    purchasedCourses: [],
-                    userProgress: {},
-                    userFlashcards: {},
-                    maturaDate: null,
-                  });
-                  return;
-                }
-
-                // Aktualizuj ostatnią aktywność sesji
-                await supabase
-                  .from('user_sessions')
-                  .update({ last_activity: new Date().toISOString() })
-                  .eq('session_token', sessionToken);
+              
+              if (!sessionToken) {
+                // Brak tokenu sesji - wyloguj użytkownika
+                console.log('⚠️ No session token in onAuthStateChange - logging out');
+                await supabase.auth.signOut();
+                localStorage.removeItem('auth-storage');
+                set({
+                  user: null,
+                  purchasedCourses: [],
+                  userProgress: {},
+                  userFlashcards: {},
+                  maturaDate: null,
+                });
+                return;
               }
+
+              const { data: sessionData, error: sessionError } = await supabase
+                .from('user_sessions')
+                .select('*')
+                .eq('session_token', sessionToken)
+                .eq('is_active', true)
+                .gt('last_activity', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
+                .single();
+
+              if (sessionError || !sessionData) {
+                // Sesja jest nieprawidłowa - wyloguj użytkownika
+                console.log('⚠️ Invalid session in onAuthStateChange - logging out');
+                await supabase.auth.signOut();
+                localStorage.removeItem('session_token');
+                localStorage.removeItem('auth-storage');
+                set({
+                  user: null,
+                  purchasedCourses: [],
+                  userProgress: {},
+                  userFlashcards: {},
+                  maturaDate: null,
+                });
+                return;
+              }
+
+              // Aktualizuj ostatnią aktywność sesji
+              await supabase
+                .from('user_sessions')
+                .update({ last_activity: new Date().toISOString() })
+                .eq('session_token', sessionToken);
 
               set({ user: session.user });
               await get().fetchUserData(session.user.id);
@@ -492,37 +523,54 @@ export const useAuthStore = create(
 
       logout: async () => {
         try {
+          console.log('🚪 Logging out user...');
+          
           // Zakończ sesję w bazie danych
           const sessionToken = localStorage.getItem('session_token');
           if (sessionToken) {
+            console.log('🔒 Deactivating session in database...');
             const { error: sessionError } = await supabase
               .from('user_sessions')
               .update({ is_active: false })
               .eq('session_token', sessionToken);
 
             if (sessionError) {
-              console.error('Błąd kończenia sesji:', sessionError);
+              console.error('❌ Błąd kończenia sesji:', sessionError);
+            } else {
+              console.log('✅ Session deactivated successfully');
             }
           }
 
+          // Wyloguj z Supabase Auth
+          console.log('🔓 Signing out from Supabase...');
           await supabase.auth.signOut();
           
-          // Usuń token sesji z localStorage
+          // Wyczyść stan aplikacji
+          console.log('🧹 Clearing application state...');
+          set({
+            user: null,
+            purchasedCourses: [],
+            userProgress: {},
+            userFlashcards: {},
+            userPoints: 0,
+            maturaDate: null,
+            userPointsEarned: {},
+          });
+          
+          // Usuń wszystkie dane z localStorage
+          console.log('🗑️ Clearing localStorage...');
           localStorage.removeItem('session_token');
+          localStorage.removeItem('auth-storage'); // Usuń Zustand persist storage
           
           // Clear notifications store
           const { useNotificationStore } = await import('./notificationStore');
           const notificationStore = useNotificationStore.getState();
           notificationStore.set({ notifications: [], userNotifications: [], unreadCount: 0 });
           
-          set({
-            user: null,
-            purchasedCourses: [],
-            userProgress: {},
-            userFlashcards: {},
-          });
+          console.log('✅ Logout completed successfully');
           toast.success("Wylogowano");
         } catch (error) {
+          console.error('❌ Logout error:', error);
           toast.error("Błąd wylogowywania");
         }
       },
