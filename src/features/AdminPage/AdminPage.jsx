@@ -63,6 +63,8 @@ export default function AdminPage({ isDark, setIsDark }) {
   const [taskAnswersLoading, setTaskAnswersLoading] = useState(false);
   const [taskAnswersFilter, setTaskAnswersFilter] = useState("all");
   const [selectedTaskAnswer, setSelectedTaskAnswer] = useState(null);
+  const [taskFeedbackModal, setTaskFeedbackModal] = useState(null);
+  const [taskFeedbackText, setTaskFeedbackText] = useState("");
 
   // Store hooks
   const { fetchReports, reports, updateStatus, addAnswer } = useReports();
@@ -170,6 +172,52 @@ export default function AdminPage({ isDark, setIsDark }) {
       console.error('Error updating task answer status:', err);
       toast.error('Nie udało się zaktualizować statusu odpowiedzi');
     }
+  };
+
+  // Funkcja do dodawania feedbacku admina
+  const addTaskFeedback = async (answerId, feedback) => {
+    try {
+      const { error } = await supabase
+        .from('video_tasks_answers')
+        .update({ 
+          admin_feedback: feedback,
+          feedback_date: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', answerId);
+
+      if (error) throw error;
+      
+      // Aktualizuj lokalny stan
+      setTaskAnswers(prev => 
+        prev.map(answer => 
+          answer.id === answerId 
+            ? { 
+                ...answer, 
+                admin_feedback: feedback, 
+                feedback_date: new Date().toISOString(),
+                updated_at: new Date().toISOString() 
+              }
+            : answer
+        )
+      );
+      
+      toast.success('Feedback został dodany pomyślnie');
+      setTaskFeedbackModal(null);
+      setTaskFeedbackText("");
+    } catch (err) {
+      console.error('Error adding task feedback:', err);
+      toast.error('Nie udało się dodać feedbacku');
+    }
+  };
+
+  // Handler do wysyłania feedbacku
+  const handleSendTaskFeedback = () => {
+    if (!taskFeedbackText.trim()) {
+      toast.error('Wpisz treść feedbacku');
+      return;
+    }
+    addTaskFeedback(taskFeedbackModal, taskFeedbackText);
   };
 
   const handleLogin = () => {
@@ -767,6 +815,25 @@ export default function AdminPage({ isDark, setIsDark }) {
                                 </p>
                                 <p className="text-gray-700 dark:text-gray-800 whitespace-pre-wrap">{answer.answer}</p>
                               </div>
+
+                              {/* Admin Feedback Display */}
+                              {answer.admin_feedback ? (
+                                <div className="mt-3 p-3 bg-green-50 border dark:bg-green-200 dark:border-0 border-green-200 rounded-lg text-sm">
+                                  <p className="font-medium text-green-700 dark:text-green-800 mb-2">
+                                    Feedback admina:
+                                  </p>
+                                  <p className="text-gray-700 dark:text-gray-800 whitespace-pre-wrap">{answer.admin_feedback}</p>
+                                  {answer.feedback_date && (
+                                    <p className="text-xs text-gray-500 dark:text-gray-600 mt-2">
+                                      {timeAgo(answer.feedback_date)}
+                                    </p>
+                                  )}
+                                </div>
+                              ) : (
+                                <p className="text-xs italic text-gray-400 mt-2">
+                                  Brak feedbacku admina
+                                </p>
+                              )}
                             </div>
 
                             <div className="flex justify-between items-center mt-6">
@@ -775,6 +842,17 @@ export default function AdminPage({ isDark, setIsDark }) {
                                 <span>{timeAgo(answer.created_at)}</span>
                               </div>
                             </div>
+
+                            {/* Feedback Button */}
+                            <button
+                              onClick={() => {
+                                setTaskFeedbackModal(answer.id);
+                                setTaskFeedbackText(answer.admin_feedback || "");
+                              }}
+                              className="mt-4 w-full bg-gradient-to-r from-primaryBlue to-secondaryBlue dark:from-primaryGreen dark:to-secondaryBlue text-white text-sm px-4 py-2 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:opacity-90"
+                            >
+                              {answer.admin_feedback ? 'Edytuj feedback' : 'Dodaj feedback'}
+                            </button>
                           </div>
                         );
                       })}
@@ -1047,6 +1125,47 @@ export default function AdminPage({ isDark, setIsDark }) {
                   className="px-6 py-3 rounded-lg bg-primaryBlue dark:bg-primaryGreen text-white font-medium shadow-lg hover:shadow-xl transition-all duration-300 hover:opacity-90"
                 >
                   Zapisz ankietę
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Task Feedback Modal */}
+      {taskFeedbackModal && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 animate-fadeIn p-4">
+          <div className="bg-white dark:bg-DarkblackBorder rounded-2xl shadow-xl w-full max-w-2xl animate-scaleIn">
+            <div className="p-6">
+              <h3 className="text-lg font-semibold text-blackText dark:text-white mb-4 flex items-center gap-2">
+                <MessageSquare size={20} />
+                Feedback dla ucznia
+              </h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                Napisz feedback, który pomoże uczniowi zrozumieć co zrobił źle lub dobrze.
+              </p>
+              <textarea
+                value={taskFeedbackText}
+                onChange={(e) => setTaskFeedbackText(e.target.value)}
+                rows="6"
+                className="w-full p-3 border border-gray-200 dark:border-DarkblackBorder rounded-lg focus:outline-none focus:ring-2 focus:ring-primaryBlue dark:focus:ring-primaryGreen text-sm dark:bg-DarkblackText dark:text-white resize-none"
+                placeholder="Wpisz swój feedback tutaj... Np. 'Świetna odpowiedź! Pamiętaj tylko, że...' lub 'Niestety to nie jest poprawne, ponieważ...'"
+              />
+              <div className="flex justify-end gap-3 mt-4">
+                <button
+                  onClick={() => {
+                    setTaskFeedbackModal(null);
+                    setTaskFeedbackText("");
+                  }}
+                  className="px-4 py-2 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-100 transition dark:border-DarkblackBorder dark:text-gray-300 dark:hover:bg-DarkblackText"
+                >
+                  Anuluj
+                </button>
+                <button
+                  onClick={handleSendTaskFeedback}
+                  className="px-4 py-2 rounded-lg bg-gradient-to-r from-primaryBlue to-secondaryBlue dark:from-primaryGreen dark:to-secondaryBlue text-white shadow hover:scale-[1.03] transition"
+                >
+                  Wyślij feedback
                 </button>
               </div>
             </div>

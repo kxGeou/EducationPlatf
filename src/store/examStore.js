@@ -16,7 +16,7 @@ export const useExamStore = create((set, get) => ({
   currentCourseId: null,
 
   fetchCourses: async () => {
-    const { data, error } = await supabase.from("courses").select("*");
+    const { data, error } = await supabase.from("courses_template").select("*");
     if (error) console.error(error);
     set({ courses: data || [] });
   },

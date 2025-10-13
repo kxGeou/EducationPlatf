@@ -229,9 +229,8 @@ export const useAuthStore = create(
             const sessionToken = localStorage.getItem('session_token');
             
             if (!sessionToken) {
-              // Brak tokenu sesji - wyloguj użytkownika
-              console.log('⚠️ No session token found - logging out');
-              await supabase.auth.signOut();
+              // Brak tokenu sesji - tylko wyczyść stan aplikacji (NIE wylogowuj z Supabase Auth)
+              console.log('⚠️ No session token found - clearing app state only');
               localStorage.removeItem('auth-storage');
               set({
                 user: null,
@@ -253,9 +252,8 @@ export const useAuthStore = create(
               .single();
 
             if (sessionError || !sessionData) {
-              // Sesja jest nieprawidłowa - wyloguj użytkownika
-              console.log('⚠️ Invalid session - logging out');
-              await supabase.auth.signOut();
+              // Sesja jest nieprawidłowa - tylko wyczyść stan aplikacji (NIE wylogowuj z Supabase Auth)
+              console.log('⚠️ Invalid session - clearing app state only');
               localStorage.removeItem('session_token');
               localStorage.removeItem('auth-storage');
               set({
@@ -309,9 +307,8 @@ export const useAuthStore = create(
               const sessionToken = localStorage.getItem('session_token');
               
               if (!sessionToken) {
-                // Brak tokenu sesji - wyloguj użytkownika
-                console.log('⚠️ No session token in onAuthStateChange - logging out');
-                await supabase.auth.signOut();
+                // Brak tokenu sesji - tylko wyczyść stan aplikacji (NIE wylogowuj z Supabase Auth)
+                console.log('⚠️ No session token in onAuthStateChange - clearing app state only');
                 localStorage.removeItem('auth-storage');
                 set({
                   user: null,
@@ -332,9 +329,8 @@ export const useAuthStore = create(
                 .single();
 
               if (sessionError || !sessionData) {
-                // Sesja jest nieprawidłowa - wyloguj użytkownika
-                console.log('⚠️ Invalid session in onAuthStateChange - logging out');
-                await supabase.auth.signOut();
+                // Sesja jest nieprawidłowa - tylko wyczyść stan aplikacji (NIE wylogowuj z Supabase Auth)
+                console.log('⚠️ Invalid session in onAuthStateChange - clearing app state only');
                 localStorage.removeItem('session_token');
                 localStorage.removeItem('auth-storage');
                 set({

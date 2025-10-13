@@ -72,7 +72,7 @@ const useVideoStore = create((set, get) => ({
     try {
       let query = supabase
         .from('video_tasks_answers')
-        .select('task_id, answer, status')
+        .select('task_id, answer, status, admin_feedback, feedback_date')
         .eq('user_id', userId)
         .eq('course_id', courseId);
 

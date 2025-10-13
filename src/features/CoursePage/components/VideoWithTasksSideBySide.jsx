@@ -1,5 +1,5 @@
 import { useAuthStore } from '../../../store/authStore';
-import { ChevronLeft, Check, Clock, FileText, Send, Lock } from "lucide-react";
+import { ChevronLeft, Check, Clock, FileText, Send, Lock, MessageSquare } from "lucide-react";
 import { useState, useEffect } from "react";
 import React from 'react';
 import { useParams } from "react-router-dom";
@@ -18,6 +18,7 @@ export default function VideoWithTasksSideBySide({
   const [taskAnswers, setTaskAnswers] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submittedTasks, setSubmittedTasks] = useState([]);
+  const [submittedAnswers, setSubmittedAnswers] = useState({});
   
   const toast = useToast();
   const { id: courseId } = useParams();
@@ -66,8 +67,8 @@ export default function VideoWithTasksSideBySide({
         if (user && Object.keys(tasksByVideo).length > 0) {
           const allTaskIds = Object.values(tasksByVideo).flat().map(task => task.task_id.toString());
           const { data: answers, error: answersError } = await supabase
-            .from('tasks_answers')
-            .select('task_id, answer, status')
+            .from('video_tasks_answers')
+            .select('task_id, answer, status, admin_feedback, feedback_date')
             .eq('user_id', user.id)
             .eq('course_id', courseId)
             .in('task_id', allTaskIds);
@@ -75,6 +76,13 @@ export default function VideoWithTasksSideBySide({
           if (!answersError && answers) {
             const submittedTaskIds = answers.map(answer => answer.task_id);
             setSubmittedTasks(submittedTaskIds);
+            
+            // Zapisz odpowiedzi wraz z feedbackiem
+            const answersMap = {};
+            answers.forEach(answer => {
+              answersMap[answer.task_id] = answer;
+            });
+            setSubmittedAnswers(answersMap);
           }
         }
       } catch (err) {
@@ -117,7 +125,7 @@ export default function VideoWithTasksSideBySide({
 
       // Sprawdź czy odpowiedź już istnieje
       const { data: existingAnswer, error: checkError } = await supabase
-        .from('tasks_answers')
+        .from('video_tasks_answers')
         .select('id')
         .eq('task_id', taskId.toString())
         .eq('user_id', user.id)
@@ -127,7 +135,7 @@ export default function VideoWithTasksSideBySide({
       if (existingAnswer) {
         // Aktualizuj istniejącą odpowiedź
         const { error: updateError } = await supabase
-          .from('tasks_answers')
+          .from('video_tasks_answers')
           .update({
             answer: answer.trim(),
             status: 'pending',
@@ -140,7 +148,7 @@ export default function VideoWithTasksSideBySide({
       } else {
         // Dodaj nową odpowiedź
         const { error: insertError } = await supabase
-          .from('tasks_answers')
+          .from('video_tasks_answers')
           .insert({
             task_id: taskId.toString(),
             user_id: user.id,
@@ -390,6 +398,34 @@ export default function VideoWithTasksSideBySide({
                               disabled={!hasAccess(selectedVideoData)}
                             />
                           </div>
+
+                          {/* Admin Feedback Display */}
+                          {isSubmitted && submittedAnswers[task.task_id.toString()]?.admin_feedback && (
+                            <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                              <div className="flex items-start gap-2 mb-2">
+                                <MessageSquare size={18} className="text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+                                <div className="flex-1">
+                                  <p className="text-sm font-semibold text-blue-800 dark:text-blue-300 mb-1">
+                                    Feedback od nauczyciela:
+                                  </p>
+                                  <p className="text-sm text-blue-700 dark:text-blue-200 whitespace-pre-wrap leading-relaxed">
+                                    {submittedAnswers[task.task_id.toString()].admin_feedback}
+                                  </p>
+                                  {submittedAnswers[task.task_id.toString()].feedback_date && (
+                                    <p className="text-xs text-blue-600 dark:text-blue-400 mt-2">
+                                      {new Date(submittedAnswers[task.task_id.toString()].feedback_date).toLocaleDateString('pl-PL', {
+                                        year: 'numeric',
+                                        month: 'long',
+                                        day: 'numeric',
+                                        hour: '2-digit',
+                                        minute: '2-digit'
+                                      })}
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          )}
 
                           {hasAccess(selectedVideoData) && (
                             <div className="flex gap-3">

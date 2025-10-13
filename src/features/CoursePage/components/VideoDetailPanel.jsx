@@ -1,6 +1,6 @@
 import { useAuthStore } from '../../../store/authStore';
 import useVideoStore from '../../../store/videoStore';
-import { ChevronLeft, Check, Clock, FileText, Send, Play, BookOpen, ChevronDown, ChevronUp, X } from "lucide-react";
+import { ChevronLeft, Check, Clock, FileText, Send, Play, BookOpen, ChevronDown, ChevronUp, X, MessageSquare } from "lucide-react";
 import { useState } from "react";
 import React from 'react';
 import { useParams } from "react-router-dom";
@@ -466,6 +466,34 @@ export default function VideoDetailPanel({
                                       disabled={!videoHasAccess || isApproved}
                                     />
                                   </div>
+
+                                  {/* Admin Feedback Section */}
+                                  {savedAnswer?.admin_feedback && (
+                                    <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                                      <div className="flex items-start gap-3">
+                                        <MessageSquare size={20} className="text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+                                        <div className="flex-1">
+                                          <h5 className="text-sm font-semibold text-blue-800 dark:text-blue-200 mb-2">
+                                            Feedback od nauczyciela
+                                          </h5>
+                                          <p className="text-sm text-blue-700 dark:text-blue-300 leading-relaxed whitespace-pre-wrap">
+                                            {savedAnswer.admin_feedback}
+                                          </p>
+                                          {savedAnswer.feedback_date && (
+                                            <p className="text-xs text-blue-600 dark:text-blue-400 mt-2">
+                                              {new Date(savedAnswer.feedback_date).toLocaleDateString('pl-PL', {
+                                                year: 'numeric',
+                                                month: 'long',
+                                                day: 'numeric',
+                                                hour: '2-digit',
+                                                minute: '2-digit'
+                                              })}
+                                            </p>
+                                          )}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  )}
 
                                   {videoHasAccess && !isApproved && (
                                     <div className="flex gap-3">
