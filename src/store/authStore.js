@@ -225,6 +225,40 @@ export const useAuthStore = create(
           } = await supabase.auth.getSession();
 
           if (session?.user) {
+            // Sprawdź ważność sesji w bazie danych
+            const sessionToken = localStorage.getItem('session_token');
+            if (sessionToken) {
+              const { data: sessionData, error: sessionError } = await supabase
+                .from('user_sessions')
+                .select('*')
+                .eq('session_token', sessionToken)
+                .eq('is_active', true)
+                .gt('last_activity', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
+                .single();
+
+              if (sessionError || !sessionData) {
+                // Sesja jest nieprawidłowa - wyloguj użytkownika
+                console.log('Sesja nieprawidłowa - wylogowywanie');
+                await supabase.auth.signOut();
+                localStorage.removeItem('session_token');
+                set({
+                  user: null,
+                  purchasedCourses: [],
+                  userProgress: {},
+                  userFlashcards: {},
+                  maturaDate: null,
+                });
+                set({ loading: false, initialized: true });
+                return;
+              }
+
+              // Aktualizuj ostatnią aktywność sesji
+              await supabase
+                .from('user_sessions')
+                .update({ last_activity: new Date().toISOString() })
+                .eq('session_token', sessionToken);
+            }
+
             set({ user: session.user });
             await get().fetchUserData(session.user.id);
             await get().fetchUserProgress(session.user.id);
@@ -234,6 +268,9 @@ export const useAuthStore = create(
             if (get().shouldCleanupCourses()) {
               await get().cleanupPurchasedCourses();
             }
+
+            // Cleanup inactive sessions (do this periodically)
+            await get().cleanupInactiveSessions();
           } else {
             set({
               user: null,
@@ -252,6 +289,39 @@ export const useAuthStore = create(
         supabase.auth.onAuthStateChange(async (_event, session) => {
           if (session?.user) {
             setTimeout(async () => {
+              // Sprawdź ważność sesji w bazie danych
+              const sessionToken = localStorage.getItem('session_token');
+              if (sessionToken) {
+                const { data: sessionData, error: sessionError } = await supabase
+                  .from('user_sessions')
+                  .select('*')
+                  .eq('session_token', sessionToken)
+                  .eq('is_active', true)
+                  .gt('last_activity', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
+                  .single();
+
+                if (sessionError || !sessionData) {
+                  // Sesja jest nieprawidłowa - wyloguj użytkownika
+                  console.log('Sesja nieprawidłowa w onAuthStateChange - wylogowywanie');
+                  await supabase.auth.signOut();
+                  localStorage.removeItem('session_token');
+                  set({
+                    user: null,
+                    purchasedCourses: [],
+                    userProgress: {},
+                    userFlashcards: {},
+                    maturaDate: null,
+                  });
+                  return;
+                }
+
+                // Aktualizuj ostatnią aktywność sesji
+                await supabase
+                  .from('user_sessions')
+                  .update({ last_activity: new Date().toISOString() })
+                  .eq('session_token', sessionToken);
+              }
+
               set({ user: session.user });
               await get().fetchUserData(session.user.id);
               await get().fetchUserProgress(session.user.id);
@@ -311,10 +381,52 @@ export const useAuthStore = create(
       login: async ({ email, password }) => {
         set({ loading: true, error: null });
         try {
-          const { data, error } = await supabase.auth.signInWithPassword({
+          // Najpierw spróbuj zalogować się aby uzyskać user_id
+          const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
             email,
             password,
           });
+
+          if (authError) {
+            toast.error(authError.message);
+            set({ error: authError.message, loading: false });
+            return false;
+          }
+
+          if (!authData.user) {
+            toast.error("Nie udało się zalogować.");
+            set({ loading: false });
+            return false;
+          }
+
+          // Teraz sprawdź czy użytkownik ma już aktywną sesję
+          console.log('🔍 Checking active sessions for user:', authData.user.id);
+          const { data: activeSessions, error: sessionError } = await supabase
+            .from('user_sessions')
+            .select('*')
+            .eq('user_id', authData.user.id)
+            .eq('is_active', true)
+            .gt('last_activity', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString());
+
+          console.log('📊 Active sessions found:', activeSessions);
+          console.log('🔢 Number of active sessions:', activeSessions?.length || 0);
+
+          if (sessionError) {
+            console.error('❌ Error checking sessions:', sessionError);
+          }
+
+          if (!sessionError && activeSessions && activeSessions.length > 0) {
+            // Wyloguj użytkownika, ponieważ ma już aktywną sesję
+            console.log('🚫 User already has active session, blocking login');
+            await supabase.auth.signOut();
+            toast.error("To konto jest już zalogowane na innym urządzeniu. Możesz się zalogować tylko z jednego urządzenia na raz.");
+            set({ loading: false });
+            return false;
+          }
+
+          console.log('✅ No active sessions found, proceeding with login');
+
+          const { data, error } = { data: authData, error: authError };
 
           if (error) {
             toast.error(error.message);
@@ -328,49 +440,33 @@ export const useAuthStore = create(
             return false;
           }
 
-          // Sprawdź czy użytkownik ma już aktywną sesję
-          const { data: existingSessions, error: sessionError } = await supabase
-            .from('user_sessions')
-            .select('*')
-            .eq('user_id', data.user.id)
-            .eq('is_active', true)
-            .order('last_activity', { ascending: false });
-
-          if (sessionError) {
-            console.error('Błąd sprawdzania sesji:', sessionError);
-            // Kontynuuj logowanie mimo błędu
-          } else if (existingSessions && existingSessions.length > 0) {
-            // Użytkownik ma aktywną sesję - zwróć informację o konflikcie
-            set({ 
-              loading: false, 
-              sessionConflict: {
-                user: data.user,
-                existingSession: existingSessions[0]
-              }
-            });
-            return 'session_conflict';
-          }
-
           // Utwórz nową sesję
-          const sessionToken = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+          console.log('🔐 Creating new session for user:', data.user.id);
+          const sessionToken = Math.random().toString(36).substring(2) + Date.now().toString(36);
           const deviceInfo = {
+            userAgent: navigator.userAgent,
+            deviceType: /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ? 'mobile' : 'desktop',
             timestamp: new Date().toISOString()
           };
+
+          console.log('📱 Device type:', deviceInfo.deviceType);
 
           const { error: sessionCreateError } = await supabase
             .from('user_sessions')
             .insert({
               user_id: data.user.id,
               session_token: sessionToken,
-              device_info: deviceInfo,
+              device_info: JSON.stringify(deviceInfo),
+              user_agent: deviceInfo.userAgent,
               is_active: true
             });
 
           if (sessionCreateError) {
-            console.error('Błąd tworzenia sesji:', sessionCreateError);
-            // Kontynuuj logowanie mimo błędu
+            console.error('❌ Błąd tworzenia sesji:', sessionCreateError);
+            // Kontynuuj logowanie nawet jeśli nie udało się utworzyć sesji
           } else {
-            // Zapisz token sesji w localStorage
+            console.log('✅ Session created successfully:', sessionToken.substring(0, 10) + '...');
+            // Zapisanie tokenu sesji w localStorage
             localStorage.setItem('session_token', sessionToken);
           }
 
@@ -396,18 +492,23 @@ export const useAuthStore = create(
 
       logout: async () => {
         try {
-          // Dezaktywuj sesję w bazie danych
+          // Zakończ sesję w bazie danych
           const sessionToken = localStorage.getItem('session_token');
           if (sessionToken) {
-            await supabase
+            const { error: sessionError } = await supabase
               .from('user_sessions')
               .update({ is_active: false })
               .eq('session_token', sessionToken);
-            
-            localStorage.removeItem('session_token');
+
+            if (sessionError) {
+              console.error('Błąd kończenia sesji:', sessionError);
+            }
           }
 
           await supabase.auth.signOut();
+          
+          // Usuń token sesji z localStorage
+          localStorage.removeItem('session_token');
           
           // Clear notifications store
           const { useNotificationStore } = await import('./notificationStore');
@@ -419,7 +520,6 @@ export const useAuthStore = create(
             purchasedCourses: [],
             userProgress: {},
             userFlashcards: {},
-            sessionConflict: null,
           });
           toast.success("Wylogowano");
         } catch (error) {
@@ -564,85 +664,24 @@ export const useAuthStore = create(
         }
       },
 
-      // Wymuszenie wylogowania z innych urządzeń
-      forceLogoutOtherDevices: async () => {
+      // Cleanup inactive sessions (called periodically)
+      cleanupInactiveSessions: async () => {
         try {
-          const { user } = get();
-          if (!user) return false;
-
-          const sessionToken = localStorage.getItem('session_token');
-          if (!sessionToken) return false;
-
-          // Dezaktywuj inne sesje użytkownika
           const { error } = await supabase
-            .rpc('deactivate_other_sessions', {
-              p_user_id: user.id,
-              p_current_session_token: sessionToken
-            });
-
-          if (error) throw error;
-
-          toast.success("Wylogowano z innych urządzeń");
-          return true;
-        } catch (error) {
-          console.error('Błąd wymuszenia wylogowania:', error);
-          toast.error("Błąd wylogowywania z innych urządzeń");
-          return false;
-        }
-      },
-
-      // Rozwiązanie konfliktu sesji - zaloguj z wylogowaniem innych urządzeń
-      resolveSessionConflict: async () => {
-        try {
-          const { sessionConflict } = get();
-          if (!sessionConflict) return false;
-
-          // Wymuś wylogowanie z innych urządzeń
-          const sessionToken = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-          const deviceInfo = {
-            timestamp: new Date().toISOString()
-          };
-
-          // Dezaktywuj inne sesje i utwórz nową
-          const { error: deactivateError } = await supabase
-            .rpc('deactivate_other_sessions', {
-              p_user_id: sessionConflict.user.id,
-              p_current_session_token: sessionToken
-            });
-
-          if (deactivateError) throw deactivateError;
-
-          // Utwórz nową sesję
-          const { error: sessionCreateError } = await supabase
             .from('user_sessions')
-            .insert({
-              user_id: sessionConflict.user.id,
-              session_token: sessionToken,
-              device_info: deviceInfo,
-              is_active: true
-            });
+            .update({ is_active: false })
+            .eq('is_active', true)
+            .lt('last_activity', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()); // starsze niż 24h
 
-          if (sessionCreateError) throw sessionCreateError;
+          if (error) {
+            console.error("Error cleaning up inactive sessions:", error);
+            return false;
+          }
 
-          // Zapisz token sesji
-          localStorage.setItem('session_token', sessionToken);
-
-          // Ustaw użytkownika i pobierz dane
-          set({ user: sessionConflict.user, sessionConflict: null });
-          await get().fetchUserData(sessionConflict.user.id);
-          await get().fetchUserProgress(sessionConflict.user.id);
-          await get().fetchUserFlashcards(sessionConflict.user.id);
-          
-          // Initialize notifications
-          const { useNotificationStore } = await import('./notificationStore');
-          const notificationStore = useNotificationStore.getState();
-          await notificationStore.fetchNotifications(sessionConflict.user.id);
-          
-          toast.success("Zalogowano pomyślnie");
+          console.log("Inactive sessions cleaned up successfully");
           return true;
-        } catch (error) {
-          console.error('Błąd rozwiązania konfliktu sesji:', error);
-          toast.error("Błąd logowania");
+        } catch (err) {
+          console.error("Error cleaning up inactive sessions:", err);
           return false;
         }
       },

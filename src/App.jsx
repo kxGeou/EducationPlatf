@@ -23,28 +23,15 @@ import ExamPage from './features/ExamPage/ExamPage.jsx'
 import { ToastProvider, useToast } from './context/ToastContext.jsx'
 import ToastContainer from './components/ui/ToastContainer.jsx'
 import FloatingNotificationBubble from './components/ui/FloatingNotificationBubble.jsx'
-import { useSessionValidation } from './hooks/useSessionValidation.js'
 function AppContent({ isDark, setIsDark }) {
   const init = useAuthStore(state => state.init)
   const loading = useAuthStore(state => state.loading)
   const user = useAuthStore(state => state.user)
   const { toasts, removeToast } = useToast()
-  
-  // Walidacja sesji
-  const { 
-    validateCurrentSession
-  } = useSessionValidation()
 
   useEffect(() => {
     init()
   }, [])
-
-  // Walidacja sesji po zalogowaniu
-  useEffect(() => {
-    if (user && !loading) {
-      validateCurrentSession()
-    }
-  }, [user, loading, validateCurrentSession])
 
   if (loading) {
     return <Loading /> 

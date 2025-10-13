@@ -24,12 +24,8 @@ export default function LoginForm() {
   const navigate = useNavigate()
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
-  const [showSessionConflict, setShowSessionConflict] = useState(false)
-  const [isResolvingConflict, setIsResolvingConflict] = useState(false)
   const loginUser = useAuthStore((state) => state.login) 
   const user = useAuthStore((state) => state.user);
-  const sessionConflict = useAuthStore((state) => state.sessionConflict);
-  const resolveSessionConflict = useAuthStore((state) => state.resolveSessionConflict);
 
   // Handle navigation when user is already logged in
   useEffect(() => {
@@ -54,37 +50,15 @@ export default function LoginForm() {
     setLoading(true)
     const { email, password } = getValues()
 
-    const result = await loginUser({ email, password })
+    const success = await loginUser({ email, password })
     setLoading(false)
 
-    if (result === true) {
+    if (success) {
       navigate('/')
-    } else if (result === 'session_conflict') {
-      // Konflikt sesji - pokaż opcję wymuszenia wylogowania
-      setShowSessionConflict(true)
     }
-  }
-
-  const handleForceLogout = async () => {
-    setIsResolvingConflict(true)
-    try {
-      const success = await resolveSessionConflict()
-      if (success) {
-        navigate('/')
-      }
-    } finally {
-      setIsResolvingConflict(false)
-      setShowSessionConflict(false)
-    }
-  }
-
-  const handleCancelConflict = () => {
-    setShowSessionConflict(false)
-    useAuthStore.getState().set({ sessionConflict: null })
   }
 
   return (
-    <>
     <form
       onSubmit={(e) => {
         e.preventDefault()
@@ -136,53 +110,5 @@ export default function LoginForm() {
 </p>
 
     </form>
-
-    {/* Sekcja konfliktu sesji */}
-    {showSessionConflict && (
-      <div className="w-full mt-4 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
-        <div className="flex items-center gap-3 mb-3">
-          <div className="w-6 h-6 text-yellow-600 dark:text-yellow-400">
-            <svg fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-            </svg>
-          </div>
-          <h3 className="font-semibold text-yellow-800 dark:text-yellow-200">
-            Konto jest już zalogowane
-          </h3>
-        </div>
-        <p className="text-sm text-yellow-700 dark:text-yellow-300 mb-4">
-          Twoje konto jest już zalogowane na innym urządzeniu. Aby zalogować się tutaj, musisz wylogować się z tamtego urządzenia.
-        </p>
-        <div className="flex gap-3">
-          <button
-            onClick={handleForceLogout}
-            disabled={isResolvingConflict}
-            className="flex-1 bg-red-600 hover:bg-red-700 disabled:bg-red-400 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
-          >
-            {isResolvingConflict ? (
-              <>
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                <span>Wylogowywanie...</span>
-              </>
-            ) : (
-              <>
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                </svg>
-                <span>Wyloguj z tamtego urządzenia</span>
-              </>
-            )}
-          </button>
-          <button
-            onClick={handleCancelConflict}
-            disabled={isResolvingConflict}
-            className="px-4 py-2 border border-yellow-300 dark:border-yellow-600 rounded-lg text-sm text-yellow-700 dark:text-yellow-300 hover:bg-yellow-100 dark:hover:bg-yellow-800/30 transition-colors"
-          >
-            Anuluj
-          </button>
-        </div>
-      </div>
-    )}
-    </>
   )
 }
