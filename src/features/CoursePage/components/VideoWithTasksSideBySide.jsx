@@ -1,10 +1,12 @@
 import { useAuthStore } from '../../../store/authStore';
-import { ChevronLeft, Check, Clock, FileText, Send, Lock, MessageSquare } from "lucide-react";
+import { ChevronLeft, Check, Clock, FileText, Send, Lock, MessageSquare, Download } from "lucide-react";
 import { useState, useEffect } from "react";
 import React from 'react';
 import { useParams } from "react-router-dom";
 import supabase from '../../../util/supabaseClient';
 import { useToast } from '../../../context/ToastContext';
+import TaskInput from '../../../components/ui/TaskInput';
+import TaskTypeBadge from '../../../components/ui/TaskTypeBadge';
 
 export default function VideoWithTasksSideBySide({
   videos,
@@ -166,6 +168,25 @@ export default function VideoWithTasksSideBySide({
       toast.error('Wystąpił błąd podczas przesyłania odpowiedzi');
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  // Function to handle file download
+  const handleFileDownload = async (fileUrl, fileName) => {
+    try {
+      // If it's a direct URL, create a temporary link to download
+      const link = document.createElement('a');
+      link.href = fileUrl;
+      link.download = fileName || 'plik_zadania.pdf';
+      link.target = '_blank';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      toast.success('Rozpoczęto pobieranie pliku');
+    } catch (error) {
+      console.error('Error downloading file:', error);
+      toast.error('Nie udało się pobrać pliku');
     }
   };
 
@@ -363,9 +384,12 @@ export default function VideoWithTasksSideBySide({
                     return (
                       <div key={task.task_id} className="bg-white dark:bg-DarkblackText rounded-lg shadow-sm p-6">
                         <div className="flex items-start justify-between mb-4">
-                          <h4 className="text-base font-semibold text-gray-800 dark:text-gray-200">
-                            Zadanie {index + 1}
-                          </h4>
+                          <div className="flex items-center gap-3">
+                            <h4 className="text-base font-semibold text-gray-800 dark:text-gray-200">
+                              Zadanie {index + 1}
+                            </h4>
+                            <TaskTypeBadge taskType={task.task_type} />
+                          </div>
                           {isSubmitted && (
                             <div className="flex items-center gap-1 text-green-600 dark:text-green-400">
                               <Check size={16} />
@@ -381,23 +405,37 @@ export default function VideoWithTasksSideBySide({
                           <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
                             {task.task}
                           </p>
+                          
+                          {/* Pliki do pobrania */}
+                          {task.file_url && (
+                            <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-600">
+                              <div className="flex items-center gap-2 mb-2">
+                                <Download size={16} className="text-primaryBlue dark:text-primaryGreen" />
+                                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                  Materiały do zadania:
+                                </span>
+                              </div>
+                              <button
+                                onClick={() => handleFileDownload(task.file_url, task.file_name || `${task.topic}.pdf`)}
+                                className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-DarkblackText border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                              >
+                                <FileText size={14} className="text-primaryBlue dark:text-primaryGreen" />
+                                <span className="text-sm text-gray-700 dark:text-gray-300">
+                                  {task.file_name || 'Pobierz plik PDF'}
+                                </span>
+                                <Download size={14} className="text-gray-500 dark:text-gray-400" />
+                              </button>
+                            </div>
+                          )}
                         </div>
 
                         <div className="space-y-3">
-                          <div>
-                            <label htmlFor={`answer-${task.task_id}`} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                              Twoja odpowiedź:
-                            </label>
-                            <textarea
-                              id={`answer-${task.task_id}`}
-                              value={currentAnswer}
-                              onChange={(e) => handleAnswerChange(task.task_id, e.target.value)}
-                              placeholder="Wprowadź swoją odpowiedź..."
-                              className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primaryBlue dark:focus:ring-primaryGreen focus:border-transparent resize-none dark:bg-gray-800 dark:text-white"
-                              rows={4}
-                              disabled={!hasAccess(selectedVideoData)}
-                            />
-                          </div>
+                          <TaskInput
+                            task={task}
+                            value={currentAnswer}
+                            onChange={(value) => handleAnswerChange(task.task_id, value)}
+                            disabled={!hasAccess(selectedVideoData)}
+                          />
 
                           {/* Admin Feedback Display */}
                           {isSubmitted && submittedAnswers[task.task_id.toString()]?.admin_feedback && (

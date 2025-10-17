@@ -1,11 +1,13 @@
 import { useAuthStore } from '../../../store/authStore';
 import useVideoStore from '../../../store/videoStore';
-import { ChevronLeft, Check, Clock, FileText, Send, Play, BookOpen, ChevronDown, ChevronUp, X, MessageSquare } from "lucide-react";
+import { ChevronLeft, Check, Clock, FileText, Send, Play, BookOpen, ChevronDown, ChevronUp, X, MessageSquare, Download } from "lucide-react";
 import { useState } from "react";
 import React from 'react';
 import { useParams } from "react-router-dom";
 import { useToast } from '../../../context/ToastContext';
 import supabase from '../../../util/supabaseClient';
+import TaskInput from '../../../components/ui/TaskInput';
+import TaskTypeBadge from '../../../components/ui/TaskTypeBadge';
 
 export default function VideoDetailPanel({
   video,
@@ -99,6 +101,25 @@ export default function VideoDetailPanel({
     }
     
     setIsSubmitting(false);
+  };
+
+  // Function to handle file download
+  const handleFileDownload = async (fileUrl, fileName) => {
+    try {
+      // If it's a direct URL, create a temporary link to download
+      const link = document.createElement('a');
+      link.href = fileUrl;
+      link.download = fileName || 'plik_zadania.pdf';
+      link.target = '_blank';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      toast.success('Rozpoczęto pobieranie pliku');
+    } catch (error) {
+      console.error('Error downloading file:', error);
+      toast.error('Nie udało się pobrać pliku');
+    }
   };
 
   const hasAccess = (video) => {
@@ -247,6 +268,31 @@ export default function VideoDetailPanel({
           <>
             {/* Nagłówek z zakładkami */}
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 lg:gap-0 mb-4 ">
+              <div className="flex bg-gray-100 dark:bg-DarkblackBorder rounded-lg p-1 w-full lg:w-auto">
+                <button
+                  onClick={() => onTabChange('tasks')}
+                  className={`flex items-center justify-center gap-1 lg:gap-2 flex-1 lg:flex-none px-3 lg:px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                    activeTab === 'tasks'
+                      ? 'bg-white dark:bg-DarkblackText text-primaryBlue dark:text-primaryGreen shadow-sm'
+                      : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
+                  }`}
+                >
+                  <BookOpen size={14} />
+                  <span>Zadania ({tasks.length})</span>
+                </button>
+                <button
+                  onClick={() => onTabChange('video')}
+                  className={`flex items-center justify-center gap-1 lg:gap-2 flex-1 lg:flex-none px-3 lg:px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                    activeTab === 'video'
+                      ? 'bg-white dark:bg-DarkblackText text-primaryBlue dark:text-primaryGreen shadow-sm'
+                      : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
+                  }`}
+                >
+                  <Play size={14} />
+                  <span>Film</span>
+                </button>
+              </div>
+
               <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
                 <h2 className="text-base lg:text-lg font-bold text-gray-800 dark:text-white truncate">
                   {video.title}
@@ -262,31 +308,6 @@ export default function VideoDetailPanel({
                   </div>
                 </div>
                 
-              </div>
-
-              <div className="flex bg-gray-100 dark:bg-DarkblackBorder rounded-lg p-1 w-full lg:w-auto">
-                <button
-                  onClick={() => onTabChange('video')}
-                  className={`flex items-center justify-center gap-1 lg:gap-2 flex-1 lg:flex-none px-3 lg:px-4 py-2 rounded-md text-sm font-medium transition-all ${
-                    activeTab === 'video'
-                      ? 'bg-white dark:bg-DarkblackText text-primaryBlue dark:text-primaryGreen shadow-sm'
-                      : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
-                  }`}
-                >
-                  <Play size={14} />
-                  <span>Film</span>
-                </button>
-                <button
-                  onClick={() => onTabChange('tasks')}
-                  className={`flex items-center justify-center gap-1 lg:gap-2 flex-1 lg:flex-none px-3 lg:px-4 py-2 rounded-md text-sm font-medium transition-all ${
-                    activeTab === 'tasks'
-                      ? 'bg-white dark:bg-DarkblackText text-primaryBlue dark:text-primaryGreen shadow-sm'
-                      : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
-                  }`}
-                >
-                  <BookOpen size={14} />
-                  <span>Zadania ({tasks.length})</span>
-                </button>
               </div>
             </div>
 
@@ -416,9 +437,12 @@ export default function VideoDetailPanel({
                                   <ChevronDown size={20} className="text-gray-500 dark:text-gray-400" />
                                 </div>
                                 <div>
-                                  <h4 className="text-base font-semibold text-gray-800 dark:text-gray-200">
-                                    Zadanie {index + 1}
-                                  </h4>
+                                  <div className="flex items-center gap-4 mb-1">
+                                    <h4 className="text-base font-semibold text-gray-800 dark:text-gray-200">
+                                      Zadanie {index + 1}
+                                    </h4>
+                                    <TaskTypeBadge taskType={task.task_type} />
+                                  </div>
                                   <p className="text-sm text-gray-600 dark:text-gray-400 truncate max-w-xs">
                                     {task.topic}
                                   </p>
@@ -449,51 +473,37 @@ export default function VideoDetailPanel({
                                   <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
                                     {task.task}
                                   </p>
+                                  
+                                  {/* Pliki do pobrania */}
+                                  {task.file_url && (
+                                    <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-600">
+                                      <div className="flex items-center gap-2">
+                                        <Download size={16} className="text-primaryBlue dark:text-primaryGreen" />
+                                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                          Materiały do zadania:
+                                        </span>
+                                      </div>
+                                      <button
+                                        onClick={() => handleFileDownload(task.file_url, task.file_name || `${task.topic}.pdf`)}
+                                        className="mt-2 flex items-center gap-2 px-3 py-2 bg-white dark:bg-DarkblackText border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                                      >
+                                        <FileText size={14} className="text-primaryBlue dark:text-primaryGreen" />
+                                        <span className="text-sm text-gray-700 dark:text-gray-300">
+                                          {task.file_name || 'Pobierz plik PDF'}
+                                        </span>
+                                        <Download size={14} className="text-gray-500 dark:text-gray-400" />
+                                      </button>
+                                    </div>
+                                  )}
                                 </div>
 
                                 <div className="space-y-4">
-                                  <div>
-                                    <label htmlFor={`answer-${task.task_id}`} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                      Twoja odpowiedź:
-                                    </label>
-                                    <textarea
-                                      id={`answer-${task.task_id}`}
-                                      value={currentAnswer}
-                                      onChange={(e) => updateTaskAnswer(task.task_id, e.target.value)}
-                                      placeholder="Wprowadź swoją odpowiedź..."
-                                      className="w-full p-3 border-0 bg-primaryBlue/10 rounded-lg dark:bg-DarkblackBorder resize-none text-gray-800 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 outline-none"
-                                      rows={4}
-                                      disabled={!videoHasAccess || isApproved}
-                                    />
-                                  </div>
-
-                                  {/* Admin Feedback Section */}
-                                  {savedAnswer?.admin_feedback && (
-                                    <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-                                      <div className="flex items-start gap-3">
-                                        <MessageSquare size={20} className="text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
-                                        <div className="flex-1">
-                                          <h5 className="text-sm font-semibold text-blue-800 dark:text-blue-200 mb-2">
-                                            Feedback od nauczyciela
-                                          </h5>
-                                          <p className="text-sm text-blue-700 dark:text-blue-300 leading-relaxed whitespace-pre-wrap">
-                                            {savedAnswer.admin_feedback}
-                                          </p>
-                                          {savedAnswer.feedback_date && (
-                                            <p className="text-xs text-blue-600 dark:text-blue-400 mt-2">
-                                              {new Date(savedAnswer.feedback_date).toLocaleDateString('pl-PL', {
-                                                year: 'numeric',
-                                                month: 'long',
-                                                day: 'numeric',
-                                                hour: '2-digit',
-                                                minute: '2-digit'
-                                              })}
-                                            </p>
-                                          )}
-                                        </div>
-                                      </div>
-                                    </div>
-                                  )}
+                                  <TaskInput
+                                    task={task}
+                                    value={currentAnswer}
+                                    onChange={(value) => updateTaskAnswer(task.task_id, value)}
+                                    disabled={!videoHasAccess || isApproved}
+                                  />
 
                                   {videoHasAccess && !isApproved && (
                                     <div className="flex gap-3">

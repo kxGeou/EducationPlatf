@@ -7,7 +7,6 @@ const useNavigationStore = create((set, get) => ({
   selectedVideo: null,
   activeTab: 'video', // 'video', 'tasks'
 
-  // Akcje nawigacji
   showSections: () => {
     set({
       currentView: 'sections',
@@ -50,6 +49,9 @@ const useNavigationStore = create((set, get) => ({
 }));
 
 export default useNavigationStore;
+
+
+
 
 
 
