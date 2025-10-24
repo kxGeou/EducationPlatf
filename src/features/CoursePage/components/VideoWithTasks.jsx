@@ -1,5 +1,5 @@
 import { useAuthStore } from '../../../store/authStore';
-import { ChevronLeft, Check, Clock, FileText, Send, Upload, MessageSquare, Download } from "lucide-react";
+import { ChevronLeft, Check, Clock, FileText, Send, Upload, MessageSquare, Download, RefreshCw } from "lucide-react";
 import { useState, useEffect } from "react";
 import React from 'react';
 import { useParams } from "react-router-dom";
@@ -20,6 +20,7 @@ export default function VideoWithTasks({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submittedTasks, setSubmittedTasks] = useState([]);
   const [submittedAnswers, setSubmittedAnswers] = useState({});
+  const [isRefreshing, setIsRefreshing] = useState(false);
   
   const toast = useToast();
   const { id: courseId } = useParams();
@@ -87,6 +88,41 @@ export default function VideoWithTasks({
     }));
   };
 
+  const handleRefreshFeedback = async (taskId) => {
+    if (!user) return;
+
+    setIsRefreshing(true);
+    try {
+      const { data: updatedAnswer, error } = await supabase
+        .from('video_tasks_answers')
+        .select('task_id, answer, status, admin_feedback, feedback_date')
+        .eq('task_id', taskId.toString())
+        .eq('user_id', user.id)
+        .eq('course_id', courseId)
+        .single();
+
+      if (!error && updatedAnswer) {
+        setSubmittedAnswers(prev => ({
+          ...prev,
+          [updatedAnswer.task_id]: updatedAnswer
+        }));
+        
+        if (updatedAnswer.admin_feedback) {
+          toast.success('Znaleziono nowy feedback od nauczyciela!');
+        } else {
+          toast.info('Brak nowego feedbacku');
+        }
+      } else if (error && error.code === 'PGRST116') {
+        toast.info('Brak odpowiedzi do odświeżenia');
+      }
+    } catch (error) {
+      console.error('Error refreshing feedback:', error);
+      toast.error('Nie udało się odświeżyć feedbacku');
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
   const handleSubmitAnswer = async (taskId) => {
     const answer = taskAnswers[taskId];
     if (!answer || !answer.trim()) {
@@ -139,6 +175,25 @@ export default function VideoWithTasks({
         if (insertError) throw insertError;
         setSubmittedTasks(prev => [...prev, taskId.toString()]);
         toast.success('Odpowiedź została przesłana do sprawdzenia');
+      }
+
+      // Odśwież dane odpowiedzi, aby pobrać zaktualizowany feedback
+      const { data: updatedAnswer, error: fetchError } = await supabase
+        .from('video_tasks_answers')
+        .select('task_id, answer, status, admin_feedback, feedback_date')
+        .eq('task_id', taskId.toString())
+        .eq('user_id', user.id)
+        .eq('course_id', courseId)
+        .single();
+
+      if (!fetchError && updatedAnswer) {
+        setSubmittedAnswers(prev => ({
+          ...prev,
+          [updatedAnswer.task_id]: updatedAnswer
+        }));
+        if (!submittedTasks.includes(taskId.toString())) {
+          setSubmittedTasks(prev => [...prev, taskId.toString()]);
+        }
       }
     } catch (error) {
       console.error('Error submitting answer:', error);
@@ -378,6 +433,18 @@ export default function VideoWithTasks({
                                 <Send size={16} />
                                 {isSubmitting ? 'Przesyłanie...' : isSubmitted ? 'Zaktualizuj odpowiedź' : 'Prześlij odpowiedź'}
                               </button>
+                              
+                              {isSubmitted && (
+                                <button
+                                  onClick={() => handleRefreshFeedback(task.task_id)}
+                                  disabled={isRefreshing}
+                                  className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all border-2 border-primaryBlue dark:border-primaryGreen text-primaryBlue dark:text-primaryGreen hover:bg-primaryBlue/10 dark:hover:bg-primaryGreen/10 disabled:opacity-50 disabled:cursor-not-allowed"
+                                  title="Sprawdź czy nauczyciel dodał feedback"
+                                >
+                                  <RefreshCw size={16} className={isRefreshing ? 'animate-spin' : ''} />
+                                  {isRefreshing ? 'Sprawdzam...' : 'Sprawdź feedback'}
+                                </button>
+                              )}
                             </div>
                           )}
 

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useTasks } from '../../../store/taskStore';
 import TaskFilterPanel from './TaskFilterPanel';
 import supabase from '../../../util/supabaseClient';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 
 function TaskPanel({ courseId }) {
     const { 
@@ -29,6 +30,7 @@ function TaskPanel({ courseId }) {
     const [timer, setTimer] = useState(0);
     const [showNextButton, setShowNextButton] = useState(false);
     const [correctAnswer, setCorrectAnswer] = useState(null);
+    const [expandedAnswers, setExpandedAnswers] = useState({});
 
     useEffect(() => {
         if (courseId) {
@@ -45,6 +47,7 @@ function TaskPanel({ courseId }) {
         setTimer(0);
         setShowNextButton(false);
         setCorrectAnswer(null);
+        setExpandedAnswers({});
     }, [currentTask])
 
     useEffect(() => {
@@ -120,6 +123,7 @@ function TaskPanel({ courseId }) {
         setShowTranslationAnswers(false);
         setShowNextButton(false);
         setSelectedAnswer(null);
+        setExpandedAnswers({});
         getNextTask();
     };
 
@@ -129,6 +133,52 @@ function TaskPanel({ courseId }) {
         setShowNextButton(false);
         setSelectedAnswer(null);
         setTimer(0);
+        setExpandedAnswers({});
+    };
+
+    const toggleAnswerExpansion = (index) => {
+        setExpandedAnswers(prev => ({
+            ...prev,
+            [index]: !prev[index]
+        }));
+    };
+
+    const shouldShowAnswer = (answer, index) => {
+        if (!showTranslationAnswers) return true;
+        
+        const isCorrect = answer === correctAnswer;
+        const isSelected = answer === selectedAnswer;
+        
+        // Jeśli odpowiedź poprawna - pokazuj tylko poprawną odpowiedź
+        if (feedbackType === 'correct' || feedbackType === 'already_completed') {
+            return isCorrect;
+        }
+        
+        // Jeśli odpowiedź niepoprawna - pokazuj wybraną błędną i poprawną
+        if (feedbackType === 'incorrect') {
+            return isSelected || isCorrect;
+        }
+        
+        return true;
+    };
+
+    const canShowDropdown = (answer, index) => {
+        if (!showTranslationAnswers) return false;
+        
+        const isCorrect = answer === correctAnswer;
+        const isSelected = answer === selectedAnswer;
+        
+        // Dla poprawnej odpowiedzi - można rozwinąć niepoprawne
+        if (feedbackType === 'correct' || feedbackType === 'already_completed') {
+            return !isCorrect;
+        }
+        
+        // Dla niepoprawnej - można rozwinąć pozostałe niepoprawne (nie wybraną i nie poprawną)
+        if (feedbackType === 'incorrect') {
+            return !isSelected && !isCorrect;
+        }
+        
+        return false;
     };
 
     const fetchCorrectAnswer = async (taskId) => {
@@ -248,42 +298,83 @@ function TaskPanel({ courseId }) {
                     </p>
 
                     <div className="space-y-3 mb-6">
-                        {currentTask.answers.map((answer, index) => (
-                            <div key={index}>
-                                <button
-                                    onClick={() => setSelectedAnswer(answer)}
-                                    className={`w-full p-3 text-left rounded-lg border-2 transition-all ${
-                                        selectedAnswer === answer
-                                            ? 'border-primaryBlue dark:border-primaryGreen bg-blue-50 dark:bg-green-900/20'
-                                            : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
-                                    }`}
-                                >
-                                    {answer}
-                                </button>
-                                {showTranslationAnswers && currentTask.answers_translation && currentTask.answers_translation[index] && (
-                                    <div className={`p-2 mt-1 rounded-lg border shadow-sm ${
-                                        correctAnswer && answer === correctAnswer
-                                            ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800'
-                                            : 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800'
-                                    }`}>
-                                        <div className="flex items-start gap-2">
-                                            <div>
-                                                <p className={`text-xs font-medium mb-1 ${
-                                                    correctAnswer && answer === correctAnswer
-                                                        ? 'text-green-600 dark:text-green-400'
-                                                        : 'text-red-600 dark:text-red-400'
+                        {currentTask.answers.map((answer, index) => {
+                            const shouldShow = shouldShowAnswer(answer, index);
+                            const canExpand = canShowDropdown(answer, index);
+                            const isExpanded = expandedAnswers[index];
+                            const isCorrect = answer === correctAnswer;
+                            const isSelected = answer === selectedAnswer;
+
+                            return (
+                                <div key={index}>
+                                    {shouldShow ? (
+                                        <>
+                                            <button
+                                                onClick={() => !showTranslationAnswers && setSelectedAnswer(answer)}
+                                                disabled={showTranslationAnswers}
+                                                className={`w-full p-3 text-left rounded-lg border-2 transition-all ${
+                                                    selectedAnswer === answer
+                                                        ? 'border-primaryBlue dark:border-primaryGreen bg-blue-50 dark:bg-green-900/20'
+                                                        : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
+                                                } ${showTranslationAnswers ? 'cursor-default' : 'cursor-pointer'}`}
+                                            >
+                                                {answer}
+                                            </button>
+                                            {showTranslationAnswers && currentTask.answers_translation && currentTask.answers_translation[index] && (
+                                                <div className={`p-3 mt-2 rounded-lg border-2 shadow-sm ${
+                                                    isCorrect
+                                                        ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800'
+                                                        : 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800'
                                                 }`}>
-                                                    {correctAnswer && answer === correctAnswer ? 'Poprawna odpowiedź' : 'Niepoprawna odpowiedź'}
-                                                </p>
-                                                <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
-                                                    {currentTask.answers_translation[index]}
-                                                </p>
-                                            </div>
+                                                    <div className="flex items-start gap-2">
+                                                        <div className="flex-1">
+                                                            <p className={`text-xs font-semibold mb-2 ${
+                                                                isCorrect
+                                                                    ? 'text-green-600 dark:text-green-400'
+                                                                    : 'text-red-600 dark:text-red-400'
+                                                            }`}>
+                                                                {isCorrect ? '✓ Poprawna odpowiedź' : '✗ Niepoprawna odpowiedź'}
+                                                            </p>
+                                                            <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+                                                                {currentTask.answers_translation[index]}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </>
+                                    ) : canExpand ? (
+                                        <div>
+                                            <button
+                                                onClick={() => toggleAnswerExpansion(index)}
+                                                className="w-full p-3 text-left rounded-lg border-2 border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 transition-all cursor-pointer flex items-center justify-between"
+                                            >
+                                                <span>{answer}</span>
+                                                {isExpanded ? (
+                                                    <ChevronUp size={20} className="text-gray-400 dark:text-gray-500 flex-shrink-0" />
+                                                ) : (
+                                                    <ChevronDown size={20} className="text-gray-400 dark:text-gray-500 flex-shrink-0" />
+                                                )}
+                                            </button>
+                                            {isExpanded && currentTask.answers_translation && currentTask.answers_translation[index] && (
+                                                <div className="p-3 mt-2 rounded-lg border-2 shadow-sm bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800">
+                                                    <div className="flex items-start gap-2">
+                                                        <div className="flex-1">
+                                                            <p className="text-xs font-semibold mb-2 text-red-600 dark:text-red-400">
+                                                                ✗ Niepoprawna odpowiedź
+                                                            </p>
+                                                            <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+                                                                {currentTask.answers_translation[index]}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
                                         </div>
-                                    </div>
-                                )}
-                            </div>
-                        ))}
+                                    ) : null}
+                                </div>
+                            );
+                        })}
                     </div>
 
                     {!showFeedback ? (

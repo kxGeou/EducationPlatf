@@ -277,6 +277,8 @@ export const useAuthStore = create(
             await get().fetchUserData(session.user.id);
             await get().fetchUserProgress(session.user.id);
             await get().fetchUserFlashcards(session.user.id);
+            // Ensure free sections are granted to all users
+            await get().grantFreeSectionsToUser();
             
             // Check if courses should be cleaned up (in June of matura year)
             if (get().shouldCleanupCourses()) {
@@ -353,6 +355,8 @@ export const useAuthStore = create(
               await get().fetchUserData(session.user.id);
               await get().fetchUserProgress(session.user.id);
               await get().fetchUserFlashcards(session.user.id);
+              // Ensure free sections are granted to all users
+              await get().grantFreeSectionsToUser();
               
               // Check if courses should be cleaned up (in June of matura year)
               if (get().shouldCleanupCourses()) {
@@ -501,6 +505,8 @@ export const useAuthStore = create(
           await get().fetchUserData(data.user.id);
           await get().fetchUserProgress(data.user.id);
           await get().fetchUserFlashcards(data.user.id);
+          // Ensure free sections are granted to all users
+          await get().grantFreeSectionsToUser();
           
           // Initialize notifications for the logged-in user
           const { useNotificationStore } = await import('./notificationStore');
@@ -727,6 +733,62 @@ export const useAuthStore = create(
         } catch (err) {
           console.error("Error cleaning up inactive sessions:", err);
           return false;
+        }
+      },
+      
+      // Grant free sections (price_cents = 0) to every user
+      grantFreeSectionsToUser: async () => {
+        try {
+          const { user } = get();
+          if (!user) return;
+          
+          // Fetch user's current purchases
+          const { data: userRow, error: userErr } = await supabase
+            .from('users')
+            .select('purchased_courses')
+            .eq('id', user.id)
+            .single();
+          if (userErr) return;
+          const existing = userRow?.purchased_courses || [];
+          
+          // Fetch all free sections (one per course should be configured with price 0)
+          const { data: freeSections, error: freeErr } = await supabase
+            .from('courses')
+            .select('id')
+            .eq('price_cents', 0);
+          if (freeErr) return;
+          const freeIds = (freeSections || []).map((s) => s.id).filter(Boolean);
+          
+          if (freeIds.length === 0) {
+            // Nothing to merge, just ensure local state reflects existing
+            set({ purchasedCourses: existing });
+            return;
+          }
+          
+          const mergedSet = new Set([...
+            existing,
+            ...freeIds,
+          ]);
+          const merged = Array.from(mergedSet);
+          
+          // Only update DB if changed
+          const changed = merged.length !== existing.length || existing.some((id) => !mergedSet.has(id));
+          if (changed) {
+            const { error: updErr } = await supabase
+              .from('users')
+              .update({ purchased_courses: merged })
+              .eq('id', user.id);
+            if (updErr) {
+              // If DB update fails, at least update local state for current session
+              set({ purchasedCourses: merged });
+              return;
+            }
+            set({ purchasedCourses: merged });
+          } else {
+            set({ purchasedCourses: existing });
+          }
+        } catch (_) {
+          // Silent fail to avoid interrupting auth flows
         }
       },
     }),

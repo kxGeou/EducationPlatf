@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Trophy, Medal, Award, Star, Crown, Users, ChevronLeft, ChevronRight, Calendar, User } from 'lucide-react';
+import { Trophy, Medal, Award, Star, Crown, Users, ChevronLeft, ChevronRight, Calendar, User, HelpCircle, X, Video, BookOpen, Zap, Flame, CheckCircle, FileText } from 'lucide-react';
 import supabase from '../../../util/supabaseClient';
 import { useAuthStore } from '../../../store/authStore';
 import Avatar from 'boring-avatars';
@@ -11,6 +11,7 @@ const Leaderboard = ({ setActivePage }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalUsers, setTotalUsers] = useState(0);
   const [currentUserRank, setCurrentUserRank] = useState(null);
+  const [showPointsModal, setShowPointsModal] = useState(false);
   const usersPerPage = 6;
   const { user, userPoints, maturaDate } = useAuthStore();
 
@@ -133,13 +134,107 @@ const Leaderboard = ({ setActivePage }) => {
     );
   }
 
+  const pointsActivities = [
+    { icon: <Video className="w-5 h-5" />, activity: 'Recenzja filmu', points: 20, color: 'text-purple-600 dark:text-purple-400', bgColor: 'bg-purple-100 dark:bg-purple-900/30' },
+    { icon: <Video className="w-5 h-5" />, activity: 'Obejrzenie filmu', points: 10, color: 'text-blue-600 dark:text-blue-400', bgColor: 'bg-blue-100 dark:bg-blue-900/30' },
+    { icon: <CheckCircle className="w-5 h-5" />, activity: 'Wykonanie zadania', points: 15, color: 'text-green-600 dark:text-green-400', bgColor: 'bg-green-100 dark:bg-green-900/30' },
+    { icon: <BookOpen className="w-5 h-5" />, activity: 'Zrobienie fiszki', points: 5, color: 'text-yellow-600 dark:text-yellow-400', bgColor: 'bg-yellow-100 dark:bg-yellow-900/30' },
+    { icon: <Flame className="w-5 h-5" />, activity: 'Codzienna aktywność', points: 5, color: 'text-orange-600 dark:text-orange-400', bgColor: 'bg-orange-100 dark:bg-orange-900/30' },
+    { icon: <FileText className="w-5 h-5" />, activity: 'Wypełnienie ankiety', points: 10, color: 'text-indigo-600 dark:text-indigo-400', bgColor: 'bg-indigo-100 dark:bg-indigo-900/30' },
+    { icon: <Zap className="w-5 h-5" />, activity: 'Dodanie pomysłu', points: 5, color: 'text-cyan-600 dark:text-cyan-400', bgColor: 'bg-cyan-100 dark:bg-cyan-900/30' },
+  ];
+
   return (
     <div className="w-full">
-      <div className="flex items-center border-l-4 border-primaryBlue dark:border-primaryGreen pl-3 mb-4 mt-20 md:mt-3">
+      <div className="flex items-center justify-between border-l-4 border-primaryBlue dark:border-primaryGreen pl-3 mb-4 mt-20 md:mt-3">
         <h2 className="text-lg font-semibold text-primaryBlue dark:text-primaryGreen">
           {maturaDate ? `Ranking użytkowników - Matura ${maturaDate.split('-')[0]}` : 'Ranking użytkowników'}
         </h2>
+        <button
+          onClick={() => setShowPointsModal(true)}
+          className="flex items-center gap-2 px-4 py-2 bg-primaryBlue dark:bg-primaryGreen text-white rounded-lg hover:opacity-90 transition-all text-sm font-medium"
+        >
+          <HelpCircle size={18} />
+          <span className="hidden sm:inline">Jak zdobyć punkty?</span>
+          <span className="sm:hidden">Punkty</span>
+        </button>
       </div>
+
+      {/* Modal - Jak zdobyć punkty */}
+      {showPointsModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setShowPointsModal(false)}>
+          <div className="bg-white dark:bg-DarkblackText rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            {/* Header */}
+            <div className="sticky top-0 bg-white dark:bg-DarkblackText border-b border-gray-200 dark:border-gray-700 p-6 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-primaryBlue dark:bg-primaryGreen rounded-full flex items-center justify-center">
+                  <Star className="w-5 h-5 text-white" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-800 dark:text-white">Jak zdobyć punkty?</h3>
+              </div>
+              <button
+                onClick={() => setShowPointsModal(false)}
+                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              >
+                <X size={20} className="text-gray-600 dark:text-gray-400" />
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="p-6 space-y-4">
+              <p className="text-gray-600 dark:text-gray-400 text-sm">
+                Zdobywaj punkty wykonując różne aktywności na platformie i wspinaj się w rankingu!
+              </p>
+
+              <div className="space-y-3">
+                {pointsActivities.map((item, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between p-4 bg-gray-50 dark:bg-DarkblackBorder rounded-lg border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`w-10 h-10 ${item.bgColor} rounded-full flex items-center justify-center ${item.color}`}>
+                        {item.icon}
+                      </div>
+                      <span className="font-medium text-gray-800 dark:text-white">{item.activity}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Star className="w-4 h-4 text-yellow-500" />
+                      <span className="font-bold text-lg text-primaryBlue dark:text-primaryGreen">
+                        +{item.points}
+                      </span>
+                      <span className="text-sm text-gray-500 dark:text-gray-400">pkt</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Tip */}
+              <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                <div className="flex items-start gap-3">
+                  <Trophy className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-semibold text-blue-800 dark:text-blue-300 mb-1">Wskazówka!</p>
+                    <p className="text-sm text-blue-700 dark:text-blue-200">
+                      Im więcej punktów zdobędziesz, tym wyżej znajdziesz się w rankingu swojego rocznika maturalnego. Bądź aktywny każdego dnia!
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="sticky bottom-0 bg-gray-50 dark:bg-DarkblackBorder border-t border-gray-200 dark:border-gray-700 p-4">
+              <button
+                onClick={() => setShowPointsModal(false)}
+                className="w-full py-3 bg-primaryBlue dark:bg-primaryGreen text-white rounded-lg hover:opacity-90 transition-all font-medium"
+              >
+                Zamknij
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
 
       {!maturaDate && (

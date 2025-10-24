@@ -1,6 +1,6 @@
 import { useAuthStore } from '../../../store/authStore';
 import useVideoStore from '../../../store/videoStore';
-import { ChevronLeft, Check, Clock, FileText, Send, Play, BookOpen, ChevronDown, ChevronUp, X, MessageSquare, Download } from "lucide-react";
+import { ChevronLeft, Check, Clock, FileText, Send, Play, BookOpen, ChevronDown, ChevronUp, X, MessageSquare, Download, RefreshCw } from "lucide-react";
 import { useState } from "react";
 import React from 'react';
 import { useParams } from "react-router-dom";
@@ -22,6 +22,7 @@ export default function VideoDetailPanel({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [taskAnswers, setTaskAnswers] = useState({}); // Store answers for each task
   const [expandedTasks, setExpandedTasks] = useState({}); // Track which tasks are expanded
+  const [isRefreshing, setIsRefreshing] = useState(false);
   
   const toast = useToast();
   const { id: courseId } = useParams();
@@ -95,12 +96,34 @@ export default function VideoDetailPanel({
     
     if (result.success) {
       toast.success(result.message);
-      // Don't clear the answer after successful submission - keep it for editing
+      // Refresh feedback after submission
+      await fetchTaskAnswers(user.id, courseId, [taskId]);
     } else {
       toast.error(result.message);
     }
     
     setIsSubmitting(false);
+  };
+
+  const handleRefreshFeedback = async (taskId) => {
+    if (!user) return;
+
+    setIsRefreshing(true);
+    try {
+      await fetchTaskAnswers(user.id, courseId, [taskId]);
+      
+      const updatedAnswer = savedTaskAnswers[taskId];
+      if (updatedAnswer?.admin_feedback) {
+        toast.success('Znaleziono nowy feedback od nauczyciela!');
+      } else {
+        toast.info('Brak nowego feedbacku');
+      }
+    } catch (error) {
+      console.error('Error refreshing feedback:', error);
+      toast.error('Nie udało się odświeżyć feedbacku');
+    } finally {
+      setIsRefreshing(false);
+    }
   };
 
   // Function to handle file download
@@ -505,6 +528,34 @@ export default function VideoDetailPanel({
                                     disabled={!videoHasAccess || isApproved}
                                   />
 
+                                  {/* Admin Feedback Display */}
+                                  {savedAnswer?.admin_feedback && (
+                                    <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                                      <div className="flex items-start gap-2 mb-2">
+                                        <MessageSquare size={18} className="text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+                                        <div className="flex-1">
+                                          <p className="text-sm font-semibold text-blue-800 dark:text-blue-300 mb-1">
+                                            Feedback od nauczyciela:
+                                          </p>
+                                          <p className="text-sm text-blue-700 dark:text-blue-200 whitespace-pre-wrap leading-relaxed">
+                                            {savedAnswer.admin_feedback}
+                                          </p>
+                                          {savedAnswer.feedback_date && (
+                                            <p className="text-xs text-blue-600 dark:text-blue-400 mt-2">
+                                              {new Date(savedAnswer.feedback_date).toLocaleDateString('pl-PL', {
+                                                year: 'numeric',
+                                                month: 'long',
+                                                day: 'numeric',
+                                                hour: '2-digit',
+                                                minute: '2-digit'
+                                              })}
+                                            </p>
+                                          )}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  )}
+
                                   {videoHasAccess && !isApproved && (
                                     <div className="flex gap-3">
                                       <button
@@ -519,6 +570,18 @@ export default function VideoDetailPanel({
                                         <Send size={16} />
                                         {isSubmitting ? 'Przesyłanie...' : isSubmitted ? 'Zaktualizuj odpowiedź' : 'Prześlij odpowiedź'}
                                       </button>
+                                      
+                                      {(isSubmitted || isRejected) && (
+                                        <button
+                                          onClick={() => handleRefreshFeedback(task.task_id)}
+                                          disabled={isRefreshing}
+                                          className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all border-2 border-primaryBlue dark:border-primaryGreen text-primaryBlue dark:text-primaryGreen hover:bg-primaryBlue/10 dark:hover:bg-primaryGreen/10 disabled:opacity-50 disabled:cursor-not-allowed"
+                                          title="Sprawdź czy nauczyciel dodał feedback"
+                                        >
+                                          <RefreshCw size={16} className={isRefreshing ? 'animate-spin' : ''} />
+                                          {isRefreshing ? 'Sprawdzam...' : 'Sprawdź feedback'}
+                                        </button>
+                                      )}
                                     </div>
                                   )}
 
