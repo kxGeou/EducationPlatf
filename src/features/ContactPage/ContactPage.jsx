@@ -198,10 +198,11 @@ function ContactPage({ isDark, setIsDark }) {
   };
 
   return (
-    <PageLayout isDark={isDark} setIsDark={setIsDark}>
+    <PageLayout isDark={isDark} setIsDark={setIsDark} from="#14e0bb"
+  fromDark="#048a71" stopAt="20%">
       <div className="mt-8 space-y-16">
         <ContactHero />
-        <div className="contact-corner-gradient"></div>
+        
         <div className="bg-white/50 dark:bg-DarkblackBorder/50 rounded-2xl z-20 p-6 shadow-sm">
           <Calendly />
         </div>

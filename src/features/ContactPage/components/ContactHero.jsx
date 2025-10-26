@@ -4,10 +4,10 @@ import Description from '../../../components/typography/Description';
 
 function ContactHero() {
   return (
-    <div className='w-full flex flex-col md:flex-row justify-between items-center mb-24 gap-8 '>
+    <div className='w-full flex flex-col md:flex-row justify-between items-center mb-24 gap-8 mt-28'>
       
       <div className='w-full md:w-[50%] flex flex-col gap-4 z-20'>
-        <h2 className='text-5xl md:text-7xl font-bold text-blackText dark:text-white'>
+        <h2 className='text-5xl md:text-6xl font-bold text-blackText dark:text-white'>
           Skontaktuj się z nami
         </h2>
         

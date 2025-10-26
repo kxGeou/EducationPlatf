@@ -51,13 +51,13 @@ export default function ExamPage({ isDark, setIsDark }) {
   };
 
   return (
-    <PageLayout isDark={isDark} setIsDark={setIsDark}>
-      <div className="exam-corner-gradient"></div>
-      <div className="mb-16 overflow-hidden w-full">
+    <PageLayout isDark={isDark} setIsDark={setIsDark} from="#5e91ff"
+  fromDark="#15316b" stopAt="30%">
+      <div className="overflow-hidden w-full mt-28">
 
-        <div className="relative flex flex-col md:flex-row gap-8 items-center z-20">
+        <div className="relative flex flex-col md:flex-row  w-full items-center z-20 mb-26">
           <div className="flex-1 flex flex-col gap-5">
-            <h1 className="text-5xl md:text-7xl font-bold leading-[50px] md:leading-[80px]">
+            <h1 className="text-5xl md:text-6xl font-bold leading-[50px] md:leading-[70px]">
               Wystaw swoje umiejętności na próbę
             </h1>
             <p className="text-base md:text-lg leading-relaxed opacity-80 max-w-[600px]">
@@ -77,7 +77,7 @@ export default function ExamPage({ isDark, setIsDark }) {
             </p>
       
           </div>
-          <div className="flex-1 items-center justify-center min-h-[200px] hidden md:flex">
+          <div className="flex-1 items-center justify-end min-h-[200px] hidden md:flex">
             <img src={Biurko} className="w-[28rem]" />
           </div>
         </div>

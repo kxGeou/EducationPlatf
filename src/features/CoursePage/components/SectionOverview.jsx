@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import React from 'react';
 import { useParams } from "react-router-dom";
 import supabase from '../../../util/supabaseClient';
-
+import MockImage from '../../../assets/kartakurs.png';
 export default function SectionOverview({
   videos,
   setActiveSection,
@@ -79,16 +79,7 @@ export default function SectionOverview({
     onSelectSection(section);
   };
 
-  if (loading) {
-    return (
-      <div className="w-full flex justify-center items-center h-64">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primaryBlue dark:border-primaryGreen mx-auto mb-2"></div>
-          <p className="text-gray-600 dark:text-gray-400">Ładowanie sekcji...</p>
-        </div>
-      </div>
-    );
-  }
+
 
   return (
     <div className="w-full">
@@ -97,7 +88,7 @@ export default function SectionOverview({
           Sekcje kursu
         </span>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
           {sortedSections.map((section, sectionIndex) => {
             const videosInSection = groupedVideos[section];
             const watchedCount = videosInSection.filter(
@@ -125,17 +116,19 @@ export default function SectionOverview({
                 }}
               >
                 {/* Section card */}
-                <div className={`flex flex-col h-full transition-all duration-200 ${
+                <div className={`flex h-full transition-all duration-200 ${
                   hasAccessToSection 
                     ? 'bg-white dark:bg-DarkblackText shadow-lg' 
-                    : 'bg-gray-100 dark:bg-gray-800 shadow-md opacity-75'
+                    : 'bg-gray-100 dark:bg-gray-800 shadow-md opacity-50'
                 }`}>
-                  {/* Top gradient with title */}
-                  <div className={`w-full h-12 bg-gradient-to-r ${getRandomGradient(sectionIndex)} flex items-center justify-center`}>
-                    <h3 className="text-white font-bold text-lg drop-shadow-lg">{section}</h3>
+
+                  <div className={`h-full max-w-[14rem] flex items-center justify-center`}>
+                    <img src={MockImage} alt="course section image" />
                   </div>
                   
-                  <div className="flex-1 p-4 flex flex-col">
+                  <div className="flex-1 p-3 flex flex-col">
+                    <h3 className="text-darkerBlack font-bold text-xl drop-shadow-lg border-b pb-1 border-b-darkBlue/20 dark:text-white dark:border-b-white/20 mb-2">{section}</h3>
+
                     {videosInSection[0]?.section_description && (
                       <p className={`text-sm mb-3 line-clamp-2 flex-1 ${
                         hasAccessToSection ? 'opacity-70' : 'opacity-50'
@@ -159,9 +152,9 @@ export default function SectionOverview({
                       </div>
                     </div>
                     
-                    <div className="mt-auto">
-                      <div className="flex justify-between items-center mb-2">
-                        <span className={`text-xs ${
+                    <div className=" mb-3">
+                      <div className="flex justify-between items-center">
+                        <span className={`my-1 text-xs ${
                           hasAccessToSection ? 'text-blackText/50 dark:text-white' : 'dark:text-white '
                         }`}>
                           Postęp
@@ -185,35 +178,40 @@ export default function SectionOverview({
                         ></div>
                       </div>
                     </div>
+                      <div>
+                      {hasAccessToSection ? (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleSectionSelect(section);
+                          }}
+                          className="w-full py-2.5 bg-primaryBlue dark:bg-primaryGreen text-white font-semibold rounded-lg transition-all duration-200 flex items-center justify-center gap-2 text-sm hover:shadow-xl hover:scale-[1.01] active:scale-[0.98]"
+                        >
+                          <Play size={14} />
+                          Otwórz sekcję
+                        </button>
+                      ) : (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setActiveSection('shop');
+                          }}
+                          className="w-full py-2.5 bg-primaryBlue dark:bg-primaryGreen text-white font-semibold rounded-lg transition-all duration-200 flex items-center justify-center gap-2 text-sm hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
+                        >
+                          <Lock size={14} />
+                          Przejdź do sklepu
+                        </button>
+                      )}
+                    </div>
                   </div>
                   
                   {/* Button at the bottom */}
-                  <div className="p-4 pt-1">
-                    {hasAccessToSection ? (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleSectionSelect(section);
-                        }}
-                        className="w-full py-2.5 bg-primaryBlue dark:bg-primaryGreen text-white font-semibold rounded-lg transition-all duration-200 flex items-center justify-center gap-2 text-sm hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
-                      >
-                        <Play size={14} />
-                        Otwórz sekcję
-                      </button>
-                    ) : (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setActiveSection('shop');
-                        }}
-                        className="w-full py-2.5 bg-primaryBlue dark:bg-primaryGreen text-white font-semibold rounded-lg transition-all duration-200 flex items-center justify-center gap-2 text-sm hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
-                      >
-                        <Lock size={14} />
-                        Przejdź do sklepu
-                      </button>
-                    )}
-                  </div>
+              
                 </div>
+
+
+
+                
               </div>
             );
           })}

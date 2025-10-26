@@ -25,12 +25,13 @@ function BlogMainPage({ isDark, setIsDark }) {
     <PageLayout 
       isDark={isDark} 
       setIsDark={setIsDark}
+      from="#8c5cfa"
+  fromDark="#4a15c2" stopAt="8%"
     >
-      <div className='mt-8 mb-16 z-10 relative'>
+      <div className='mt-28 mb-16 z-10 relative'>
         <HeroBlog />
         <CourseListHero />
       </div>
-      <div className='blog-corner-gradient'></div>
 
       <div className="space-y-16">
         {categories.map(category => {
