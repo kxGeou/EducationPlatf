@@ -25,8 +25,8 @@ function BlogMainPage({ isDark, setIsDark }) {
     <PageLayout 
       isDark={isDark} 
       setIsDark={setIsDark}
-      from="#8c5cfa"
-  fromDark="#4a15c2" stopAt="8%"
+      from="#18d3f0"
+  fromDark="#026a7a" stopAt="8%"
     >
       <div className='mt-28 mb-16 z-10 relative'>
         <HeroBlog />

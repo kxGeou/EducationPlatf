@@ -12,8 +12,8 @@ function TestResources({ isDark, setIsDark }) {
     <PageLayout
      isDark={isDark} 
       setIsDark={setIsDark}
-      from="#946eff"
-  fromDark="#391f82" stopAt="8%"
+      from="#12e396"
+  fromDark="#038f5b" stopAt="8%"
     >
 
         <Hero></Hero>
