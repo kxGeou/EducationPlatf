@@ -17,6 +17,7 @@ import {
   ListCheck,
   PenBoxIcon,
   Trophy,
+  Gift,
   Star,
   LayoutDashboard,
 } from "lucide-react";
@@ -159,6 +160,16 @@ function Navigation({
                 >
                   <Trophy size={20} />
                   Ranking
+                </span>
+                <span
+                  onClick={() => setActivePage("rewards")}
+                  className={`cursor-pointer flex items-center gap-2 transition-discrete duration-200 ${
+                    activePage === "rewards" &&
+                    "border-l-6 px-2 border-secondaryBlue text-secondaryBlue dark:border-primaryGreen dark:text-primaryGreen"
+                  }`}
+                >
+                  <Gift size={20} />
+                  Nagrody
                 </span>
               </div>
             </div>
@@ -306,6 +317,15 @@ function Navigation({
                   }`}
                 >
                   <Trophy size={22} />
+                </span>
+                <span
+                  onClick={() => setActivePage("rewards")}
+                  className={`cursor-pointer ${
+                    activePage === "rewards" &&
+                    "text-secondaryBlue dark:text-primaryGreen"
+                  }`}
+                >
+                  <Gift size={22} />
                 </span>
               </div>
             </div>
@@ -500,6 +520,18 @@ function Navigation({
               }`}
             >
               <Trophy size={20} /> Ranking
+            </span>
+            <span
+              onClick={() => {
+                setActivePage("rewards");
+                setMobileOpen(false);
+              }}
+              className={`cursor-pointer flex items-center gap-2 ${
+                activePage === "rewards" &&
+                "text-secondaryBlue dark:text-primaryGreen"
+              }`}
+            >
+              <Gift size={20} /> Nagrody
             </span>
           </div>
 

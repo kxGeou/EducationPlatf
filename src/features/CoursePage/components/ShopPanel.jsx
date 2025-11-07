@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { ShoppingBasket, Check } from 'lucide-react';
+import { ShoppingBasket, Check, ShoppingBag, Award, TrendingUp } from 'lucide-react';
 import { useToast } from '../../../context/ToastContext';
 import { useAuthStore } from '../../../store/authStore';
+import { useCartStore } from '../../../store/cartStore';
 import supabase from '../../../util/supabaseClient';
 
 export default function ShopPanel({ course, isDark, setActivePage }) {
   const toast = useToast();
   const { user, purchasedCourses, fetchUserData, canPurchaseCourses, maturaDate } = useAuthStore();
+  const { addItem, isInCart } = useCartStore();
   const [coursePackages, setCoursePackages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [packageDetails, setPackageDetails] = useState({});
@@ -105,9 +107,9 @@ export default function ShopPanel({ course, isDark, setActivePage }) {
     }
   };
 
-  const handlePackagePurchase = async (packageId) => {
+  const handleAddToCart = (packageId) => {
     if (!user) {
-      toast.error("Musisz być zalogowany, żeby kupić pakiet.");
+      toast.error("Musisz być zalogowany, żeby dodać produkt do koszyka.");
       return;
     }
 
@@ -117,51 +119,13 @@ export default function ShopPanel({ course, isDark, setActivePage }) {
       return;
     }
 
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-
-    if (!session) {
-      toast.error("Brak sesji. Zaloguj się ponownie.");
-      return;
-    }
-
     const packageData = coursePackages.find(pkg => pkg.id === packageId);
     if (!packageData) {
       toast.error("Nie udało się pobrać informacji o pakiecie.");
       return;
     }
 
-    const priceCents = packageData.price_cents * 100;
-    if (!priceCents || isNaN(priceCents) || priceCents < 200) {
-      toast.error("Cena pakietu musi wynosić co najmniej 2 zł.");
-      return;
-    }
-
-    const res = await fetch(
-      "https://gkvjdemszxjmtxvxlnmr.supabase.co/functions/v1/create-checkout-session",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify({
-          user_id: user.id,
-          course_id: packageData.id,
-          course_title: packageData.title,
-          price_cents: priceCents,
-          success_url_base: window.location.origin,
-        }),
-      }
-    );
-
-    const data = await res.json();
-    if (res.ok && data.url) {
-      window.location.href = data.url;
-    } else {
-      toast.error("Błąd przy tworzeniu sesji płatności:", data);
-    }
+    addItem(packageId, packageData, coursePackages);
   };
 
   if (loading) {
@@ -177,24 +141,91 @@ export default function ShopPanel({ course, isDark, setActivePage }) {
     );
   }
 
+  // Oblicz procent zakupionych sekcji
+  const allSectionIds = coursePackages.map(pkg => pkg.id);
+  const purchasedSectionIds = allSectionIds.filter(sectionId => 
+    purchasedCourses.includes(sectionId)
+  );
+  const purchasedSectionsPercentage = allSectionIds.length > 0 
+    ? Math.round((purchasedSectionIds.length / allSectionIds.length) * 100)
+    : 0;
+
   return (
     <div className="flex flex-col gap-8 w-full md:min-h-[96vh] p-3">
       <span className="flex gap-2 text-lg items-center font-semibold border-l-4 px-3 border-primaryBlue dark:border-primaryGreen text-primaryBlue dark:text-primaryGreen mb-6">
         Sklep
       </span>
 
+      {/* Procent zakupionych sekcji */}
+      {coursePackages.length > 0 && (
+        <div className="relative bg-white dark:bg-DarkblackText rounded-lg shadow-md p-4 border border-primaryBlue/10 dark:border-primaryGreen/10 overflow-hidden">
+          <div className="relative flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            {/* Lewa strona - ikona i tekst */}
+            <div className="flex items-center gap-3">
+              <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-primaryBlue dark:bg-primaryGreen flex items-center justify-center shadow-md">
+                <ShoppingBag size={18} className="text-white" />
+              </div>
+              <div>
+                <h3 className="text-sm font-semibold text-blackText dark:text-white">
+                  Zakupione sekcje
+                </h3>
+                <p className="text-xs text-primaryBlue/70 dark:text-primaryGreen/70">
+                  {purchasedSectionIds.length} z {allSectionIds.length} sekcji
+                </p>
+              </div>
+            </div>
+
+            {/* Prawa strona - procent i pasek */}
+            <div className="flex-1 sm:max-w-xs">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-1.5">
+                  <TrendingUp size={14} className="text-primaryBlue dark:text-primaryGreen" />
+                  <span className="text-xs font-medium text-primaryBlue/80 dark:text-primaryGreen/80">
+                    Postęp
+                  </span>
+                </div>
+                <span className="text-2xl font-bold text-primaryBlue dark:text-primaryGreen">
+                  {purchasedSectionsPercentage}%
+                </span>
+              </div>
+              
+              {/* Pasek postępu */}
+              <div className="relative w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 overflow-hidden shadow-inner">
+                <div
+                  className="absolute inset-y-0 left-0 rounded-full bg-primaryBlue dark:bg-primaryGreen transition-all duration-700 ease-out"
+                  style={{
+                    width: `${purchasedSectionsPercentage}%`,
+                  }}
+                ></div>
+              </div>
+              
+              {/* Dodatkowy wskaźnik wizualny */}
+              {purchasedSectionsPercentage === 100 && (
+                <div className="mt-1.5 flex items-center gap-1.5 text-xs text-green-600 dark:text-green-400">
+                  <Award size={12} className="animate-bounce" />
+                  <span className="font-medium">Wszystkie sekcje zakupione!</span>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {coursePackages.map((pkg, index) => {
           const isPurchased = purchasedCourses.includes(pkg.id);
-          const priceInZloty = pkg.price_cents.toFixed(0);
+          const inCart = isInCart(pkg.id);
+          // price_cents w bazie jest w złotych, więc wyświetlamy bezpośrednio
+          const priceInZloty = pkg.price_cents.toFixed(2);
           const details = packageDetails[pkg.id];
           
-          // Sprawdź czy poprzedni pakiet został zakupiony
+          // Sprawdź czy poprzedni pakiet został zakupiony LUB jest w koszyku
           const previousPackage = index > 0 ? coursePackages[index - 1] : null;
           const previousPackagePurchased = previousPackage ? purchasedCourses.includes(previousPackage.id) : true;
+          const previousPackageInCart = previousPackage ? isInCart(previousPackage.id) : true;
+          const previousPackageAvailable = previousPackagePurchased || previousPackageInCart;
           const hasMaturaDate = canPurchaseCourses();
-          const canPurchase = isPurchased || (index === 0) || previousPackagePurchased;
+          const canPurchase = isPurchased || (index === 0) || previousPackageAvailable;
           const canPurchaseWithMatura = canPurchase && hasMaturaDate;
 
           return (
@@ -259,7 +290,7 @@ export default function ShopPanel({ course, isDark, setActivePage }) {
                 <div className="mb-2">
                   <span className="text-xs text-gray-500 dark:text-gray-400">Koszt pakietu:</span>
                   <div className="text-lg font-bold text-gray-900 dark:text-white">
-                    {priceInZloty},00 zł
+                    {priceInZloty} zł
                   </div>
                 </div>
               </div>
@@ -270,9 +301,14 @@ export default function ShopPanel({ course, isDark, setActivePage }) {
                   <div className="w-full py-2.5 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-lg text-center font-semibold text-sm shadow-sm border border-green-200 dark:border-green-700">
                     ✓ Zakupione
                   </div>
+                ) : inCart ? (
+                  <div className="w-full py-2.5 bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-lg text-center font-semibold text-sm shadow-sm border border-green-200 dark:border-green-700 flex items-center justify-center gap-2">
+                    <Check size={16} />
+                    W koszyku
+                  </div>
                 ) : canPurchaseWithMatura ? (
                   <button
-                    onClick={() => handlePackagePurchase(pkg.id)}
+                    onClick={() => handleAddToCart(pkg.id)}
                     className="w-full py-2.5 bg-primaryBlue dark:bg-primaryGreen text-white rounded-lg font-semibold text-sm shadow-lg transition-all duration-200 flex items-center justify-center gap-2 hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
                   >
                     <ShoppingBasket size={16} />

@@ -4,11 +4,14 @@ import supabase from '../../../util/supabaseClient'
 import { Cog } from 'lucide-react'
 import { useToast } from '../../../context/ToastContext'
 import { useAuthStore } from '../../../store/authStore'
+import { useCartStore } from '../../../store/cartStore'
 export default function Success() {
   const toast = useToast();
   const [params] = useSearchParams()
   const navigate = useNavigate()
   const hasProcessed = useRef(false)
+  const { fetchUserData } = useAuthStore()
+  const clearCart = useCartStore((state) => state.clearCart)
 
   useEffect(() => {
     const session_id = params.get('session_id')
@@ -17,6 +20,7 @@ export default function Success() {
     const confirmPayment = async () => {
       hasProcessed.current = true
       
+      try {
       const {
         data: { session },
       } = await supabase.auth.getSession()
@@ -39,15 +43,44 @@ export default function Success() {
         }
       )
 
-      const data = await res.json()
-      if (res.ok && data.success) {
-        // Małe opóźnienie, aby upewnić się, że wszystkie procesy się zakończą
-        setTimeout(() => {
-          toast.success('Zakup zapisany! Kurs został dodany do Twojego konta.')
+        // Sprawdź czy response jest ok przed parsowaniem JSON
+        let data;
+        try {
+          data = await res.json()
+        } catch (jsonError) {
+          console.error('Error parsing JSON response:', jsonError)
+          toast.error('Błąd podczas przetwarzania odpowiedzi serwera.')
           navigate('/')
-        }, 500)
-      } else {
-        toast.error('Błąd podczas zapisu płatności: ' + (data.error || ''))
+          return
+        }
+
+      if (res.ok && data.success) {
+          // Wyczyść koszyk i odśwież dane użytkownika
+          clearCart()
+          const userId = session.user.id
+          await fetchUserData(userId)
+          
+        // Małe opóźnienie, aby upewnić się, że wszystkie procesy się zakończą
+          setTimeout(() => {
+            toast.success('Zakupy zapisane! Kursy zostały dodane do Twojego konta.')
+            navigate('/')
+          }, 500)
+        } else {
+          const errorMessage = data?.error || `Status: ${res.status}`
+          console.error('Payment confirmation error:', errorMessage)
+          toast.error('Błąd podczas zapisu płatności: ' + errorMessage)
+          // Nawiguj do strony głównej nawet przy błędzie
+          setTimeout(() => {
+            navigate('/')
+          }, 2000)
+        }
+      } catch (error) {
+        console.error('Error in confirmPayment:', error)
+        toast.error('Wystąpił błąd podczas przetwarzania zakupu. Sprawdź konsolę dla szczegółów.')
+        // Nawiguj do strony głównej nawet przy błędzie
+        setTimeout(() => {
+          navigate('/')
+        }, 2000)
       }
     }
 

@@ -84,9 +84,11 @@ export default function SectionOverview({
   return (
     <div className="w-full">
       <div className="flex flex-col gap-8 w-full md:min-h-[96vh] p-3">
-        <span className="flex gap-2 text-lg items-center font-semibold border-l-4 px-3 border-primaryBlue dark:border-primaryGreen text-primaryBlue dark:text-primaryGreen mb-6">
+        <div className="flex flex-col gap-4 mb-3 mt-2">
+          <span className="flex gap-2 text-lg items-center font-semibold border-l-4 px-3 border-primaryBlue dark:border-primaryGreen text-primaryBlue dark:text-primaryGreen">
           Sekcje kursu
         </span>
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
           {sortedSections.map((section, sectionIndex) => {

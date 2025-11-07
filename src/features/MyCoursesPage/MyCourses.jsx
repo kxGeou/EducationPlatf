@@ -16,7 +16,7 @@ export default function MyCourses({ isDark, setIsDark }) {
 
   useEffect(() => {
     const section = searchParams.get('section');
-    if (section && ['courses', 'resources', 'reports', 'blogs', 'forms', 'ideas', 'leaderboard', 'profile'].includes(section)) {
+    if (section && ['courses', 'resources', 'reports', 'blogs', 'forms', 'ideas', 'leaderboard', 'rewards', 'profile'].includes(section)) {
       setActivePage(section);
     }
   }, [searchParams]);

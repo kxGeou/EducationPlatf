@@ -17,9 +17,11 @@ import {
   ListTodo,
   User,
   ShoppingBag,
+  ShoppingCart,
 } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useCartStore } from '../../../store/cartStore';
 
 export default function CourseSidebar({
   user,
@@ -33,11 +35,13 @@ export default function CourseSidebar({
   const navigate = useNavigate();
   const [showSidebar, setShowSidebar] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const cartItemCount = useCartStore((state) => state.getItemCount());
 
   const menuItems = [
     { icon: <SearchCode size={20} />, label: "Informacje", key: "info" },
     { icon: <Clapperboard size={20} />, label: "Wideo", key: "video" },
     { icon: <ShoppingBag size={20} />, label: "Sklep", key: "shop" },
+    { icon: <ShoppingCart size={20} />, label: "Koszyk", key: "cart", badge: cartItemCount },
     { icon: <NotepadText size={20} />, label: "Fiszki", key: "flashcards" },
     { icon: <ChartColumnBig size={20} />, label: "Postęp", key: "chart" },
     { icon: <ListTodo size={20} />, label: "Zadania", key: "tasks" },
@@ -92,6 +96,7 @@ export default function CourseSidebar({
                 expanded={true}
                 active={activeSection === item.key}
                 highlight={item.highlight}
+                badge={item.badge}
                 onClick={() => {
                   setMobileMenuOpen(false);
                   if (item.action) item.action();
@@ -166,6 +171,7 @@ export default function CourseSidebar({
                   active={activeSection === item.key}
                   expanded={showSidebar}
                   highlight={item.highlight}
+                  badge={item.badge}
                   onClick={() => {
                     if (item.action) item.action();
                     else setActiveSection(item.key);
@@ -200,17 +206,28 @@ export default function CourseSidebar({
   );
 }
 
-function SidebarButton({ icon, label, expanded, active, onClick, highlight }) {
+function SidebarButton({ icon, label, expanded, active, onClick, highlight, badge }) {
   return (
     <button
       onClick={onClick}
-      className={`flex items-center  transition-all duration-300 cursor-pointer
+      className={`flex items-center relative transition-all duration-300 cursor-pointer
         ${expanded ? "justify-start gap-1 py-1" : "justify-center"}
         ${active ? ` dark:text-primaryGreen text-primaryBlue ${expanded && " border-l-6 pl-3"}` : ""}
         ${highlight ? "" : ""}`}
     >
+      <div className="relative">
       {icon}
-      {expanded && <span className="whitespace-nowrap">{label}</span>}
+        {badge > 0 && (
+          <span className="absolute -top-2 -right-2 bg-primaryBlue dark:bg-primaryGreen text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+            {badge}
+          </span>
+        )}
+      </div>
+      {expanded && (
+        <span className="whitespace-nowrap flex items-center gap-2">
+          {label}
+        </span>
+      )}
     </button>
   );
 }

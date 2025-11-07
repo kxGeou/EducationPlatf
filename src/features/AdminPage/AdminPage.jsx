@@ -2,6 +2,7 @@ import { useReports } from '../../store/reportStore';
 import { usePollStore } from '../../store/formStore';
 import { useIdeaStore } from '../../store/ideaStore';
 import { useVideoReviewsStore } from '../../store/videoReviewsStore';
+import { useTransactionStore } from '../../store/transactionStore';
 import { 
   User, 
   ChevronDown, 
@@ -17,11 +18,21 @@ import {
   Star,
   Video,
   Bell,
-  FileText
+  FileText,
+  Gift
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useToast } from "../../context/ToastContext";
 import NotificationManagement from "./components/NotificationManagement";
+import PromoCodeManagement from "./components/PromoCodeManagement";
+import AdminNavigation from "./components/AdminNavigation";
+import RewardsManagement from "./components/RewardsManagement";
+import ReportsSection from "./components/sections/ReportsSection";
+import PollsSection from "./components/sections/PollsSection";
+import IdeasSection from "./components/sections/IdeasSection";
+import TaskAnswersSection from "./components/sections/TaskAnswersSection";
+import VideoReviewsSection from "./components/sections/VideoReviewsSection";
+import TransactionsSection from "./components/sections/TransactionsSection";
 import supabase from "../../util/supabaseClient";
 
 function timeAgo(dateString) {
@@ -85,6 +96,7 @@ export default function AdminPage({ isDark, setIsDark }) {
   } = useVideoReviewsStore();
   const polls = usePollStore((s) => s.polls);
   const { fetchIdea, ideas } = useIdeaStore();
+  const { fetchTransactions } = useTransactionStore();
 
   const statuses = [
     { label: "Do zrobienia", color: "bg-green-100 text-green-600" },
@@ -120,7 +132,7 @@ export default function AdminPage({ isDark, setIsDark }) {
       if (userIds.length > 0) {
         const { data: usersData, error: usersError } = await supabase
           .from('users')
-          .select('id, user_name, email')
+          .select('id, email, full_name')
           .in('id', userIds);
 
         if (!usersError && usersData) {
@@ -228,6 +240,7 @@ export default function AdminPage({ isDark, setIsDark }) {
       fetchIdea();
       fetchVideoData();
       fetchTaskAnswers();
+      fetchTransactions();
     } else {
       toast.error("Niepoprawne hasło");
     }
@@ -339,537 +352,63 @@ export default function AdminPage({ isDark, setIsDark }) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-blackText dark:to-DarkblackText p-3 sm:p-4 md:p-6" data-theme={isDark ? "dark" : "light"}>
+    <div className="h-screen overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 dark:from-blackText dark:to-DarkblackText " data-theme={isDark ? "dark" : "light"}>
     
-      <div className="bg-white/90 dark:bg-DarkblackText/90 backdrop-blur-xl p-3 sm:p-4  w-full rounded-xl shadow-md mb-4 sm:mb-6 border border-white/20 dark:border-DarkblackBorder/20">
-        <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 justify-center">
-           <button
-            className="cursor-pointer p-3 hover:bg-gray-100 dark:hover:bg-DarkblackBorder rounded-xl transition-all duration-300 shadow-lg"
-            title="Przełącz tryb jasny/ciemny"
-            role="button"
-            aria-label="Przełącz tryb jasny/ciemny"
-            onClick={() => {
-              setIsDark((prev) => {
-                const newValue = !prev;
-                localStorage.setItem("theme", newValue ? "dark" : "light");
-                return newValue;
-              });
-            }}
-          >
-            {isDark ? <Sun size={20} /> : <Moon size={20} />}
-          </button>
-          <button
-            onClick={() => setActiveSection("reports")}
-            className={`flex items-center justify-center gap-2 px-4 sm:px-6 py-3 rounded-xl transition-all duration-300 font-medium ${
-              activeSection === "reports"
-                ? "bg-gradient-to-r from-primaryBlue to-secondaryBlue text-white dark:from-primaryGreen dark:to-secondaryBlue shadow-xl"
-                : "bg-gray-100 dark:bg-DarkblackBorder text-gray-700 dark:text-gray-300 hover:bg-primaryBlue/10 dark:hover:bg-primaryGreen/10"
-            }`}
-          >
-            <MessageSquare size={16} className="sm:w-5 sm:h-5" />
-            <span className="text-sm sm:text-base">Zgłoszenia</span>
-            <span className="bg-white/20 dark:bg-black/20 px-2 py-1 rounded-full text-xs font-bold">
-              {filteredReports.length}
-            </span>
-          </button>
-          <button
-            onClick={() => setActiveSection("polls")}
-            className={`flex items-center justify-center gap-2 px-4 sm:px-6 py-3 rounded-xl transition-all duration-300 font-medium ${
-              activeSection === "polls"
-                ? "bg-gradient-to-r from-primaryBlue to-secondaryBlue text-white dark:from-primaryGreen dark:to-secondaryBlue shadow-xl"
-                : "bg-gray-100 dark:bg-DarkblackBorder text-gray-700 dark:text-gray-300 hover:bg-primaryBlue/10 dark:hover:bg-primaryGreen/10"
-            }`}
-          >
-            <BarChart3 size={16} className="sm:w-5 sm:h-5" />
-            <span className="text-sm sm:text-base">Ankiety</span>
-            <span className="bg-white/20 dark:bg-black/20 px-2 py-1 rounded-full text-xs font-bold">
-              {polls.length}
-            </span>
-          </button>
-          <button
-            onClick={() => setActiveSection("ideas")}
-            className={`flex items-center justify-center gap-2 px-4 sm:px-6 py-3 rounded-xl transition-all duration-300 font-medium ${
-              activeSection === "ideas"
-                ? "bg-gradient-to-r from-primaryBlue to-secondaryBlue text-white dark:from-primaryGreen dark:to-secondaryBlue shadow-xl"
-                : "bg-gray-100 dark:bg-DarkblackBorder text-gray-700 dark:text-gray-300 hover:bg-primaryBlue/10 dark:hover:bg-primaryGreen/10"
-            }`}
-          >
-            <PenBoxIcon size={16} className="sm:w-5 sm:h-5" />
-            <span className="text-sm sm:text-base">Pomysły</span>
-            <span className="bg-white/20 dark:bg-black/20 px-2 py-1 rounded-full text-xs font-bold">
-              {ideas.length}
-            </span>
-          </button>
-          <button
-            onClick={() => setActiveSection("videoReviews")}
-            className={`flex items-center justify-center gap-2 px-4 sm:px-6 py-3 rounded-xl transition-all duration-300 font-medium ${
-              activeSection === "videoReviews"
-                ? "bg-gradient-to-r from-primaryBlue to-secondaryBlue text-white dark:from-primaryGreen dark:to-secondaryBlue shadow-xl"
-                : "bg-gray-100 dark:bg-DarkblackBorder text-gray-700 dark:text-gray-300 hover:bg-primaryBlue/10 dark:hover:bg-primaryGreen/10"
-            }`}
-          >
-            <Video size={16} className="sm:w-5 sm:h-5" />
-            <span className="text-sm sm:text-base">Recenzje wideo</span>
-            <span className="bg-white/20 dark:bg-black/20 px-2 py-1 rounded-full text-xs font-bold">
-              {videoReviews.length}
-            </span>
-          </button>
-          <button
-            onClick={() => setActiveSection("taskAnswers")}
-            className={`flex items-center justify-center gap-2 px-4 sm:px-6 py-3 rounded-xl transition-all duration-300 font-medium ${
-              activeSection === "taskAnswers"
-                ? "bg-gradient-to-r from-primaryBlue to-secondaryBlue text-white dark:from-primaryGreen dark:to-secondaryBlue shadow-xl"
-                : "bg-gray-100 dark:bg-DarkblackBorder text-gray-700 dark:text-gray-300 hover:bg-primaryBlue/10 dark:hover:bg-primaryGreen/10"
-            }`}
-          >
-            <FileText size={16} className="sm:w-5 sm:h-5" />
-            <span className="text-sm sm:text-base">Odpowiedzi na zadania</span>
-            <span className="bg-white/20 dark:bg-black/20 px-2 py-1 rounded-full text-xs font-bold">
-              {taskAnswers.length}
-            </span>
-          </button>
-          <button
-            onClick={() => setActiveSection("notifications")}
-            className={`flex items-center justify-center gap-2 px-4 sm:px-6 py-3 rounded-xl transition-all duration-300 font-medium ${
-              activeSection === "notifications"
-                ? "bg-gradient-to-r from-primaryBlue to-secondaryBlue text-white dark:from-primaryGreen dark:to-secondaryBlue shadow-xl"
-                : "bg-gray-100 dark:bg-DarkblackBorder text-gray-700 dark:text-gray-300 hover:bg-primaryBlue/10 dark:hover:bg-primaryGreen/10"
-            }`}
-          >
-            <Bell size={16} className="sm:w-5 sm:h-5" />
-            <span className="text-sm sm:text-base">Powiadomienia</span>
-          </button>
-        </div>
-      </div>
+     
+      {/* Sidebar + Content */}
+      <AdminNavigation
+        activeSection={activeSection}
+        setActiveSection={setActiveSection}
+        isDark={isDark}
+        setIsDark={setIsDark}
+      />
 
-      {/* Content */}
-      <div className="bg-white/90 dark:bg-DarkblackText/90 backdrop-blur-xl shadow-lg w-full rounded-3xl p-4 sm:p-6 lg:p-8 border border-white/20 dark:border-DarkblackBorder/20">
+      <div className="bg-white/90 dark:bg-DarkblackText/90 backdrop-blur-xl shadow-lg w-full md:w-[calc(100vw-260px)] md:max-w-[calc(100vw-260px)] box-border rounded-3xl p-4 sm:p-6 lg:p-8 border border-white/20 dark:border-DarkblackBorder/20 md:ml-[260px] md:h-[calc(100vh-1.5rem)] md:overflow-y-auto">
         {/* Reports Section */}
         {activeSection === "reports" && (
-          <div className="space-y-4 sm:space-y-6">
-            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-              <h2 className="font-bold text-xl sm:text-2xl text-blackText dark:text-white">
-                Wszystkie zgłoszenia
-              </h2>
-              <div className="dropdown relative">
-                <button
-                  onClick={() => setOpenFilter((prev) => !prev)}
-                  className="flex items-center justify-between gap-2 px-4 py-2 bg-white border border-gray-200 dark:bg-DarkblackBorder dark:border-0 dark:text-white rounded-xl shadow-sm hover:shadow-md transition text-sm w-full sm:w-auto"
-                >
-                  {statusFilter === "all" ? "Wszystkie statusy" : statusFilter}
-                  <ChevronDown className="w-4 h-4 text-gray-500 dark:text-white/80" />
-                </button>
-                {openFilter && (
-                  <div className="absolute top-full right-0 mt-2 w-48 bg-white dark:bg-DarkblackBorder dark:border-DarkblackText rounded-lg shadow-xl border border-gray-200 z-[9999]">
-                    <div
-                      onClick={() => {
-                        setStatusFilter("all");
-                        setOpenFilter(false);
-                      }}
-                      className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-DarkblackText cursor-pointer text-sm text-blackText dark:text-white transition-colors"
-                    >
-                      Wszystkie statusy
-                    </div>
-                    {statuses.map((s) => (
-                      <div
-                        key={s.label}
-                        onClick={() => {
-                          setStatusFilter(s.label);
-                          setOpenFilter(false);
-                        }}
-                        className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-DarkblackText cursor-pointer text-sm text-blackText dark:text-white transition-colors"
-                      >
-                        {s.label}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {filteredReports.length > 0 ? (
-              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
-                {filteredReports.map((report, index) => {
-                  const currentStatus = statuses.find(
-                    (s) => s.label === report.status
-                  );
-
-                  return (
-                    <div
-                      key={report.id}
-                      className="bg-white/80 dark:bg-DarkblackBorder backdrop-blur-md p-4 sm:p-6 rounded-2xl shadow-lg border border-gray-100 dark:border-DarkblackText flex flex-col justify-between transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
-                    >
-                      {/* Status dropdown at the top */}
-                      <div className="flex justify-between items-start mb-4">
-                        <h3 className="text-lg sm:text-xl font-semibold text-blackText dark:text-white flex-1">
-                          {report.topic}
-                        </h3>
-                        <div className="dropdown relative ml-4">
-                          <button
-                            onClick={() =>
-                              setOpenDropdown(
-                                openDropdown === report.id ? null : report.id
-                              )
-                            }
-                            className={`flex items-center gap-2 px-3 py-2 rounded-full text-xs font-medium tracking-wide ${currentStatus?.color}`}
-                          >
-                            {report.status}
-                            <ChevronDown className="w-4 h-4" />
-                          </button>
-                          {openDropdown === report.id && (
-                            <div className="absolute top-full right-0 mt-2 w-40 bg-white dark:bg-DarkblackBorder rounded-lg shadow-xl border border-gray-100 dark:border-DarkblackText py-2 flex flex-col gap-2 z-[9999]">
-                              {statuses.map((s) => (
-                                <div
-                                  key={s.label}
-                                  onClick={() => {
-                                    updateStatus(report.id, s.label);
-                                    setOpenDropdown(null);
-                                  }}
-                                  className="px-4 py-2 cursor-pointer text-sm hover:bg-gray-100 dark:hover:bg-DarkblackText text-blackText dark:text-white"
-                                >
-                                  {s.label}
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                      
-                      <div className="mb-4">
-                        <p className="text-gray-500 text-sm mb-1 dark:text-primaryGreen/75">
-                          <span className="font-medium">Email:</span>{" "}
-                          {report.user_email}
-                        </p>
-                        <p className="text-gray-600 text-sm leading-relaxed dark:text-white/75">
-                          {report.description}
-                        </p>
-
-                        {report.answer ? (
-                          <div className="mt-3 p-3 bg-green-50 border dark:bg-green-200 dark:border-0 border-green-200 rounded-lg text-sm">
-                            <p className="font-medium text-green-700 dark:text-green-800">
-                              Odpowiedź admina:
-                            </p>
-                            <p className="text-gray-700">{report.answer}</p>
-                          </div>
-                        ) : (
-                          <p className="text-xs italic text-gray-400 mt-2">
-                            Brak odpowiedzi
-                          </p>
-                        )}
-                      </div>
-
-                      <div className="flex justify-between items-center mt-6">
-                        <div className="flex flex-col text-xs text-gray-400 dark:text-gray-500">
-                          <span>#{index + 1}</span>
-                          <span>{timeAgo(report.created_at)}</span>
-                        </div>
-                      </div>
-
-                      <button
-                        onClick={() => setReplyModal(report.id)}
-                        className="mt-4 bg-gradient-to-r from-primaryBlue to-secondaryBlue text-white text-sm px-4 py-2 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:opacity-90"
-                      >
-                        Odpowiedz
-                      </button>
-                    </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <p className="text-gray-500 text-center italic py-12">
-                Nie ma żadnych zgłoszeń
-              </p>
-            )}
-          </div>
+          <ReportsSection
+            statuses={statuses}
+            filteredReports={filteredReports}
+            openDropdown={openDropdown}
+            setOpenDropdown={setOpenDropdown}
+            statusFilter={statusFilter}
+            setStatusFilter={setStatusFilter}
+            openFilter={openFilter}
+            setOpenFilter={setOpenFilter}
+            updateStatus={updateStatus}
+            timeAgo={timeAgo}
+            setReplyModal={setReplyModal}
+          />
         )}
 
         {/* Polls Section */}
         {activeSection === "polls" && (
-          <div className="space-y-4 sm:space-y-6">
-            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-              <h2 className="font-bold text-xl sm:text-2xl text-blackText dark:text-white flex items-center gap-2">
-                <BarChart3 size={20} className="sm:w-6 sm:h-6" />
-                Zarządzanie ankietami ({polls.length})
-              </h2>
-              <button
-                onClick={() => setShowPollModal(true)}
-                className="flex items-center justify-center gap-2 px-4 sm:px-6 py-3 bg-gradient-to-r from-primaryBlue to-secondaryBlue dark:from-primaryGreen dark:to-secondaryBlue text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:opacity-90 w-full sm:w-auto"
-              >
-                <PlusCircle size={18} />
-                <span className="text-sm sm:text-base">Stwórz nową ankietę</span>
-              </button>
-            </div>
-
-            {polls.length > 0 ? (
-              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
-                {polls.map((poll) => (
-                  <div
-                    key={poll.id}
-                    className="bg-white/80 dark:bg-DarkblackBorder rounded-2xl shadow-lg p-4 sm:p-6 border border-gray-100 dark:border-DarkblackText transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
-                  >
-                    <h4 className="text-lg font-semibold mb-2 text-blackText dark:text-white">{poll.title}</h4>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                      {poll.description}
-                    </p>
-                    <div className="space-y-2">
-                      {poll.options.map((opt) => (
-                        <div
-                          key={opt.id}
-                          className="flex justify-between bg-gray-200 dark:bg-DarkblackText px-3 py-2 rounded-lg text-blackText dark:text-white"
-                        >
-                          <span className="text-sm">{opt.option_text}</span>
-                          <span className="font-medium text-sm">{opt.votes} głosów</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-12 text-gray-500 dark:text-gray-400">
-                <BarChart3 size={48} className="mx-auto mb-4 opacity-50" />
-                <p className="text-lg">Brak ankiet</p>
-                <p className="text-sm">Kliknij "Stwórz nową ankietę" aby rozpocząć</p>
-              </div>
-            )}
-          </div>
+          <PollsSection polls={polls} setShowPollModal={setShowPollModal} />
         )}
 
         {/* Ideas Section */}
         {activeSection === "ideas" && (
-          <div className="space-y-4 sm:space-y-6">
-            <h2 className="font-bold text-xl sm:text-2xl text-blackText dark:text-white flex items-center gap-2">
-              <PenBoxIcon size={20} className="sm:w-6 sm:h-6" />
-              Pomysły użytkowników ({ideas.length})
-            </h2>
-            {ideas.length === 0 ? (
-              <div className="text-center py-12 text-gray-500 dark:text-gray-400">
-                <p>Nie ma żadnych pomysłów</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
-                {ideas.map((idea, index) => (
-                  <div
-                    key={index}
-                    className="bg-white/80 dark:bg-DarkblackBorder shadow-lg rounded-2xl p-4 sm:p-6 border border-gray-100 dark:border-DarkblackText transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
-                  >
-                    <span
-                      className={`${
-                        idea.type === "Design" &&
-                        "bg-indigo-400 text-sm text-white px-3 py-1 border border-indigo-500/50 rounded-[8px]"
-                      } ${
-                        idea.type === "Funkcjonalność" &&
-                        "bg-green-400 text-sm text-white px-3 py-1 border border-green-500/50 rounded-[8px]"
-                      } ${
-                        idea.type === "Inne" &&
-                        "bg-red-400 text-sm text-white px-3 py-1 border border-red-500/50 rounded-[8px]"
-                      }`}
-                    >
-                      {idea.type}
-                    </span>
-                    <p className="text-md opacity-75 mt-2 text-gray-600 dark:text-gray-400">{idea.user_email}</p>
-                    <p className="text-lg font-semibold mt-2 text-blackText dark:text-white">{idea.name}</p>
-                    <p className="bg-gray-100 dark:bg-blackText/50 dark:text-white/75 p-3 text-blackText/75 mt-2 rounded-lg">
-                      {idea.description}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+          <IdeasSection ideas={ideas} />
         )}
 
         {/* Task Answers Section */}
         {activeSection === "taskAnswers" && (
-          <div className="space-y-4 sm:space-y-6">
-            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-              <h2 className="font-bold text-xl sm:text-2xl text-blackText dark:text-white flex items-center gap-2">
-                <FileText size={20} className="sm:w-6 sm:h-6" />
-                Odpowiedzi na zadania ({taskAnswers.length})
-              </h2>
-              <div className="dropdown relative">
-                <button
-                  onClick={() => setOpenFilter((prev) => !prev)}
-                  className="flex items-center justify-between gap-2 px-4 py-2 bg-white border border-gray-200 dark:bg-DarkblackBorder dark:border-0 dark:text-white rounded-xl shadow-sm hover:shadow-md transition text-sm w-full sm:w-auto"
-                >
-                  {taskAnswersFilter === "all" ? "Wszystkie statusy" : taskAnswersFilter}
-                  <ChevronDown className="w-4 h-4 text-gray-500 dark:text-white/80" />
-                </button>
-                {openFilter && (
-                  <div className="absolute top-full right-0 mt-2 w-48 bg-white dark:bg-DarkblackBorder dark:border-DarkblackText rounded-lg shadow-xl border border-gray-200 z-[9999]">
-                    <div
-                      onClick={() => {
-                        setTaskAnswersFilter("all");
-                        setOpenFilter(false);
-                      }}
-                      className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-DarkblackText cursor-pointer text-sm text-blackText dark:text-white transition-colors"
-                    >
-                      Wszystkie statusy
-                    </div>
-                    <div
-                      onClick={() => {
-                        setTaskAnswersFilter("pending");
-                        setOpenFilter(false);
-                      }}
-                      className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-DarkblackText cursor-pointer text-sm text-blackText dark:text-white transition-colors"
-                    >
-                      Oczekujące
-                    </div>
-                    <div
-                      onClick={() => {
-                        setTaskAnswersFilter("approved");
-                        setOpenFilter(false);
-                      }}
-                      className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-DarkblackText cursor-pointer text-sm text-blackText dark:text-white transition-colors"
-                    >
-                      Zaakceptowane
-                    </div>
-                    <div
-                      onClick={() => {
-                        setTaskAnswersFilter("rejected");
-                        setOpenFilter(false);
-                      }}
-                      className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-DarkblackText cursor-pointer text-sm text-blackText dark:text-white transition-colors"
-                    >
-                      Odrzucone
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {taskAnswersLoading ? (
-              <div className="flex justify-center items-center h-32">
-                <div className="text-center">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primaryBlue dark:border-primaryGreen mx-auto mb-2"></div>
-                  <p className="text-gray-600 dark:text-gray-400">Ładowanie odpowiedzi...</p>
-                </div>
-              </div>
-            ) : (
-              <>
-                {taskAnswers
-                  .filter(answer => taskAnswersFilter === "all" || answer.status === taskAnswersFilter)
-                  .length > 0 ? (
-                  <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
-                    {taskAnswers
-                      .filter(answer => taskAnswersFilter === "all" || answer.status === taskAnswersFilter)
-                      .map((answer, index) => {
-
-                        return (
-                          <div
-                            key={answer.id}
-                            className="bg-white/80 dark:bg-DarkblackBorder backdrop-blur-md p-4 sm:p-6 rounded-2xl shadow-lg border border-gray-100 dark:border-DarkblackText flex flex-col justify-between transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
-                          >
-                            {/* Status dropdown at the top */}
-                            <div className="flex justify-between items-start mb-4">
-                              <h3 className="text-lg sm:text-xl font-semibold text-blackText dark:text-white flex-1">
-                                {answer.video_tasks?.topic || 'Brak tematu'}
-                              </h3>
-                              <div className="dropdown relative ml-4">
-                                <button
-                                  onClick={() =>
-                                    setOpenDropdown(
-                                      openDropdown === answer.id ? null : answer.id
-                                    )
-                                  }
-                                  className={`flex items-center gap-2 px-3 py-2 rounded-full text-xs font-medium tracking-wide ${getStatusColor(answer.status)}`}
-                                >
-                                  {getStatusLabel(answer.status)}
-                                  <ChevronDown className="w-4 h-4" />
-                                </button>
-                                {openDropdown === answer.id && (
-                                  <div className="absolute top-full right-0 mt-2 w-40 bg-white dark:bg-DarkblackBorder rounded-lg shadow-xl border border-gray-100 dark:border-DarkblackText py-2 flex flex-col gap-2 z-[9999]">
-                                    {['pending', 'approved', 'rejected'].map((status) => (
-                                      <div
-                                        key={status}
-                                        onClick={() => {
-                                          updateTaskAnswerStatus(answer.id, status);
-                                          setOpenDropdown(null);
-                                        }}
-                                        className="px-4 py-2 cursor-pointer text-sm hover:bg-gray-100 dark:hover:bg-DarkblackText text-blackText dark:text-white"
-                                      >
-                                        {getStatusLabel(status)}
-                                      </div>
-                                    ))}
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                            
-                            <div className="mb-4">
-                              <p className="text-gray-500 text-sm mb-1 dark:text-primaryGreen/75">
-                                <span className="font-medium">Użytkownik:</span>{" "}
-                                {answer.users?.user_name || answer.users?.email || 'Nieznany'}
-                              </p>
-                              <p className="text-gray-500 text-sm mb-2 dark:text-primaryGreen/75">
-                                <span className="font-medium">Email:</span>{" "}
-                                {answer.users?.email || 'Brak'}
-                              </p>
-                              <p className="text-gray-600 text-sm leading-relaxed dark:text-white/75 mb-3">
-                                <span className="font-medium">Treść zadania:</span><br />
-                                {answer.video_tasks?.task || 'Brak treści zadania'}
-                              </p>
-                              <div className="p-3 bg-blue-50 border dark:bg-blue-200 dark:border-0 border-blue-200 rounded-lg text-sm">
-                                <p className="font-medium text-blue-700 dark:text-blue-800 mb-2">
-                                  Odpowiedź ucznia:
-                                </p>
-                                <p className="text-gray-700 dark:text-gray-800 whitespace-pre-wrap">{answer.answer}</p>
-                              </div>
-
-                              {/* Admin Feedback Display */}
-                              {answer.admin_feedback ? (
-                                <div className="mt-3 p-3 bg-green-50 border dark:bg-green-200 dark:border-0 border-green-200 rounded-lg text-sm">
-                                  <p className="font-medium text-green-700 dark:text-green-800 mb-2">
-                                    Feedback admina:
-                                  </p>
-                                  <p className="text-gray-700 dark:text-gray-800 whitespace-pre-wrap">{answer.admin_feedback}</p>
-                                  {answer.feedback_date && (
-                                    <p className="text-xs text-gray-500 dark:text-gray-600 mt-2">
-                                      {timeAgo(answer.feedback_date)}
-                                    </p>
-                                  )}
-                                </div>
-                              ) : (
-                                <p className="text-xs italic text-gray-400 mt-2">
-                                  Brak feedbacku admina
-                                </p>
-                              )}
-                            </div>
-
-                            <div className="flex justify-between items-center mt-6">
-                              <div className="flex flex-col text-xs text-gray-400 dark:text-gray-500">
-                                <span>#{index + 1}</span>
-                                <span>{timeAgo(answer.created_at)}</span>
-                              </div>
-                            </div>
-
-                            {/* Feedback Button */}
-                            <button
-                              onClick={() => {
-                                setTaskFeedbackModal(answer.id);
-                                setTaskFeedbackText(answer.admin_feedback || "");
-                              }}
-                              className="mt-4 w-full bg-gradient-to-r from-primaryBlue to-secondaryBlue dark:from-primaryGreen dark:to-secondaryBlue text-white text-sm px-4 py-2 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:opacity-90"
-                            >
-                              {answer.admin_feedback ? 'Edytuj feedback' : 'Dodaj feedback'}
-                            </button>
-                          </div>
-                        );
-                      })}
-                  </div>
-                ) : (
-                  <div className="text-center py-12 text-gray-500 dark:text-gray-400">
-                    <FileText size={48} className="mx-auto mb-4 opacity-50" />
-                    <p className="text-lg">
-                      {taskAnswersFilter === "all" 
-                        ? "Brak odpowiedzi na zadania do wyświetlenia" 
-                        : `Brak odpowiedzi ze statusem "${getStatusLabel(taskAnswersFilter)}"`}
-                    </p>
-                  </div>
-                )}
-              </>
-            )}
-          </div>
+          <TaskAnswersSection
+            taskAnswers={taskAnswers}
+            taskAnswersLoading={taskAnswersLoading}
+            taskAnswersFilter={taskAnswersFilter}
+            setTaskAnswersFilter={setTaskAnswersFilter}
+            openFilter={openFilter}
+            setOpenFilter={setOpenFilter}
+            openDropdown={openDropdown}
+            setOpenDropdown={setOpenDropdown}
+            getStatusColor={getStatusColor}
+            getStatusLabel={getStatusLabel}
+            updateTaskAnswerStatus={updateTaskAnswerStatus}
+            timeAgo={timeAgo}
+            setTaskFeedbackModal={setTaskFeedbackModal}
+            setTaskFeedbackText={setTaskFeedbackText}
+          />
         )}
 
         {/* Notifications Section */}
@@ -877,114 +416,33 @@ export default function AdminPage({ isDark, setIsDark }) {
           <NotificationManagement isDark={isDark} />
         )}
 
+        {/* Rewards Management Section */}
+        {activeSection === "rewards" && (
+          <RewardsManagement isDark={isDark} />
+        )}
+
+        {/* Transactions Section */}
+        {activeSection === "transactions" && (
+          <TransactionsSection timeAgo={timeAgo} />
+        )}
+
+        {/* Promo Codes Section */}
+        {activeSection === "promoCodes" && (
+          <PromoCodeManagement isDark={isDark} />
+        )}
+
         {/* Video Reviews Section */}
         {activeSection === "videoReviews" && (
-          <div className="space-y-4 sm:space-y-6">
-            <h2 className="font-bold text-xl sm:text-2xl text-blackText dark:text-white flex items-center gap-2">
-              <Video size={20} className="sm:w-6 sm:h-6" />
-              Recenzje wideo użytkowników
-            </h2>
-
-            {/* Section Filter */}
-            {getUniqueSections().length > 0 && (
-              <div className="flex flex-wrap gap-2 mb-4">
-                <button
-                  onClick={() => setSectionFilter("all")}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
-                    sectionFilter === "all"
-                      ? "bg-primaryBlue text-white"
-                      : "bg-gray-200 dark:bg-DarkblackText text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-DarkblackBorder"
-                  }`}
-                >
-                  Wszystkie sekcje
-                </button>
-                {getUniqueSections().map((section) => (
-                  <button
-                    key={section.id}
-                    onClick={() => setSectionFilter(section.id)}
-                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
-                      sectionFilter === section.id
-                        ? "bg-primaryBlue text-white"
-                        : "bg-gray-200 dark:bg-DarkblackText text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-DarkblackBorder"
-                    }`}
-                  >
-                    {section.title}
-                  </button>
-                ))}
-              </div>
-            )}
-
-            {getFilteredVideosWithReviews(sectionFilter).length > 0 ? (
-              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
-                {getFilteredVideosWithReviews(sectionFilter).map((video) => {
-                  const videoReviewsList = getVideoReviews(video.videoId);
-                  const averageRating = calculateAverageRating(video.videoId);
-                  const hasReviews = videoReviewsList.length > 0;
-
-                  return (
-                    <div
-                      key={video.videoId}
-                      className="bg-white/80 dark:bg-DarkblackBorder shadow-lg rounded-2xl p-4 sm:p-6 border border-gray-100 dark:border-DarkblackText transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
-                    >
-                      {/* Video Title */}
-                      <h3 className="text-lg font-semibold text-blackText dark:text-white mb-3 line-clamp-2">
-                        {video.title}
-                      </h3>
-
-                      {/* Video ID */}
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
-                        ID: {video.videoId}
-                      </p>
-
-                      {/* Average Rating */}
-                      <div className="mb-4">
-                        {hasReviews ? (
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
-                                Średnia ocena:
-                              </p>
-                              {renderStars(averageRating)}
-                            </div>
-                            <span className="text-xs text-gray-500 dark:text-gray-400">
-                              {videoReviewsList.length} ocen
-                            </span>
-                          </div>
-                        ) : (
-                          <p className="text-sm text-gray-500 dark:text-gray-400">
-                            Brak ocen
-                          </p>
-                        )}
-                      </div>
-
-                      {/* View Reviews Button */}
-                      {hasReviews && (
-                        <button
-                          onClick={() => setSelectedVideoReviews({
-                            video: video,
-                            reviews: videoReviewsList,
-                            averageRating: averageRating
-                          })}
-                          className="w-full bg-gradient-to-r from-primaryBlue to-secondaryBlue text-white text-sm px-4 py-2 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:opacity-90"
-                        >
-                          Zobacz recenzje ({videoReviewsList.length})
-                        </button>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <div className="text-center py-12 text-gray-500 dark:text-gray-400">
-                <Video size={48} className="mx-auto mb-4 opacity-50" />
-                <p className="text-lg">
-                  {sectionFilter === "all" 
-                    ? "Brak wideo z recenzjami do wyświetlenia" 
-                    : "Brak wideo z recenzjami w wybranej sekcji"}
-                </p>
-              </div>
-            )}
-          </div>
+          <VideoReviewsSection
+            getUniqueSections={getUniqueSections}
+            sectionFilter={sectionFilter}
+            setSectionFilter={setSectionFilter}
+            getFilteredVideosWithReviews={getFilteredVideosWithReviews}
+            getVideoReviews={getVideoReviews}
+            calculateAverageRating={calculateAverageRating}
+            renderStars={renderStars}
+            setSelectedVideoReviews={setSelectedVideoReviews}
+          />
         )}
       </div>
 

@@ -10,6 +10,7 @@ import BlogPanel from "./BlogPanel";
 import FormUserPage from "./FormUserPage";
 import IdeaPanel from "./IdeaPanel";
 import Leaderboard from "./Leaderboard";
+import Rewards from "./Rewards";
 import UserData from "./UserData";
 import Dashboard from "./Dashboard";
 
@@ -297,6 +298,9 @@ function CourseList({ activePage, setActivePage, setTutorialVisible, tutorialVis
 
               {/* RANKING */}
               {activePage === "leaderboard" && <Leaderboard setActivePage={setActivePage} />}
+
+              {/* NAGRODY */}
+              {activePage === "rewards" && <Rewards />}
 
               {/* PROFIL */}
               {activePage === "profile" && <UserData />}

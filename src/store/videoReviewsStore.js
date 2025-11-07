@@ -58,7 +58,7 @@ export const useVideoReviewsStore = create((set, get) => ({
         .select(`
           id,
           email,
-          user_name
+          full_name
         `);
 
       if (usersError) {

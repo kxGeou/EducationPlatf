@@ -1,6 +1,6 @@
 import ContactHero from "./components/ContactHero";
 import PageLayout from '../../components/systemLayouts/PageLayout';
-import { LoaderCircle, ChevronDown, Check } from "lucide-react";
+import { LoaderCircle, ChevronDown, Check, Calendar, X } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 import { useToast } from '../../context/ToastContext';
 import Gmail from '../../assets/gmail.svg';
@@ -95,41 +95,102 @@ function CustomSelect({ value, onChange, options, placeholder = "-- Wybierz tema
   );
 }
 
-function Calendly() {
+function CalendlyModal({ isOpen, onClose, isDark }) {
   const calendlyRef = useRef(null);
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          setLoaded(true);
-          observer.disconnect();
-        }
-      },
-      { rootMargin: "100px" }
-    );
-    if (calendlyRef.current) observer.observe(calendlyRef.current);
-    return () => observer.disconnect();
-  }, []);
+    if (isOpen) {
+      // Zablokuj scroll body gdy modal jest otwarty
+      document.body.style.overflow = 'hidden';
+      // Załaduj Calendly po otwarciu modala
+      setTimeout(() => setLoaded(true), 100);
+    } else {
+      document.body.style.overflow = 'unset';
+      setLoaded(false);
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
+
+  if (!isOpen) return null;
+
+  // Kolory dla Calendly - różne dla trybu jasnego i ciemnego
+  const textColor = isDark ? "ffffff" : "0a2540";
+  const primaryColor = isDark ? "17d19b" : "00498a";
+  const calendlyUrl = `https://calendly.com/educationplatform-supabase/30min?text_color=${textColor}&primary_color=${primaryColor}`;
 
   return (
-    <div
-      ref={calendlyRef}
-      className="w-full rounded-[12px] overflow-hidden shadow-lg min-h-[400px] flex items-center justify-center bg-gray-100 dark:bg-DarkblackBorder mt-12 z-20"
+    <div 
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
+      onClick={(e) => {
+        // Zamknij modal przy kliknięciu w tło
+        if (e.target === e.currentTarget) {
+          onClose();
+        }
+      }}
+      style={{
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        width: '100vw',
+        height: '100vh',
+      }}
     >
-      {loaded ? (
-        <iframe
-          src="https://calendly.com/educationplatform-supabase/30min?text_color=0a2540&primary_color=00498a"
-          className="w-full h-[1000px] border-0 z-20"
-          loading="lazy"
-          title="Calendly"
-        />
-      ) : (
-        <span className="text-gray-500 dark:text-gray-300 animate-pulse">
-          Ładowanie kalendarza...
-        </span>
-      )}
+      {/* Blur tło - pokrywa cały ekran */}
+      <div 
+        className="absolute transition-opacity duration-300"
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          width: '100vw',
+          height: '100vh',
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          backdropFilter: 'blur(8px)',
+          WebkitBackdropFilter: 'blur(8px)',
+          zIndex: 0,
+        }}
+      ></div>
+      
+      {/* Modal z Calendly */}
+      <div className="relative bg-white dark:bg-DarkblackText rounded-[12px] shadow-2xl w-full max-w-6xl max-h-[90vh] overflow-hidden z-50 animate-scaleIn">
+        {/* Przycisk zamknięcia */}
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 z-50 p-2 bg-white/90 dark:bg-DarkblackBorder/90 hover:bg-white dark:hover:bg-DarkblackBorder rounded-full shadow-lg transition-all duration-200 hover:scale-110 active:scale-95"
+          aria-label="Zamknij"
+        >
+          <X size={20} className="text-blackText dark:text-white" />
+        </button>
+
+        {/* Calendly iframe */}
+        <div
+          ref={calendlyRef}
+          className="w-full min-h-[600px] flex items-center justify-center bg-white dark:bg-DarkblackText"
+        >
+          {loaded ? (
+            <iframe
+              src={calendlyUrl}
+              className="w-full border-0"
+              style={{ height: '90vh' }}
+              loading="lazy"
+              title="Calendly"
+            />
+          ) : (
+            <div className="flex flex-col items-center gap-4">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primaryBlue dark:border-primaryGreen"></div>
+              <span className="text-gray-500 dark:text-gray-300">
+                Ładowanie kalendarza...
+              </span>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
@@ -138,6 +199,7 @@ function ContactPage({ isDark, setIsDark }) {
   const toast = useToast();
   const [formData, setFormData] = useState({ email: "", name: "", phone: "", topic: "", message: "" });
   const [loading, setLoading] = useState(false);
+  const [isCalendlyOpen, setIsCalendlyOpen] = useState(false);
 
   const topics = [
     { label: "Matura z informatyki", value: "Matura z informatyki" },
@@ -203,9 +265,32 @@ function ContactPage({ isDark, setIsDark }) {
       <div className="mt-8 space-y-16">
         <ContactHero />
         
+        {/* Przycisk do otwarcia Calendly */}
         <div className="bg-white/50 dark:bg-DarkblackBorder/50 rounded-2xl z-20 p-6 shadow-sm">
-          <Calendly />
+          <div className="flex flex-col items-center justify-center py-12">
+            <div className="mb-6">
+              <div className="w-16 h-16 bg-primaryBlue dark:bg-primaryGreen rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+                <Calendar size={32} className="text-white" />
+              </div>
+              <h3 className="text-2xl font-bold text-center mb-2 dark:text-white">
+                Umów się na spotkanie
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400 text-center max-w-md">
+                Wybierz dogodny termin i umów się na 60-minutowe spotkanie z naszym zespołem
+              </p>
+            </div>
+            <button
+              onClick={() => setIsCalendlyOpen(true)}
+              className="px-8 py-4 bg-primaryBlue dark:bg-primaryGreen text-white rounded-[12px] font-semibold hover:opacity-90 hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2 shadow-md"
+            >
+              <Calendar size={20} />
+              <span>Otwórz kalendarz</span>
+            </button>
+          </div>
         </div>
+
+        {/* Modal z Calendly */}
+        <CalendlyModal isOpen={isCalendlyOpen} onClose={() => setIsCalendlyOpen(false)} isDark={isDark} />
 
         <div className="w-full bg-white dark:bg-DarkblackBorder rounded-2xl shadow-lg p-8">
           <h2 className="text-2xl font-bold text-center mb-6 dark:text-white">

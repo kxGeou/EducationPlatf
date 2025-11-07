@@ -7,6 +7,7 @@ import FlashcardPanel from "./components/FlashCardPanel";
 import TaskPanel from "./components/TaskPanel";
 import VideoPanel from "./components/VideoPanel";
 import ShopPanel from "./components/ShopPanel";
+import CartPanel from "./components/CartPanel";
 import UserData from "../MyCoursesPage/components/UserData";
 import { useAuthStore } from '../../store/authStore';
 import { useSingleCourseStore } from '../../store/singleCourseStore';
@@ -106,6 +107,14 @@ export default function CoursePage({ isDark, setIsDark }) {
               course={course}
               isDark={isDark}
               setActivePage={() => window.location.href = '/user_page?section=profile'}
+            />
+          )}
+
+          {activeSection === "cart" && (
+            <CartPanel
+              course={course}
+              isDark={isDark}
+              setActiveSection={setActiveSection}
             />
           )}
 
