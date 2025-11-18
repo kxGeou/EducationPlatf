@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ShoppingCart, Trash2, Plus, CreditCard, Receipt, Download, FileText, Tag, X } from 'lucide-react';
+import { ShoppingCart, Trash2, Plus, CreditCard, Receipt, Download, FileText, Tag, X, Gift, Check } from 'lucide-react';
 import { useToast } from '../../../context/ToastContext';
 import { useAuthStore } from '../../../store/authStore';
 import { useCartStore } from '../../../store/cartStore';
@@ -9,7 +9,7 @@ import supabase from '../../../util/supabaseClient';
 
 export default function CartPanel({ course, isDark, setActiveSection }) {
   const toast = useToast();
-  const { user, canPurchaseCourses, fetchUserData } = useAuthStore();
+  const { user, canPurchaseCourses, fetchUserData, referralDiscountAvailable } = useAuthStore();
   const { 
     getItems, 
     removeItem, 
@@ -20,7 +20,10 @@ export default function CartPanel({ course, isDark, setActiveSection }) {
     applyPromoCode,
     removePromoCode,
     getPromoDiscount,
-    getTotalWithDiscount
+    getTotalWithDiscount,
+    applyReferralDiscount,
+    removeReferralDiscount,
+    isReferralDiscountApplied
   } = useCartStore();
   const { validatePromoCode } = usePromoCodeStore();
   const [activeTab, setActiveTab] = useState('cart');
@@ -386,7 +389,52 @@ export default function CartPanel({ course, isDark, setActiveSection }) {
               </div>
 
               <div className="border-t border-primaryBlue/20 dark:border-primaryGreen/20 pt-6 mt-6">
+                {/* Referral Discount Section - 75% */}
+                {referralDiscountAvailable && (
+                  <div className="mb-6 p-5 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-[12px] border-2 border-green-500 dark:border-green-600">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-green-500 dark:bg-green-600 rounded-[10px]">
+                          <Gift size={18} className="text-white" />
+                        </div>
+                        <div>
+                          <p className="text-xs text-green-700 dark:text-green-300 mb-0.5 font-semibold">Dostępna zniżka polecająca</p>
+                          <span className="text-xl font-bold text-green-600 dark:text-green-400">
+                            75% ZNIŻKI
+                          </span>
+                        </div>
+                      </div>
+                      {isReferralDiscountApplied() ? (
+                        <button
+                          onClick={removeReferralDiscount}
+                          className="p-2 hover:bg-green-100 dark:hover:bg-green-900/30 rounded-[10px] transition-all duration-200"
+                          title="Usuń zniżkę"
+                        >
+                          <X size={18} className="text-green-600 dark:text-green-400" />
+                        </button>
+                      ) : (
+                        <button
+                          onClick={applyReferralDiscount}
+                          className="px-5 py-2.5 bg-green-500 dark:bg-green-600 hover:bg-green-600 dark:hover:bg-green-700 text-white rounded-[12px] font-semibold transition-all duration-200 shadow-md hover:shadow-lg flex items-center gap-2"
+                        >
+                          <Gift size={16} />
+                          <span>Zastosuj</span>
+                        </button>
+                      )}
+                    </div>
+                    {isReferralDiscountApplied() && (
+                      <div className="mt-3 pt-3 border-t border-green-300 dark:border-green-700">
+                        <p className="text-xs text-green-700 dark:text-green-300 flex items-center gap-1">
+                          <Check size={14} />
+                          Zniżka polecająca 75% jest aktywna
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 {/* Promo Code Section */}
+                {!isReferralDiscountApplied() && (
                 <div className="mb-6 p-5 bg-gradient-to-br from-primaryBlue/5 to-primaryGreen/5 dark:from-primaryBlue/10 dark:to-primaryGreen/10 rounded-[12px] border border-primaryBlue/20 dark:border-primaryGreen/20">
                   {appliedPromoCode ? (
                     <div className="flex items-center justify-between">
@@ -439,6 +487,7 @@ export default function CartPanel({ course, isDark, setActiveSection }) {
                     </div>
                   )}
                 </div>
+                )}
 
                 {/* Price Summary */}
                 <div className="mb-6 p-5 bg-white dark:bg-DarkblackText rounded-[12px] border border-primaryBlue/10 dark:border-primaryGreen/10 shadow-sm">
@@ -447,7 +496,13 @@ export default function CartPanel({ course, isDark, setActiveSection }) {
                       <span>Suma częściowa:</span>
                       <span className="font-medium text-blackText dark:text-white">{totalPrice.toFixed(2)} zł</span>
                     </div>
-                    {appliedPromoCode && discount > 0 && (
+                    {isReferralDiscountApplied() && discount > 0 && (
+                      <div className="flex items-center justify-between text-sm text-green-600 dark:text-green-400">
+                        <span>Zniżka polecająca (75%):</span>
+                        <span className="font-semibold">-{discount.toFixed(2)} zł</span>
+                      </div>
+                    )}
+                    {appliedPromoCode && !isReferralDiscountApplied() && discount > 0 && (
                       <div className="flex items-center justify-between text-sm text-green-600 dark:text-green-400">
                         <span>Zniżka ({appliedPromoCode.code}):</span>
                         <span className="font-semibold">-{discount.toFixed(2)} zł</span>

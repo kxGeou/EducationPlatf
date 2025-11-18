@@ -248,3 +248,4 @@ export const generateReceiptPDF = (purchase, userData = null, courseTitles = [])
 
 
 
+

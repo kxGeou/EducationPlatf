@@ -119,8 +119,12 @@ function ReSection({ ReSection, Color, activeDropdown, setActiveDropdown }) {
 function DropdownButton({ title, options, color, dropdownKey, activeDropdown, setActiveDropdown }) {
   const isOpen = activeDropdown === dropdownKey;
 
-  const toggleDropdown = () => {
-    setActiveDropdown(isOpen ? null : dropdownKey);
+  const handleMouseEnter = () => {
+    setActiveDropdown(dropdownKey);
+  };
+
+  const handleMouseLeave = () => {
+    setActiveDropdown(null);
   };
 
   const handleSelect = (pdfUrl) => {
@@ -129,18 +133,25 @@ function DropdownButton({ title, options, color, dropdownKey, activeDropdown, se
   };
 
   return (
-    <div className="relative">
+    <div 
+      className="relative"
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
       <button
-        onClick={toggleDropdown}
         className="cursor-pointer w-full transition-all duration-300 hover:scale-[1.05] text-white flex items-center justify-center px-8 py-3 rounded-[12px]"
         style={{ background: color }}
       >
         {title}
       </button>
       {isOpen && (
-        <div
+        <motion.div
           className="absolute z-20 mt-2 w-full rounded-[12px] shadow-lg"
           style={{ background: color }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
         >
           {options.map((opt, idx) => (
             <button
@@ -151,7 +162,7 @@ function DropdownButton({ title, options, color, dropdownKey, activeDropdown, se
               {opt.label}
             </button>
           ))}
-        </div>
+        </motion.div>
       )}
     </div>
   );

@@ -8,6 +8,7 @@ export const useCartStore = create(
     (set, get) => ({
       items: [], // Array of { packageId, packageData }
       appliedPromoCode: null, // { code, discount_amount_cents, discount_type, discount_value }
+      referralDiscountApplied: false, // Whether 75% referral discount is being used
 
       addItem: (packageId, packageData, coursePackages = []) => {
         const { items } = get();
@@ -57,7 +58,7 @@ export const useCartStore = create(
       },
 
       clearCart: () => {
-        set({ items: [], appliedPromoCode: null });
+        set({ items: [], appliedPromoCode: null, referralDiscountApplied: false });
       },
 
       getItems: () => {
@@ -79,7 +80,14 @@ export const useCartStore = create(
       },
 
       getPromoDiscount: () => {
-        const { appliedPromoCode, items } = get();
+        const { appliedPromoCode, referralDiscountApplied, items } = get();
+        
+        // If referral discount (75%) is applied, use it instead of promo code
+        if (referralDiscountApplied) {
+          const total = items.reduce((sum, item) => sum + item.packageData.price_cents, 0);
+          return total * 0.75; // 75% discount
+        }
+        
         if (!appliedPromoCode) return 0;
 
         // Jeśli mamy już obliczoną discount_amount_cents z Edge Function, użyjmy jej (ale konwertujmy z groszy na złote)
@@ -102,6 +110,29 @@ export const useCartStore = create(
         const total = get().getTotalPrice();
         const discount = get().getPromoDiscount();
         return Math.max(0, total - discount);
+      },
+
+      // Referral discount functions
+      applyReferralDiscount: () => {
+        const { referralDiscountAvailable } = useAuthStore.getState();
+        if (referralDiscountAvailable) {
+          // Remove any applied promo code when applying referral discount
+          set({ referralDiscountApplied: true, appliedPromoCode: null });
+          toast.success("Zniżka polecająca 75% została zastosowana!");
+          return true;
+        } else {
+          toast.error("Nie masz dostępnej zniżki polecającej");
+          return false;
+        }
+      },
+
+      removeReferralDiscount: () => {
+        set({ referralDiscountApplied: false });
+        toast.info("Zniżka polecająca została usunięta");
+      },
+
+      isReferralDiscountApplied: () => {
+        return get().referralDiscountApplied;
       },
 
       getItemCount: () => {
@@ -152,6 +183,7 @@ export const useCartStore = create(
       partialize: (state) => ({
         items: state.items,
         appliedPromoCode: state.appliedPromoCode,
+        referralDiscountApplied: state.referralDiscountApplied,
       }),
     }
   )

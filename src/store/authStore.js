@@ -16,6 +16,10 @@ export const useAuthStore = create(
       userPointsEarned: {}, 
       error: null,
       initialized: false,
+      referralCode: null,
+      referralDiscountAvailable: false,
+      referralUsedBy: null,
+      referredBy: null,
 
       setUser: (user) => set({ user }),
 
@@ -23,18 +27,29 @@ export const useAuthStore = create(
         try {
           const { data, error } = await supabase
             .from("users")
-            .select("purchased_courses, points, matura_date")
+            .select("purchased_courses, points, matura_date, referral_discount_available, referred_by_user_id")
             .eq("id", userId)
             .single();
 
           if (error) throw error;
+
           set({ 
             purchasedCourses: data?.purchased_courses || [],
             userPoints: data?.points || 0,
-            maturaDate: data?.matura_date || null
+            maturaDate: data?.matura_date || null,
+            referralDiscountAvailable: data?.referral_discount_available || false,
+            referredBy: data?.referred_by_user_id || null,
+            // referralCode and referralUsedBy are fetched separately in fetchReferralData
           });
         } catch (err) {
-          set({ purchasedCourses: [], userPoints: 0, maturaDate: null, error: err.message });
+          set({ 
+            purchasedCourses: [], 
+            userPoints: 0, 
+            maturaDate: null, 
+            referralDiscountAvailable: false,
+            referredBy: null,
+            error: err.message 
+          });
         }
       },
 
@@ -275,6 +290,7 @@ export const useAuthStore = create(
 
             set({ user: session.user });
             await get().fetchUserData(session.user.id);
+            await get().fetchReferralData();
             await get().fetchUserProgress(session.user.id);
             await get().fetchUserFlashcards(session.user.id);
             // Ensure free sections are granted to all users
@@ -353,6 +369,7 @@ export const useAuthStore = create(
 
               set({ user: session.user });
               await get().fetchUserData(session.user.id);
+              await get().fetchReferralData();
               await get().fetchUserProgress(session.user.id);
               await get().fetchUserFlashcards(session.user.id);
               // Ensure free sections are granted to all users
@@ -503,6 +520,7 @@ export const useAuthStore = create(
 
           set({ user: data.user });
           await get().fetchUserData(data.user.id);
+          await get().fetchReferralData();
           await get().fetchUserProgress(data.user.id);
           await get().fetchUserFlashcards(data.user.id);
           // Ensure free sections are granted to all users
@@ -789,6 +807,119 @@ export const useAuthStore = create(
           }
         } catch (_) {
           // Silent fail to avoid interrupting auth flows
+        }
+      },
+
+      // Generate referral code for user
+      generateReferralCode: async () => {
+        const { user } = get();
+        if (!user) {
+          toast.error("Musisz być zalogowany");
+          return false;
+        }
+
+        set({ loading: true, error: null });
+        try {
+          const { data: { session } } = await supabase.auth.getSession();
+          
+          if (!session) {
+            throw new Error('Brak sesji. Zaloguj się ponownie.');
+          }
+
+          const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://gkvjdemszxjmtxvxlnmr.supabase.co';
+          
+          const response = await fetch(
+            `${supabaseUrl}/functions/v1/generate-referral-code`,
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${session.access_token}`,
+              },
+              body: JSON.stringify({
+                user_id: user.id
+              })
+            }
+          );
+
+          const data = await response.json();
+
+          if (!response.ok) {
+            throw new Error(data.error || data.message || 'Błąd generowania kodu');
+          }
+
+          // Wait a bit for database to update
+          await new Promise(resolve => setTimeout(resolve, 500));
+          await get().fetchReferralData();
+
+          if (data.already_created) {
+            toast.info("Masz już wygenerowany kod polecający.");
+          } else {
+            toast.success("Kod polecający został wygenerowany!");
+          }
+          set({ loading: false });
+          return true;
+        } catch (err) {
+          console.error('Error generating referral code:', err);
+          toast.error(err.message || "Błąd generowania kodu polecającego");
+          set({ error: err.message, loading: false });
+          return false;
+        }
+      },
+
+      // Fetch referral data (code, discount status, etc.)
+      fetchReferralData: async () => {
+        const { user } = get();
+        if (!user) {
+          console.log("fetchReferralData: No user found");
+          return;
+        }
+
+        try {
+          console.log("fetchReferralData: Fetching for user:", user.id);
+          
+          const [promoCodeRes, userRes] = await Promise.all([
+            supabase
+              .from("user_promo_codes")
+              .select("code, used_by_user_id, used_by_display_name, used_at")
+              .eq("user_id", user.id)
+              .maybeSingle(),
+            supabase
+              .from("users")
+              .select("referral_discount_available, referred_by_user_id")
+              .eq("id", user.id)
+              .single()
+          ]);
+
+          console.log("fetchReferralData: promoCodeRes:", promoCodeRes);
+          console.log("fetchReferralData: userRes:", userRes);
+
+          if (promoCodeRes.error) {
+            console.error("fetchReferralData: Error fetching promo code:", promoCodeRes.error);
+            throw promoCodeRes.error;
+          }
+          if (userRes.error) {
+            console.error("fetchReferralData: Error fetching user:", userRes.error);
+            throw userRes.error;
+          }
+
+          const codeRow = promoCodeRes.data;
+          const userRow = userRes.data;
+          
+          console.log("fetchReferralData: codeRow:", codeRow);
+          console.log("fetchReferralData: userRow:", userRow);
+          
+          const newState = {
+            referralCode: codeRow?.code || null,
+            referralUsedBy: codeRow?.used_by_display_name || null,
+            referralDiscountAvailable: userRow?.referral_discount_available || false,
+            referredBy: userRow?.referred_by_user_id || null,
+          };
+          
+          console.log("fetchReferralData: Setting state:", newState);
+          set(newState);
+        } catch (err) {
+          console.error("Error fetching referral data:", err);
         }
       },
     }),

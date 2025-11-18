@@ -13,6 +13,7 @@ import Leaderboard from "./Leaderboard";
 import Rewards from "./Rewards";
 import UserData from "./UserData";
 import Dashboard from "./Dashboard";
+import ReferralPanel from "./ReferralPanel";
 
 const videoResources = [
   {
@@ -301,6 +302,9 @@ function CourseList({ activePage, setActivePage, setTutorialVisible, tutorialVis
 
               {/* NAGRODY */}
               {activePage === "rewards" && <Rewards />}
+
+              {/* KOD POLECAJĄCY */}
+              {activePage === "referral" && <ReferralPanel />}
 
               {/* PROFIL */}
               {activePage === "profile" && <UserData />}

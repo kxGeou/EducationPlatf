@@ -20,6 +20,7 @@ import {
   Gift,
   Star,
   LayoutDashboard,
+  UserPlus,
 } from "lucide-react";
 import React, { useState, useEffect } from "react";
 
@@ -170,6 +171,16 @@ function Navigation({
                 >
                   <Gift size={20} />
                   Nagrody
+                </span>
+                <span
+                  onClick={() => setActivePage("referral")}
+                  className={`cursor-pointer flex items-center gap-2 transition-discrete duration-200 ${
+                    activePage === "referral" &&
+                    "border-l-6 px-2 border-secondaryBlue text-secondaryBlue dark:border-primaryGreen dark:text-primaryGreen"
+                  }`}
+                >
+                  <UserPlus size={20} />
+                  Kod polecający
                 </span>
               </div>
             </div>
@@ -326,6 +337,15 @@ function Navigation({
                   }`}
                 >
                   <Gift size={22} />
+                </span>
+                <span
+                  onClick={() => setActivePage("referral")}
+                  className={`cursor-pointer ${
+                    activePage === "referral" &&
+                    "text-secondaryBlue dark:text-primaryGreen"
+                  }`}
+                >
+                  <UserPlus size={22} />
                 </span>
               </div>
             </div>
@@ -532,6 +552,18 @@ function Navigation({
               }`}
             >
               <Gift size={20} /> Nagrody
+            </span>
+            <span
+              onClick={() => {
+                setActivePage("referral");
+                setMobileOpen(false);
+              }}
+              className={`cursor-pointer flex items-center gap-2 ${
+                activePage === "referral" &&
+                "text-secondaryBlue dark:text-primaryGreen"
+              }`}
+            >
+              <UserPlus size={20} /> Kod polecający
             </span>
           </div>
 
