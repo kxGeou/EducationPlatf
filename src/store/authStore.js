@@ -20,7 +20,6 @@ export const useAuthStore = create(
       referralDiscountAvailable: false,
       referralUsedBy: null,
       referredBy: null,
-      sessionBlocked: false, // Flaga zapobiegająca automatycznemu ustawieniu użytkownika przy blokadzie sesji
 
       setUser: (user) => set({ user }),
 
@@ -330,18 +329,8 @@ export const useAuthStore = create(
         }
 
         supabase.auth.onAuthStateChange(async (_event, session) => {
-          // Sprawdź czy sesja jest zablokowana - jeśli tak, nie ustawiaj użytkownika
-          if (get().sessionBlocked) {
-            return;
-          }
-
           if (session?.user) {
             setTimeout(async () => {
-              // Sprawdź czy sesja nie została zablokowana w międzyczasie
-              if (get().sessionBlocked) {
-                return;
-              }
-
               // Sprawdź ważność sesji w bazie danych
               const sessionToken = localStorage.getItem('session_token');
               
@@ -358,28 +347,20 @@ export const useAuthStore = create(
                 return;
               }
 
-              // Sprawdź czy sesja jest aktywna (ostatnia aktywność w ciągu 2 godzin)
-              const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
+              // Sprawdź czy sesja istnieje w bazie
               const { data: sessionData, error: sessionError } = await supabase
                 .from('user_sessions')
                 .select('*')
                 .eq('session_token', sessionToken)
                 .eq('is_active', true)
-                .gt('last_activity', twoHoursAgo)
                 .single();
 
               if (sessionError || !sessionData) {
-                // Sesja została usunięta lub wygasła
-                // Sprawdź czy sesja była aktywna (token istnieje, ale sesja nie) - oznacza to wylogowanie z innego urządzenia
-                const sessionWasDeleted = sessionToken && sessionError?.code === 'PGRST116'; // PGRST116 = no rows returned
-                
-                if (sessionWasDeleted && session?.user?.id) {
-                  // Sesja została usunięta z innego urządzenia - pokaż powiadomienie
-                  toast.warning("Zostałeś wylogowany z tego urządzenia, ponieważ zalogowano się na innym urządzeniu.");
-                }
-                
-                // Usuń wszystkie sesje tego użytkownika z bazy (jeśli jeszcze jakieś są)
+                // Sesja została usunięta - wylogowanie z innego urządzenia
                 if (session?.user?.id) {
+                  toast.warning("Zostałeś wylogowany z tego urządzenia, ponieważ zalogowano się na innym urządzeniu.");
+                  
+                  // Usuń wszystkie sesje tego użytkownika z bazy
                   await supabase
                     .from('user_sessions')
                     .delete()
@@ -409,19 +390,13 @@ export const useAuthStore = create(
               await get().fetchReferralData();
               await get().fetchUserProgress(session.user.id);
               await get().fetchUserFlashcards(session.user.id);
-              // Ensure free sections are granted to all users
               await get().grantFreeSectionsToUser();
               
-              // Check if courses should be cleaned up (in June of matura year)
               if (get().shouldCleanupCourses()) {
                 await get().cleanupPurchasedCourses();
               }
             }, 100); 
           } else {
-            // Gdy session jest null, sprawdź czy to nie jest z powodu blokady sesji
-            if (get().sessionBlocked) {
-              return;
-            }
             set({
               user: null,
               purchasedCourses: [],
@@ -467,9 +442,12 @@ export const useAuthStore = create(
         }
       },
 
-      login: async ({ email, password }) => {
+      login: async ({ email, password, confirmPassword }) => {
         set({ loading: true, error: null });
         try {
+          // Jeśli podano hasło dwa razy, usuń wszystkie sesje przed logowaniem
+          const shouldLogoutAllSessions = confirmPassword && password === confirmPassword;
+          
           // Najpierw spróbuj zalogować się aby uzyskać user_id
           const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
             email,
@@ -488,78 +466,11 @@ export const useAuthStore = create(
             return false;
           }
 
-          // Wyczyść nieaktywne sesje użytkownika (starsze niż 2 godziny)
-          const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
-          
-          // Usuń nieaktywne sesje (starsze niż 2h)
+          // USUŃ WSZYSTKIE SESJE tego użytkownika (zarówno aktywne jak i nieaktywne)
           await supabase
             .from('user_sessions')
             .delete()
-            .eq('user_id', authData.user.id)
-            .lt('last_activity', twoHoursAgo);
-
-          // Sprawdź czy są jeszcze aktywne sesje (z ostatnich 2 godzin)
-          const { data: activeSessions, error: sessionError } = await supabase
-            .from('user_sessions')
-            .select('*')
-            .eq('user_id', authData.user.id)
-            .gt('last_activity', twoHoursAgo)
-            .order('last_activity', { ascending: false });
-
-
-          // Limit równoległych sesji: maksymalnie 2
-          const MAX_SESSIONS = 2;
-          const activeSessionsCount = activeSessions?.length || 0;
-
-          // Jeśli jest już maksymalna liczba sesji, zwróć informację o aktywnych sesjach
-          if (!sessionError && activeSessionsCount >= MAX_SESSIONS) {
-            // Ustaw flagę blokady sesji PRZED signOut
-            set({ sessionBlocked: true });
-            
-            // Wyloguj użytkownika z Supabase Auth, żeby nie było automatycznego przekierowania
-            await supabase.auth.signOut();
-            
-            // Przygotuj informacje o sesjach do wyświetlenia
-            const sessionsInfo = activeSessions.map(session => {
-              let deviceInfo = {};
-              try {
-                deviceInfo = session.device_info ? JSON.parse(session.device_info) : {};
-              } catch (e) {
-                // Ignoruj błędy parsowania
-              }
-              
-              return {
-                sessionToken: session.session_token,
-                deviceType: deviceInfo.deviceType || 'desktop',
-                userAgent: session.user_agent || deviceInfo.userAgent || 'Unknown',
-                lastActivity: session.last_activity,
-                createdAt: session.created_at
-              };
-            });
-
-            set({ loading: false });
-            return {
-              blocked: true,
-              reason: 'max_sessions_reached',
-              activeSessions: sessionsInfo,
-              userId: authData.user.id,
-              email: authData.user.email
-            };
-          }
-
-          const { data, error } = { data: authData, error: authError };
-
-          if (error) {
-            toast.error(error.message);
-            set({ error: error.message, loading: false });
-            return false;
-          }
-
-          if (!data.user) {
-            toast.error("Nie udało się zalogować.");
-            set({ loading: false });
-            return false;
-          }
+            .eq('user_id', authData.user.id);
 
           // Utwórz nową sesję
           const sessionToken = Math.random().toString(36).substring(2) + Date.now().toString(36);
@@ -572,7 +483,7 @@ export const useAuthStore = create(
           const { error: sessionCreateError } = await supabase
             .from('user_sessions')
             .insert({
-              user_id: data.user.id,
+              user_id: authData.user.id,
               session_token: sessionToken,
               device_info: JSON.stringify(deviceInfo),
               user_agent: deviceInfo.userAgent,
@@ -583,18 +494,16 @@ export const useAuthStore = create(
             localStorage.setItem('session_token', sessionToken);
           }
 
-          set({ user: data.user });
-          await get().fetchUserData(data.user.id);
+          set({ user: authData.user });
+          await get().fetchUserData(authData.user.id);
           await get().fetchReferralData();
-          await get().fetchUserProgress(data.user.id);
-          await get().fetchUserFlashcards(data.user.id);
-          // Ensure free sections are granted to all users
+          await get().fetchUserProgress(authData.user.id);
+          await get().fetchUserFlashcards(authData.user.id);
           await get().grantFreeSectionsToUser();
           
-          // Initialize notifications for the logged-in user
           const { useNotificationStore } = await import('./notificationStore');
           const notificationStore = useNotificationStore.getState();
-          await notificationStore.fetchNotifications(data.user.id);
+          await notificationStore.fetchNotifications(authData.user.id);
           
           toast.success("Zalogowano pomyślnie.");
           set({ loading: false });
@@ -646,91 +555,6 @@ export const useAuthStore = create(
         }
       },
 
-      // Wyloguj konkretną sesję (używane przy wyborze sesji do wylogowania)
-      logoutSession: async (sessionToken) => {
-        try {
-          const { error } = await supabase
-            .from('user_sessions')
-            .delete()
-            .eq('session_token', sessionToken);
-
-          if (error) {
-            return false;
-          }
-
-          return true;
-        } catch (err) {
-          return false;
-        }
-      },
-
-      // Kontynuuj logowanie po wylogowaniu wybranej sesji
-      continueLoginAfterSessionLogout: async ({ email, password, loggedOutSessionToken }) => {
-        // Wyczyść flagę blokady sesji
-        set({ sessionBlocked: false, loading: true, error: null });
-        try {
-          // Najpierw zaloguj się ponownie (sesja mogła wygasnąć)
-          const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-            email,
-            password,
-          });
-
-          if (authError || !authData.user) {
-            toast.error(authError?.message || "Nie udało się zalogować.");
-            set({ error: authError?.message || "Nie udało się zalogować.", loading: false });
-            return false;
-          }
-
-          // Wyczyść nieaktywne sesje (starsze niż 2 godziny)
-          const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
-          await supabase
-            .from('user_sessions')
-            .delete()
-            .eq('user_id', authData.user.id)
-            .lt('last_activity', twoHoursAgo);
-
-          // Utwórz nową sesję
-          const sessionToken = Math.random().toString(36).substring(2) + Date.now().toString(36);
-          const deviceInfo = {
-            userAgent: navigator.userAgent,
-            deviceType: /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ? 'mobile' : 'desktop',
-            timestamp: new Date().toISOString()
-          };
-
-          const { error: sessionCreateError } = await supabase
-            .from('user_sessions')
-            .insert({
-              user_id: authData.user.id,
-              session_token: sessionToken,
-              device_info: JSON.stringify(deviceInfo),
-              user_agent: deviceInfo.userAgent,
-              is_active: true
-            });
-
-          if (!sessionCreateError) {
-            localStorage.setItem('session_token', sessionToken);
-          }
-
-          set({ user: authData.user });
-          await get().fetchUserData(authData.user.id);
-          await get().fetchReferralData();
-          await get().fetchUserProgress(authData.user.id);
-          await get().fetchUserFlashcards(authData.user.id);
-          await get().grantFreeSectionsToUser();
-          
-          const { useNotificationStore } = await import('./notificationStore');
-          const notificationStore = useNotificationStore.getState();
-          await notificationStore.fetchNotifications(authData.user.id);
-          
-          toast.success("Zalogowano pomyślnie.");
-          set({ loading: false });
-          return true;
-        } catch (err) {
-          toast.error("Wystąpił błąd. Spróbuj ponownie.");
-          set({ error: err.message, loading: false });
-          return false;
-        }
-      },
 
       resetPassword: async (email) => {
         set({ loading: true, error: null });
