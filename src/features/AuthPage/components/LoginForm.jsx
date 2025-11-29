@@ -28,7 +28,7 @@ export default function LoginForm() {
   const [sessionModalOpen, setSessionModalOpen] = useState(false)
   const [blockedSessionData, setBlockedSessionData] = useState(null)
   const [loginCredentials, setLoginCredentials] = useState({ email: '', password: '' })
-  const loginUser = useAuthStore((state) => state.login)
+  const loginUser = useAuthStore((state) => state.login) 
   const user = useAuthStore((state) => state.user)
 
   // Handle navigation when user is already logged in
@@ -58,8 +58,15 @@ export default function LoginForm() {
     const result = await loginUser({ email, password })
     setLoading(false)
 
+    console.log('📥 Login result:', result);
+    console.log('📥 Result type:', typeof result);
+    console.log('📥 Is object?', typeof result === 'object');
+    console.log('📥 Has blocked?', result && result.blocked);
+    console.log('📥 Reason?', result && result.reason);
+
     // Sprawdź czy logowanie zostało zablokowane z powodu limitu sesji
     if (result && typeof result === 'object' && result.blocked && result.reason === 'max_sessions_reached') {
+      console.log('🚫 Session limit reached, showing modal with sessions:', result.activeSessions);
       setBlockedSessionData(result)
       setSessionModalOpen(true)
       return

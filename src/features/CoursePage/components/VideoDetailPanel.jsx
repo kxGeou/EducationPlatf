@@ -312,9 +312,9 @@ export default function VideoDetailPanel({
                         isSelected 
                           ? 'text-primaryBlue dark:text-primaryGreen' 
                           : 'text-gray-900 dark:text-white'
-                      }`}>
-                        {sectionVideo.title}
-                      </h4>
+                    }`}>
+                      {sectionVideo.title}
+                    </h4>
                       {isWatched && videoHasAccess && (
                         <Check size={16} className="flex-shrink-0 text-green-500 dark:text-green-400 mt-0.5" />
                       )}
@@ -326,10 +326,10 @@ export default function VideoDetailPanel({
                         <span>{sectionVideo.duration || "?"} min</span>
                       </div>
                       {videoTasks.length > 0 && (
-                        <div className="flex items-center gap-1">
+                      <div className="flex items-center gap-1">
                           <FileText size={12} />
-                          <span>{videoTasks.length} zadań</span>
-                        </div>
+                        <span>{videoTasks.length} zadań</span>
+                      </div>
                       )}
                     </div>
                   </div>
@@ -347,16 +347,16 @@ export default function VideoDetailPanel({
             {/* Nagłówek */}
             <div className="p-4 border-b border-gray-200 dark:border-DarkblackBorder">
               <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-2">
-                {video.title}
-              </h2>
+                  {video.title}
+                </h2>
               <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
-                <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1">
                   <Clock size={16} />
-                  <span>{video.duration || "?"} min</span>
-                </div>
-                <div className="flex items-center gap-1">
+                    <span>{video.duration || "?"} min</span>
+                  </div>
+                  <div className="flex items-center gap-1">
                   <FileText size={16} />
-                  <span>{tasks.length} zadań</span>
+                    <span>{tasks.length} zadań</span>
                 </div>
               </div>
             </div>

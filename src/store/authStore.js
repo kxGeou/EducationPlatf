@@ -20,6 +20,7 @@ export const useAuthStore = create(
       referralDiscountAvailable: false,
       referralUsedBy: null,
       referredBy: null,
+      sessionBlocked: false, // Flaga zapobiegająca automatycznemu ustawieniu użytkownika przy blokadzie sesji
 
       setUser: (user) => set({ user }),
 
@@ -329,8 +330,20 @@ export const useAuthStore = create(
         }
 
         supabase.auth.onAuthStateChange(async (_event, session) => {
+          // Sprawdź czy sesja jest zablokowana - jeśli tak, nie ustawiaj użytkownika
+          if (get().sessionBlocked) {
+            console.log('🚫 Session blocked, ignoring onAuthStateChange');
+            return;
+          }
+
           if (session?.user) {
             setTimeout(async () => {
+              // Sprawdź czy sesja nie została zablokowana w międzyczasie
+              if (get().sessionBlocked) {
+                console.log('🚫 Session blocked during onAuthStateChange, ignoring');
+                return;
+              }
+
               // Sprawdź ważność sesji w bazie danych
               const sessionToken = localStorage.getItem('session_token');
               
@@ -505,6 +518,13 @@ export const useAuthStore = create(
           if (!sessionError && activeSessionsCount >= MAX_SESSIONS) {
             console.log(`🚫 User has ${activeSessionsCount} active sessions (max: ${MAX_SESSIONS}), need to logout one`);
             
+            // Ustaw flagę blokady sesji, żeby zapobiec automatycznemu ustawieniu użytkownika
+            set({ sessionBlocked: true });
+            
+            // Wyloguj użytkownika z Supabase Auth, żeby nie było automatycznego przekierowania
+            await supabase.auth.signOut();
+            console.log('🔓 Signed out from Supabase Auth to prevent auto-redirect');
+            
             // Przygotuj informacje o sesjach do wyświetlenia
             const sessionsInfo = activeSessions.map(session => {
               let deviceInfo = {};
@@ -521,6 +541,12 @@ export const useAuthStore = create(
                 lastActivity: session.last_activity,
                 createdAt: session.created_at
               };
+            });
+
+            console.log('📋 Returning blocked session data:', { 
+              blocked: true, 
+              sessionsCount: sessionsInfo.length,
+              sessions: sessionsInfo 
             });
 
             set({ loading: false });
@@ -680,7 +706,8 @@ export const useAuthStore = create(
 
       // Kontynuuj logowanie po wylogowaniu wybranej sesji
       continueLoginAfterSessionLogout: async ({ email, password, loggedOutSessionToken }) => {
-        set({ loading: true, error: null });
+        // Wyczyść flagę blokady sesji
+        set({ sessionBlocked: false, loading: true, error: null });
         try {
           // Najpierw zaloguj się ponownie (sesja mogła wygasnąć)
           const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
