@@ -414,6 +414,11 @@ export const useAuthStore = create(
               }
             }, 100); 
           } else {
+            // Gdy session jest null, sprawdź czy to nie jest z powodu blokady sesji
+            if (get().sessionBlocked) {
+              console.log('🚫 Session blocked, ignoring onAuthStateChange (session null)');
+              return;
+            }
             set({
               user: null,
               purchasedCourses: [],
@@ -518,10 +523,13 @@ export const useAuthStore = create(
           if (!sessionError && activeSessionsCount >= MAX_SESSIONS) {
             console.log(`🚫 User has ${activeSessionsCount} active sessions (max: ${MAX_SESSIONS}), need to logout one`);
             
-            // Ustaw flagę blokady sesji, żeby zapobiec automatycznemu ustawieniu użytkownika
+            // Ustaw flagę blokady sesji PRZED signOut, żeby zapobiec automatycznemu ustawieniu użytkownika
+            // To musi być synchroniczne, żeby onAuthStateChange nie wyczyścił stanu
             set({ sessionBlocked: true });
+            console.log('🚫 Session blocked flag set');
             
             // Wyloguj użytkownika z Supabase Auth, żeby nie było automatycznego przekierowania
+            // onAuthStateChange zostanie wywołane, ale sprawdzi flagę sessionBlocked i zignoruje
             await supabase.auth.signOut();
             console.log('🔓 Signed out from Supabase Auth to prevent auto-redirect');
             
@@ -550,13 +558,15 @@ export const useAuthStore = create(
             });
 
             set({ loading: false });
-            return {
+            const blockedResult = {
               blocked: true,
               reason: 'max_sessions_reached',
               activeSessions: sessionsInfo,
               userId: authData.user.id,
               email: authData.user.email
             };
+            console.log('📤 About to return blocked result:', blockedResult);
+            return blockedResult;
           }
 
           console.log(`✅ User has ${activeSessionsCount} active sessions, proceeding with login`);

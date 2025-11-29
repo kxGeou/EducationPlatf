@@ -89,58 +89,60 @@ export default function LoginForm() {
   }
 
   return (
-    <form
-      onSubmit={(e) => {
-        e.preventDefault()
-        onSubmit()
-      }}
-      className="flex flex-col justify-center items-center space-y-4 w-full"
-    >
-      <div className="w-full">
-        <label className="block text-sm font-medium mb-2">Email</label>
-        <input
-          type="email"
-          {...register('email')}
-          className="w-full p-2 border border-gray-300 dark:border-DarkblackBorder dark:bg-DarkblackBorder/50 rounded bg-gray-50 sm:bg-transparent"
-          placeholder="Wprowadź swój email"
-        />
-      </div>
-
-      <div className="w-full">
-        <label className="block text-sm font-medium mb-2">Hasło</label>
-        <div className="relative">
-          <input
-            type={showPassword ? 'text' : 'password'}
-            {...register('password')}
-            className="w-full p-2 pr-10 border border-gray-300 rounded bg-gray-50 sm:bg-transparent dark:border-DarkblackBorder dark:bg-DarkblackBorder/50"
-            placeholder="Podaj swoje hasło"
-          />
-          <button
-            type="button"
-            onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-          >
-            {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-          </button>
-        </div>
-      </div>
-
-      <button
-        type="submit"
-        disabled={loading}
-        className="w-full bg-primaryBlue dark:bg-primaryGreen dark:hover:bg-secondaryGreen text-white p-2 rounded hover:bg-secondaryBlue transition mt-4"
+    <>
+      <form
+        onSubmit={(e) => {
+          e.preventDefault()
+          onSubmit()
+        }}
+        className="flex flex-col justify-center items-center space-y-4 w-full"
       >
-        {loading ? 'Logowanie...' : 'Zaloguj się'}
-        
-      </button>
+        <div className="w-full">
+          <label className="block text-sm font-medium mb-2">Email</label>
+          <input
+            type="email"
+            {...register('email')}
+            className="w-full p-2 border border-gray-300 dark:border-DarkblackBorder dark:bg-DarkblackBorder/50 rounded bg-gray-50 sm:bg-transparent"
+            placeholder="Wprowadź swój email"
+          />
+        </div>
 
-      <p className="text-sm text-center mt-2">
-  <a href="/update-password" className="text-primaryBlue hover:underline">
-    Zapomniałeś hasła?
-  </a>
-</p>
+        <div className="w-full">
+          <label className="block text-sm font-medium mb-2">Hasło</label>
+          <div className="relative">
+            <input
+              type={showPassword ? 'text' : 'password'}
+              {...register('password')}
+              className="w-full p-2 pr-10 border border-gray-300 rounded bg-gray-50 sm:bg-transparent dark:border-DarkblackBorder dark:bg-DarkblackBorder/50"
+              placeholder="Podaj swoje hasło"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+            >
+              {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+            </button>
+          </div>
+        </div>
 
-      {/* Modal wyboru sesji */}
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full bg-primaryBlue dark:bg-primaryGreen dark:hover:bg-secondaryGreen text-white p-2 rounded hover:bg-secondaryBlue transition mt-4"
+        >
+          {loading ? 'Logowanie...' : 'Zaloguj się'}
+          
+        </button>
+
+        <p className="text-sm text-center mt-2">
+    <a href="/update-password" className="text-primaryBlue hover:underline">
+      Zapomniałeś hasła?
+    </a>
+  </p>
+      </form>
+
+      {/* Modal wyboru sesji - poza formularzem */}
       {sessionModalOpen && blockedSessionData && (
         <SessionSelectionModal
           isOpen={sessionModalOpen}
@@ -150,6 +152,6 @@ export default function LoginForm() {
           password={loginCredentials.password}
         />
       )}
-    </form>
+    </>
   )
 }
