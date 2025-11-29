@@ -16,10 +16,7 @@ export default function SessionSelectionModal({
   const continueLogin = useAuthStore((state) => state.continueLoginAfterSessionLogout);
   const toast = useToast();
 
-  console.log('🎭 SessionSelectionModal render:', { isOpen, activeSessionsCount: activeSessions?.length });
-
   if (!isOpen) {
-    console.log('🎭 Modal not open, returning null');
     return null;
   }
 

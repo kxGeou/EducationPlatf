@@ -58,15 +58,8 @@ export default function LoginForm() {
     const result = await loginUser({ email, password })
     setLoading(false)
 
-    console.log('📥 Login result:', result);
-    console.log('📥 Result type:', typeof result);
-    console.log('📥 Is object?', typeof result === 'object');
-    console.log('📥 Has blocked?', result && result.blocked);
-    console.log('📥 Reason?', result && result.reason);
-
     // Sprawdź czy logowanie zostało zablokowane z powodu limitu sesji
     if (result && typeof result === 'object' && result.blocked && result.reason === 'max_sessions_reached') {
-      console.log('🚫 Session limit reached, showing modal with sessions:', result.activeSessions);
       setBlockedSessionData(result)
       setSessionModalOpen(true)
       return
