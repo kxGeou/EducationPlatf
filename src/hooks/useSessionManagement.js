@@ -30,7 +30,7 @@ export const useSessionManagement = () => {
         .select('*')
         .eq('user_id', userId)
         .eq('is_active', true)
-        .gt('last_activity', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()) // ostatnie 24h
+        .gt('last_activity', new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString()) // ostatnie 2h
         .order('last_activity', { ascending: false });
 
       if (error) {
@@ -98,17 +98,16 @@ export const useSessionManagement = () => {
     }
   }, []);
 
-  // Kończenie wszystkich sesji użytkownika
+  // Usuwanie wszystkich sesji użytkownika z bazy
   const endAllUserSessions = useCallback(async (userId) => {
     try {
       const { error } = await supabase
         .from('user_sessions')
-        .update({ is_active: false })
-        .eq('user_id', userId)
-        .eq('is_active', true);
+        .delete()
+        .eq('user_id', userId);
 
       if (error) {
-        console.error('Błąd kończenia sesji:', error);
+        console.error('Błąd usuwania sesji:', error);
         return false;
       }
 
@@ -116,44 +115,43 @@ export const useSessionManagement = () => {
       localStorage.removeItem('session_token');
       return true;
     } catch (err) {
-      console.error('Błąd kończenia sesji:', err);
+      console.error('Błąd usuwania sesji:', err);
       return false;
     }
   }, []);
 
-  // Kończenie konkretnej sesji
+  // Usuwanie konkretnej sesji z bazy
   const endSession = useCallback(async (sessionToken) => {
     try {
       const { error } = await supabase
         .from('user_sessions')
-        .update({ is_active: false })
+        .delete()
         .eq('session_token', sessionToken);
 
       if (error) {
-        console.error('Błąd kończenia sesji:', error);
+        console.error('Błąd usuwania sesji:', error);
         return false;
       }
 
       localStorage.removeItem('session_token');
       return true;
     } catch (err) {
-      console.error('Błąd kończenia sesji:', err);
+      console.error('Błąd usuwania sesji:', err);
       return false;
     }
   }, []);
 
-  // Wymuszenie wylogowania innych sesji (dla nowego logowania)
+  // Usuwanie innych sesji użytkownika z bazy (dla nowego logowania)
   const forceLogoutOtherSessions = useCallback(async (userId, currentSessionToken) => {
     try {
       const { error } = await supabase
         .from('user_sessions')
-        .update({ is_active: false })
+        .delete()
         .eq('user_id', userId)
-        .neq('session_token', currentSessionToken)
-        .eq('is_active', true);
+        .neq('session_token', currentSessionToken);
 
       if (error) {
-        console.error('Błąd wymuszania wylogowania:', error);
+        console.error('Błąd usuwania innych sesji:', error);
         return false;
       }
 
@@ -177,7 +175,7 @@ export const useSessionManagement = () => {
         .select('*')
         .eq('session_token', sessionToken)
         .eq('is_active', true)
-        .gt('last_activity', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
+        .gt('last_activity', new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString()) // ostatnie 2h
         .single();
 
       if (error || !data) {

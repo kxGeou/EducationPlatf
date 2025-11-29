@@ -20,6 +20,7 @@ import ContactPage from './features/ContactPage/ContactPage.jsx'
 import AdminPage from './features/AdminPage/AdminPage.jsx'
 import Regulations from './features/AuthPage/Regulations.jsx'
 import ExamPage from './features/ExamPage/ExamPage.jsx'
+import CalendarPage from './features/CalendarPage/CalendarPage.jsx'
 import { ToastProvider, useToast } from './context/ToastContext.jsx'
 import ToastContainer from './components/ui/ToastContainer.jsx'
 import FloatingNotificationBubble from './components/ui/FloatingNotificationBubble.jsx'
@@ -63,6 +64,7 @@ function AppContent({ isDark, setIsDark }) {
         <Route path='/zasoby' element={<TestResources isDark={isDark} setIsDark={setIsDark}/>} />
         <Route path='/admin' element={<AdminPage isDark={isDark} setIsDark={setIsDark}></AdminPage>}></Route>
         <Route path='/exam' element={<ExamPage isDark={isDark} setIsDark={setIsDark}></ExamPage>}></Route>
+        <Route path='/calendar' element={<CalendarPage isDark={isDark} setIsDark={setIsDark}></CalendarPage>}></Route>
         <Route path='/*' element={<WrongPage isDark={isDark} setIsDark={setIsDark} />} />
       </Routes>
       

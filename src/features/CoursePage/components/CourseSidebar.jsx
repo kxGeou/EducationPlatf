@@ -31,11 +31,17 @@ export default function CourseSidebar({
   setActiveSection,
   userDataModal,
   setUserDataModal,
+  showSidebar: externalShowSidebar,
+  setShowSidebar: externalSetShowSidebar,
 }) {
   const navigate = useNavigate();
-  const [showSidebar, setShowSidebar] = useState(true);
+  const [internalShowSidebar, setInternalShowSidebar] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const cartItemCount = useCartStore((state) => state.getItemCount());
+  
+  // Użyj zewnętrznego stanu jeśli jest przekazany, w przeciwnym razie użyj wewnętrznego
+  const showSidebar = externalShowSidebar !== undefined ? externalShowSidebar : internalShowSidebar;
+  const setShowSidebar = externalSetShowSidebar || setInternalShowSidebar;
 
   const menuItems = [
     { icon: <SearchCode size={20} />, label: "Informacje", key: "info" },

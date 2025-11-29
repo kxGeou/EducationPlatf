@@ -7,6 +7,7 @@ import { useToast } from '../../../context/ToastContext';
 import { Eye, EyeOff } from 'lucide-react'
 
 import { useAuthStore } from '../../../store/authStore';
+import SessionSelectionModal from './SessionSelectionModal';
 
 const loginSchema = z.object({
   email: z.string().email({ message: 'Niepoprawny adres email' }),
@@ -24,8 +25,11 @@ export default function LoginForm() {
   const navigate = useNavigate()
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
-  const loginUser = useAuthStore((state) => state.login) 
-  const user = useAuthStore((state) => state.user);
+  const [sessionModalOpen, setSessionModalOpen] = useState(false)
+  const [blockedSessionData, setBlockedSessionData] = useState(null)
+  const [loginCredentials, setLoginCredentials] = useState({ email: '', password: '' })
+  const loginUser = useAuthStore((state) => state.login)
+  const user = useAuthStore((state) => state.user)
 
   // Handle navigation when user is already logged in
   useEffect(() => {
@@ -49,13 +53,32 @@ export default function LoginForm() {
 
     setLoading(true)
     const { email, password } = getValues()
+    setLoginCredentials({ email, password })
 
-    const success = await loginUser({ email, password })
+    const result = await loginUser({ email, password })
     setLoading(false)
 
-    if (success) {
+    // Sprawdź czy logowanie zostało zablokowane z powodu limitu sesji
+    if (result && typeof result === 'object' && result.blocked && result.reason === 'max_sessions_reached') {
+      setBlockedSessionData(result)
+      setSessionModalOpen(true)
+      return
+    }
+
+    if (result === true) {
       navigate('/')
     }
+  }
+
+  const handleModalClose = () => {
+    setSessionModalOpen(false)
+    setBlockedSessionData(null)
+  }
+
+  const handleModalSuccess = () => {
+    setSessionModalOpen(false)
+    setBlockedSessionData(null)
+    navigate('/')
   }
 
   return (
@@ -64,7 +87,7 @@ export default function LoginForm() {
         e.preventDefault()
         onSubmit()
       }}
-      className="flex flex-col justify-center items-center space-y-4 w-full h-fit"
+      className="flex flex-col justify-center items-center space-y-4 w-full"
     >
       <div className="w-full">
         <label className="block text-sm font-medium mb-2">Email</label>
@@ -103,12 +126,23 @@ export default function LoginForm() {
         {loading ? 'Logowanie...' : 'Zaloguj się'}
         
       </button>
+
       <p className="text-sm text-center mt-2">
   <a href="/update-password" className="text-primaryBlue hover:underline">
     Zapomniałeś hasła?
   </a>
 </p>
 
+      {/* Modal wyboru sesji */}
+      {sessionModalOpen && blockedSessionData && (
+        <SessionSelectionModal
+          isOpen={sessionModalOpen}
+          onClose={handleModalClose}
+          activeSessions={blockedSessionData.activeSessions}
+          email={loginCredentials.email}
+          password={loginCredentials.password}
+        />
+      )}
     </form>
   )
 }

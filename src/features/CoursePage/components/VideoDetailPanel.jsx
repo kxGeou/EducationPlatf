@@ -1,6 +1,6 @@
 import { useAuthStore } from '../../../store/authStore';
 import useVideoStore from '../../../store/videoStore';
-import { ChevronLeft, Check, Clock, FileText, Send, Play, BookOpen, ChevronDown, ChevronUp, X, MessageSquare, Download, RefreshCw } from "lucide-react";
+import { ChevronLeft, Check, Clock, FileText, Send, Play, ChevronDown, X, MessageSquare, Download, RefreshCw, Lock, Video as VideoIcon } from "lucide-react";
 import { useState } from "react";
 import React from 'react';
 import { useParams } from "react-router-dom";
@@ -17,7 +17,9 @@ export default function VideoDetailPanel({
   onTabChange,
   onVideoSelect,
   onBackToSections,
-  HlsPlayer
+  HlsPlayer,
+  onNavigateToShop,
+  setShowSidebar
 }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [taskAnswers, setTaskAnswers] = useState({}); // Store answers for each task
@@ -193,32 +195,81 @@ export default function VideoDetailPanel({
     }
   }, [tasks, savedTaskAnswers]);
 
+  // Oblicz progress - ile filmów obejrzanych
+  const watchedCount = videosInSection.filter(v => userProgress[v.videoId]).length;
+  const totalVideos = videosInSection.length;
+  const progressText = `${watchedCount}/${totalVideos} rozdziałów`;
+
+  // Sprawdź czy użytkownik ma dostęp do sekcji
+  const sectionHasAccess = videosInSection.some(v => hasAccess(v));
+
+  // Funkcja do minimalizacji sidebara przy wyborze filmu
+  const handleVideoSelectWithSidebar = (sectionVideo) => {
+    if (setShowSidebar) {
+      setShowSidebar(false);
+    }
+    onVideoSelect(sectionVideo);
+  };
+
   return (
-    <div className="w-full h-full flex flex-col lg:flex-row gap-2 lg:gap-4">
+    <div className="w-full h-full flex flex-col lg:flex-row">
       {/* Lewy panel - Lista filmów i zadań */}
-      <div className="w-full lg:w-64 xl:w-72 2xl:w-80 flex flex-col h-64 lg:h-full  flex-shrink-0">
+      <div className="w-full lg:w-80 xl:w-96 flex flex-col h-full flex-shrink-0">
         {/* Nagłówek sekcji */}
-        <div className="p-3 lg:p-4 border-b border-gray-200 dark:border-gray-600">
-          <div className="flex items-center gap-2 mb-2">
+        <div className="p-4 border-b border-gray-200 dark:border-DarkblackBorder">
+          <div className="flex items-center gap-2 mb-3">
             <button
               onClick={onBackToSections}
-              className="flex items-center gap-1 text-secondaryBlue dark:text-secondaryGreen hover:underline cursor-pointer font-medium text-xs lg:text-sm"
+              className="flex items-center gap-1 text-secondaryBlue dark:text-secondaryGreen hover:underline cursor-pointer font-medium text-sm"
             >
-              <ChevronLeft size={14} />
-              <span className="hidden sm:inline">Powrót do sekcji</span>
-              <span className="sm:hidden">Powrót</span>
+              <ChevronLeft size={16} />
+              <span>Powrót do sekcji</span>
             </button>
           </div>
-          <h2 className="text-sm lg:text-base font-bold text-gray-800 dark:text-white truncate">
+          <h2 className="text-lg font-bold text-gray-800 dark:text-white mb-1">
             {selectedSection}
           </h2>
-          <p className="text-xs text-gray-600 dark:text-gray-400">
-            {videosInSection.length} filmów
+          <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+            {progressText}
           </p>
+
+          {/* Przyciski Video / Zadania */}
+          <div className="flex gap-2 mb-4">
+            <button
+              onClick={() => onTabChange('video')}
+              className={`flex-1 px-4 py-2 rounded-lg font-medium text-sm transition-all ${
+                activeTab === 'video'
+                  ? 'bg-primaryBlue dark:bg-primaryGreen text-white'
+                  : 'bg-gray-100 dark:bg-DarkblackBorder text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+              }`}
+            >
+              Video
+            </button>
+            <button
+              onClick={() => onTabChange('tasks')}
+              className={`flex-1 px-4 py-2 rounded-lg font-medium text-sm transition-all ${
+                activeTab === 'tasks'
+                  ? 'bg-primaryBlue dark:bg-primaryGreen text-white'
+                  : 'bg-gray-100 dark:bg-DarkblackBorder text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+              }`}
+            >
+              Zadania
+            </button>
+          </div>
+
+          {/* Przycisk Kup kurs - jeśli brak dostępu */}
+          {!sectionHasAccess && (
+            <button 
+              onClick={onNavigateToShop}
+              className="w-full bg-primaryBlue dark:bg-primaryGreen text-white py-2 px-4 rounded-lg font-medium hover:opacity-90 transition-opacity"
+            >
+              Kup kurs
+            </button>
+          )}
         </div>
 
         {/* Lista filmów */}
-        <div className="flex-1 overflow-y-auto p-2 lg:p-3 space-y-2">
+        <div className="flex-1 overflow-y-auto p-3 space-y-1.5">
           {videosInSection.map((sectionVideo, index) => {
             const isSelected = video?.videoId === sectionVideo.videoId;
             const isWatched = !!userProgress[sectionVideo.videoId];
@@ -227,57 +278,61 @@ export default function VideoDetailPanel({
             
             const videoStats = getVideoStats([sectionVideo.videoId]);
             const stats = videoStats[sectionVideo.videoId] || { total: 0, completed: 0, percentage: 0 };
-            const allTasksCompleted = stats.total > 0 && stats.completed === stats.total;
 
             return (
               <div
                 key={sectionVideo.videoId}
-                className={`p-2 lg:p-3 rounded-lg cursor-pointer border-gray-100 transition-all border dark:border-DarkblackText ${
+                className={`p-3 rounded-lg cursor-pointer transition-all duration-200 ${
                   isSelected 
-                    ? ' dark:border-primaryGreen/75 bg-primaryBlue text-white  dark:bg-DarkblackText' 
-                    : 'bg-white dark:bg-DarkblackText '
-                }`}
-                onClick={() => onVideoSelect(sectionVideo)}
+                    ? 'bg-primaryBlue/10 dark:bg-primaryGreen/20 shadow-sm' 
+                    : 'hover:bg-gray-50 dark:hover:bg-DarkblackBorder/50'
+                } ${!videoHasAccess ? 'opacity-60 cursor-not-allowed' : ''}`}
+                onClick={() => videoHasAccess && handleVideoSelectWithSidebar(sectionVideo)}
               >
-                <div className="flex items-start justify-between">
-                  <div className="flex-1 min-w-0">
-                    <h4 className={`font-semibold text-xs lg:text-sm mb-2 leading-tight ${
-                      isSelected ? 'text-white' : 'text-gray-900 dark:text-white'
-                    }`}>
-                      {sectionVideo.title}
-                    </h4>
-                    
-                    <div className={`flex items-center gap-2 lg:gap-3 text-xs mb-1 ${
-                      isSelected ? 'text-white/80' : 'text-gray-500 dark:text-gray-400'
-                    }`}>
-                      <div className="flex items-center gap-1">
-                        <Clock size={10} />
-                        <span>{sectionVideo.duration || "?"} min</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <FileText size={10} />
-                        <span>{videoTasks.length} zadań</span>
-                      </div>
-                    </div>
-
-                  </div>
-
-                  <div className="flex items-center justify-center">
-            
-                    {videoHasAccess && (
-                      <div className="flex items-center gap-3 mt-6 ">
-                        <input
-                          type="checkbox"
-                          id="watched"
-                          checked={isWatched}
-                          onChange={(e) => handleToggleWatched(video.videoId, e.target.checked)}
-                          className="h-5 w-5 cursor-pointer text-blue-600 rounded"
-                        />
-                      
-                      </div>
+                <div className="flex items-start gap-3">
+                  {/* Ikona */}
+                  <div className={`flex-shrink-0 mt-0.5 ${
+                    isSelected 
+                      ? 'text-primaryBlue dark:text-primaryGreen' 
+                      : videoHasAccess 
+                        ? 'text-gray-500 dark:text-gray-400' 
+                        : 'text-gray-300 dark:text-gray-600'
+                  }`}>
+                    {videoHasAccess ? (
+                      <VideoIcon size={18} strokeWidth={2} />
+                    ) : (
+                      <Lock size={18} strokeWidth={2} />
                     )}
                   </div>
-                  
+
+                  {/* Zawartość */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between gap-2 mb-1">
+                      <h4 className={`font-medium text-sm leading-tight ${
+                        isSelected 
+                          ? 'text-primaryBlue dark:text-primaryGreen' 
+                          : 'text-gray-900 dark:text-white'
+                      }`}>
+                        {sectionVideo.title}
+                      </h4>
+                      {isWatched && videoHasAccess && (
+                        <Check size={16} className="flex-shrink-0 text-green-500 dark:text-green-400 mt-0.5" />
+                      )}
+                    </div>
+                    
+                    <div className="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400">
+                      <div className="flex items-center gap-1">
+                        <Clock size={12} />
+                        <span>{sectionVideo.duration || "?"} min</span>
+                      </div>
+                      {videoTasks.length > 0 && (
+                        <div className="flex items-center gap-1">
+                          <FileText size={12} />
+                          <span>{videoTasks.length} zadań</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
             );
@@ -286,56 +341,28 @@ export default function VideoDetailPanel({
       </div>
 
       {/* Prawy panel - Video i zadania */}
-      <div className="flex-1 flex flex-col h-full lg:h-full min-w-0 bg-white rounded-lg max-h-[97vh] dark:bg-DarkblackText p-4">
+      <div className="flex-1 flex flex-col h-full min-w-0">
         {video ? (
           <>
-            {/* Nagłówek z zakładkami */}
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 lg:gap-0 mb-4 ">
-              <div className="flex bg-gray-100 dark:bg-DarkblackBorder rounded-lg p-1 w-full lg:w-auto">
-                <button
-                  onClick={() => onTabChange('tasks')}
-                  className={`flex items-center justify-center gap-1 lg:gap-2 flex-1 lg:flex-none px-3 lg:px-4 py-2 rounded-md text-sm font-medium transition-all ${
-                    activeTab === 'tasks'
-                      ? 'bg-white dark:bg-DarkblackText text-primaryBlue dark:text-primaryGreen shadow-sm'
-                      : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
-                  }`}
-                >
-                  <BookOpen size={14} />
-                  <span>Zadania ({tasks.length})</span>
-                </button>
-                <button
-                  onClick={() => onTabChange('video')}
-                  className={`flex items-center justify-center gap-1 lg:gap-2 flex-1 lg:flex-none px-3 lg:px-4 py-2 rounded-md text-sm font-medium transition-all ${
-                    activeTab === 'video'
-                      ? 'bg-white dark:bg-DarkblackText text-primaryBlue dark:text-primaryGreen shadow-sm'
-                      : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
-                  }`}
-                >
-                  <Play size={14} />
-                  <span>Film</span>
-                </button>
-              </div>
-
-              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
-                <h2 className="text-base lg:text-lg font-bold text-gray-800 dark:text-white truncate">
-                  {video.title}
-                </h2>
-                <div className="flex items-center gap-3 lg:gap-4 text-sm text-gray-600 dark:text-gray-400">
-                  <div className="flex items-center gap-1">
-                    <Clock size={14} />
-                    <span>{video.duration || "?"} min</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <FileText size={14} />
-                    <span>{tasks.length} zadań</span>
-                  </div>
+            {/* Nagłówek */}
+            <div className="p-4 border-b border-gray-200 dark:border-DarkblackBorder">
+              <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-2">
+                {video.title}
+              </h2>
+              <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
+                <div className="flex items-center gap-1">
+                  <Clock size={16} />
+                  <span>{video.duration || "?"} min</span>
                 </div>
-                
+                <div className="flex items-center gap-1">
+                  <FileText size={16} />
+                  <span>{tasks.length} zadań</span>
+                </div>
               </div>
             </div>
 
             {/* Zawartość */}
-            <div className="flex-1 overflow-y-auto">
+            <div className="flex-1 overflow-y-auto p-4">
               {activeTab === 'video' ? (
                 /* Panel z filmem */
                 <div className="space-y-4">
@@ -360,12 +387,10 @@ export default function VideoDetailPanel({
                       </div>
                     )}
 
-                    
-
                     {/* Opis filmu */}
                     {video.video_description && (
-                      <div className="mt-4 p-4 bg-white dark:bg-DarkblackText rounded-lg ">
-                        <h2 className='font-semibold mb-1'>{video.video_section_title}</h2>
+                      <div className="mt-4">
+                        <h3 className='font-semibold mb-2 text-gray-800 dark:text-white'>{video.video_section_title || video.title}</h3>
                         <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
                           {video.video_description}
                         </p>
@@ -376,7 +401,7 @@ export default function VideoDetailPanel({
               ) : (
                 /* Panel z zadaniami */
                 <div className="space-y-4">
-                  <div className="border border-gray-200 rounded-lg p-3 bg-white dark:border-DarkblackBorder dark:bg-DarkblackText">
+                  <div>
                     <h3 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200">
                       Zadania do filmu: {video.title}
                     </h3>
@@ -452,7 +477,7 @@ export default function VideoDetailPanel({
                           <div key={task.task_id} className="w-full">
                             {/* Task Header - Clickable */}
                             <div 
-                              className="flex items-center justify-between p-4 cursor-pointer border border-gray-100 shadow-sm rounded-lg dark:border-DarkblackBorder "
+                              className="flex items-center justify-between p-4 cursor-pointer rounded-lg hover:bg-gray-50 dark:hover:bg-DarkblackBorder transition-colors"
                               onClick={() => toggleTaskExpansion(task.task_id)}
                             >
                               <div className="flex items-center gap-3">

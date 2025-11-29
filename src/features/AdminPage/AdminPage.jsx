@@ -33,6 +33,7 @@ import IdeasSection from "./components/sections/IdeasSection";
 import TaskAnswersSection from "./components/sections/TaskAnswersSection";
 import VideoReviewsSection from "./components/sections/VideoReviewsSection";
 import TransactionsSection from "./components/sections/TransactionsSection";
+import CalendarSection from "./components/sections/CalendarSection";
 import supabase from "../../util/supabaseClient";
 
 function timeAgo(dateString) {
@@ -443,6 +444,11 @@ export default function AdminPage({ isDark, setIsDark }) {
             renderStars={renderStars}
             setSelectedVideoReviews={setSelectedVideoReviews}
           />
+        )}
+
+        {/* Calendar Section */}
+        {activeSection === "calendar" && (
+          <CalendarSection timeAgo={timeAgo} />
         )}
       </div>
 

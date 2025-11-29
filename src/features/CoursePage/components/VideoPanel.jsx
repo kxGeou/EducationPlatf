@@ -17,6 +17,7 @@ export default function VideoPanel({
   setCurrentVideo,
   HlsPlayer,
   setActiveSection,
+  setShowSidebar,
 }) {
   const toast = useToast();
   const { id: courseId } = useParams();
@@ -47,6 +48,13 @@ export default function VideoPanel({
       fetchVideos(courseId);
     }
   }, [courseId, fetchVideos]);
+
+  // Automatyczne zamykanie sidebara gdy włączamy panel video
+  useEffect(() => {
+    if (setShowSidebar && (currentView === 'videoList' || currentView === 'videoDetail')) {
+      setShowSidebar(false);
+    }
+  }, [currentView, setShowSidebar]);
 
   // Funkcja do pokazania modala recenzji
   const handleShowReviewModal = (videoId, videoTitle) => {
@@ -131,6 +139,8 @@ export default function VideoPanel({
           onVideoSelect={handleVideoSelect}
           onBackToSections={handleBackToSections}
           HlsPlayer={HlsPlayer}
+          onNavigateToShop={() => setActiveSection('shop')}
+          setShowSidebar={setShowSidebar}
         />
       )}
       

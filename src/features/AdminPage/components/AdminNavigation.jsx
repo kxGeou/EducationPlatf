@@ -1,5 +1,5 @@
 import React from "react";
-import { Trophy, Bell, BarChart3, PenBoxIcon, Video, Gift, Sun, Moon, CreditCard, Tag } from "lucide-react";
+import { Trophy, Bell, BarChart3, PenBoxIcon, Video, Gift, Sun, Moon, CreditCard, Tag, Calendar } from "lucide-react";
 
 export default function AdminNavigation({ activeSection, setActiveSection, isDark, setIsDark }) {
   return (
@@ -85,6 +85,16 @@ export default function AdminNavigation({ activeSection, setActiveSection, isDar
           >
             <Tag size={20} />
             Kody promocyjne
+          </span>
+          <span
+            onClick={() => setActiveSection("calendar")}
+            className={`cursor-pointer flex items-center gap-2 transition duration-200 ${
+              activeSection === "calendar" &&
+              "border-l-6 px-2 border-secondaryBlue text-secondaryBlue dark:border-primaryGreen dark:text-primaryGreen"
+            }`}
+          >
+            <Calendar size={20} />
+            Kalendarz
           </span>
         </div>
 

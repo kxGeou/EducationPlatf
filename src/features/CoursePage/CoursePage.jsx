@@ -26,6 +26,14 @@ export default function CoursePage({ isDark, setIsDark }) {
 
   const [currentVideo, setCurrentVideo] = useState(null);
   const [activeSection, setActiveSection] = useState("video");
+  const [showSidebar, setShowSidebar] = useState(true);
+
+  // Automatyczne zamykanie sidebara gdy włączamy panel video
+  useEffect(() => {
+    if (activeSection === "video") {
+      setShowSidebar(false);
+    }
+  }, [activeSection]);
 
   useEffect(() => {
     if (initialized) {
@@ -84,6 +92,8 @@ export default function CoursePage({ isDark, setIsDark }) {
           setActiveSection={setActiveSection}
           setUserDataModal={setUserDataModal}
           userDataModal={userDataModal}
+          showSidebar={showSidebar}
+          setShowSidebar={setShowSidebar}
         />
 
         <main className="flex flex-col w-full items-start min-h-[98vh] bg-gray-100 dark:bg-DarkblackBorder rounded-[12px] p-2">
@@ -99,6 +109,7 @@ export default function CoursePage({ isDark, setIsDark }) {
               HlsPlayer={HlsPlayer}
               isDark={isDark}
               setActiveSection={setActiveSection}
+              setShowSidebar={setShowSidebar}
             />
           )}
 

@@ -258,17 +258,27 @@ export const useAuthStore = create(
               return;
             }
 
+            // Sprawdź czy sesja jest aktywna (ostatnia aktywność w ciągu 2 godzin)
+            const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
             const { data: sessionData, error: sessionError } = await supabase
               .from('user_sessions')
               .select('*')
               .eq('session_token', sessionToken)
               .eq('is_active', true)
-              .gt('last_activity', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
+              .gt('last_activity', twoHoursAgo)
               .single();
 
             if (sessionError || !sessionData) {
-              // Sesja jest nieprawidłowa - tylko wyczyść stan aplikacji (NIE wylogowuj z Supabase Auth)
-              console.log('⚠️ Invalid session - clearing app state only');
+              // Sesja jest nieprawidłowa lub nieaktywna (starsza niż 2h)
+              // Usuń wszystkie sesje tego użytkownika z bazy
+              if (session?.user?.id) {
+                await supabase
+                  .from('user_sessions')
+                  .delete()
+                  .eq('user_id', session.user.id);
+              }
+              
+              console.log('⚠️ Session inactive (older than 2h) - clearing app state and deleting sessions');
               localStorage.removeItem('session_token');
               localStorage.removeItem('auth-storage');
               set({
@@ -338,17 +348,27 @@ export const useAuthStore = create(
                 return;
               }
 
+              // Sprawdź czy sesja jest aktywna (ostatnia aktywność w ciągu 2 godzin)
+              const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
               const { data: sessionData, error: sessionError } = await supabase
                 .from('user_sessions')
                 .select('*')
                 .eq('session_token', sessionToken)
                 .eq('is_active', true)
-                .gt('last_activity', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
+                .gt('last_activity', twoHoursAgo)
                 .single();
 
               if (sessionError || !sessionData) {
-                // Sesja jest nieprawidłowa - tylko wyczyść stan aplikacji (NIE wylogowuj z Supabase Auth)
-                console.log('⚠️ Invalid session in onAuthStateChange - clearing app state only');
+                // Sesja jest nieprawidłowa lub nieaktywna (starsza niż 2h)
+                // Usuń wszystkie sesje tego użytkownika z bazy
+                if (session?.user?.id) {
+                  await supabase
+                    .from('user_sessions')
+                    .delete()
+                    .eq('user_id', session.user.id);
+                }
+                
+                console.log('⚠️ Session inactive (older than 2h) in onAuthStateChange - clearing app state and deleting sessions');
                 localStorage.removeItem('session_token');
                 localStorage.removeItem('auth-storage');
                 set({
@@ -447,32 +467,73 @@ export const useAuthStore = create(
             return false;
           }
 
-          // Teraz sprawdź czy użytkownik ma już aktywną sesję
-          console.log('🔍 Checking active sessions for user:', authData.user.id);
+          // Wyczyść nieaktywne sesje użytkownika (starsze niż 2 godziny)
+          // Jeśli użytkownik nie był aktywny przez 2 godziny, usuń wszystkie jego sesje z bazy
+          console.log('🧹 Cleaning up inactive sessions for user:', authData.user.id);
+          const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
+          
+          // Usuń nieaktywne sesje (starsze niż 2h) - faktyczne usunięcie z bazy
+          const { error: cleanupError } = await supabase
+            .from('user_sessions')
+            .delete()
+            .eq('user_id', authData.user.id)
+            .lt('last_activity', twoHoursAgo);
+
+          if (cleanupError) {
+            console.error('❌ Error cleaning up inactive sessions:', cleanupError);
+          } else {
+            console.log('✅ Deleted inactive sessions (older than 2 hours)');
+          }
+
+          // Sprawdź czy są jeszcze aktywne sesje (z ostatnich 2 godzin)
           const { data: activeSessions, error: sessionError } = await supabase
             .from('user_sessions')
             .select('*')
             .eq('user_id', authData.user.id)
-            .eq('is_active', true)
-            .gt('last_activity', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString());
-
-          console.log('📊 Active sessions found:', activeSessions);
-          console.log('🔢 Number of active sessions:', activeSessions?.length || 0);
+            .gt('last_activity', twoHoursAgo)
+            .order('last_activity', { ascending: false });
 
           if (sessionError) {
             console.error('❌ Error checking sessions:', sessionError);
           }
 
-          if (!sessionError && activeSessions && activeSessions.length > 0) {
-            // Wyloguj użytkownika, ponieważ ma już aktywną sesję
-            console.log('🚫 User already has active session, blocking login');
-            await supabase.auth.signOut();
-            toast.error("To konto jest już zalogowane na innym urządzeniu. Możesz się zalogować tylko z jednego urządzenia na raz.");
+          // Limit równoległych sesji: maksymalnie 2
+          const MAX_SESSIONS = 2;
+          const activeSessionsCount = activeSessions?.length || 0;
+
+          // Jeśli jest już maksymalna liczba sesji, zwróć informację o aktywnych sesjach
+          if (!sessionError && activeSessionsCount >= MAX_SESSIONS) {
+            console.log(`🚫 User has ${activeSessionsCount} active sessions (max: ${MAX_SESSIONS}), need to logout one`);
+            
+            // Przygotuj informacje o sesjach do wyświetlenia
+            const sessionsInfo = activeSessions.map(session => {
+              let deviceInfo = {};
+              try {
+                deviceInfo = session.device_info ? JSON.parse(session.device_info) : {};
+              } catch (e) {
+                console.error('Error parsing device_info:', e);
+              }
+              
+              return {
+                sessionToken: session.session_token,
+                deviceType: deviceInfo.deviceType || 'desktop',
+                userAgent: session.user_agent || deviceInfo.userAgent || 'Unknown',
+                lastActivity: session.last_activity,
+                createdAt: session.created_at
+              };
+            });
+
             set({ loading: false });
-            return false;
+            return {
+              blocked: true,
+              reason: 'max_sessions_reached',
+              activeSessions: sessionsInfo,
+              userId: authData.user.id,
+              email: authData.user.email
+            };
           }
 
-          console.log('✅ No active sessions found, proceeding with login');
+          console.log(`✅ User has ${activeSessionsCount} active sessions, proceeding with login`);
 
           const { data, error } = { data: authData, error: authError };
 
@@ -545,19 +606,19 @@ export const useAuthStore = create(
         try {
           console.log('🚪 Logging out user...');
           
-          // Zakończ sesję w bazie danych
+          // Usuń sesję z bazy danych
           const sessionToken = localStorage.getItem('session_token');
           if (sessionToken) {
-            console.log('🔒 Deactivating session in database...');
+            console.log('🔒 Deleting session from database...');
             const { error: sessionError } = await supabase
               .from('user_sessions')
-              .update({ is_active: false })
+              .delete()
               .eq('session_token', sessionToken);
 
             if (sessionError) {
-              console.error('❌ Błąd kończenia sesji:', sessionError);
+              console.error('❌ Błąd usuwania sesji:', sessionError);
             } else {
-              console.log('✅ Session deactivated successfully');
+              console.log('✅ Session deleted successfully');
             }
           }
 
@@ -592,6 +653,99 @@ export const useAuthStore = create(
         } catch (error) {
           console.error('❌ Logout error:', error);
           toast.error("Błąd wylogowywania");
+        }
+      },
+
+      // Wyloguj konkretną sesję (używane przy wyborze sesji do wylogowania)
+      logoutSession: async (sessionToken) => {
+        try {
+          console.log('🔒 Logging out session:', sessionToken.substring(0, 10) + '...');
+          const { error } = await supabase
+            .from('user_sessions')
+            .delete()
+            .eq('session_token', sessionToken);
+
+          if (error) {
+            console.error('❌ Błąd usuwania sesji:', error);
+            return false;
+          }
+
+          console.log('✅ Session logged out successfully');
+          return true;
+        } catch (err) {
+          console.error('❌ Error logging out session:', err);
+          return false;
+        }
+      },
+
+      // Kontynuuj logowanie po wylogowaniu wybranej sesji
+      continueLoginAfterSessionLogout: async ({ email, password, loggedOutSessionToken }) => {
+        set({ loading: true, error: null });
+        try {
+          // Najpierw zaloguj się ponownie (sesja mogła wygasnąć)
+          const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+            email,
+            password,
+          });
+
+          if (authError || !authData.user) {
+            toast.error(authError?.message || "Nie udało się zalogować.");
+            set({ error: authError?.message || "Nie udało się zalogować.", loading: false });
+            return false;
+          }
+
+          // Wyczyść nieaktywne sesje (starsze niż 2 godziny)
+          const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
+          await supabase
+            .from('user_sessions')
+            .delete()
+            .eq('user_id', authData.user.id)
+            .lt('last_activity', twoHoursAgo);
+
+          // Utwórz nową sesję
+          console.log('🔐 Creating new session for user:', authData.user.id);
+          const sessionToken = Math.random().toString(36).substring(2) + Date.now().toString(36);
+          const deviceInfo = {
+            userAgent: navigator.userAgent,
+            deviceType: /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ? 'mobile' : 'desktop',
+            timestamp: new Date().toISOString()
+          };
+
+          const { error: sessionCreateError } = await supabase
+            .from('user_sessions')
+            .insert({
+              user_id: authData.user.id,
+              session_token: sessionToken,
+              device_info: JSON.stringify(deviceInfo),
+              user_agent: deviceInfo.userAgent,
+              is_active: true
+            });
+
+          if (sessionCreateError) {
+            console.error('❌ Błąd tworzenia sesji:', sessionCreateError);
+          } else {
+            console.log('✅ Session created successfully');
+            localStorage.setItem('session_token', sessionToken);
+          }
+
+          set({ user: authData.user });
+          await get().fetchUserData(authData.user.id);
+          await get().fetchReferralData();
+          await get().fetchUserProgress(authData.user.id);
+          await get().fetchUserFlashcards(authData.user.id);
+          await get().grantFreeSectionsToUser();
+          
+          const { useNotificationStore } = await import('./notificationStore');
+          const notificationStore = useNotificationStore.getState();
+          await notificationStore.fetchNotifications(authData.user.id);
+          
+          toast.success("Zalogowano pomyślnie.");
+          set({ loading: false });
+          return true;
+        } catch (err) {
+          toast.error("Wystąpił błąd. Spróbuj ponownie.");
+          set({ error: err.message, loading: false });
+          return false;
         }
       },
 
@@ -646,6 +800,7 @@ export const useAuthStore = create(
           return false;
         }
       },
+
 
       updateMaturaDate: async (maturaDate) => {
         const { user, maturaDate: currentMaturaDate } = get();
@@ -733,20 +888,45 @@ export const useAuthStore = create(
       },
 
       // Cleanup inactive sessions (called periodically)
+      // Cleanup inactive sessions (called periodically)
+      // Usuwa wszystkie sesje użytkowników, którzy nie byli aktywni przez 2 godziny
       cleanupInactiveSessions: async () => {
         try {
-          const { error } = await supabase
+          const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
+          
+          // Znajdź wszystkich użytkowników z nieaktywnymi sesjami (starsze niż 2h)
+          const { data: inactiveSessions, error: findError } = await supabase
             .from('user_sessions')
-            .update({ is_active: false })
-            .eq('is_active', true)
-            .lt('last_activity', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()); // starsze niż 24h
+            .select('user_id')
+            .lt('last_activity', twoHoursAgo);
 
-          if (error) {
-            console.error("Error cleaning up inactive sessions:", error);
+          if (findError) {
+            console.error("Error finding inactive sessions:", findError);
             return false;
           }
 
-          console.log("Inactive sessions cleaned up successfully");
+          if (!inactiveSessions || inactiveSessions.length === 0) {
+            console.log("No inactive sessions to clean up");
+            return true;
+          }
+
+          // Dla każdego użytkownika z nieaktywnymi sesjami, usuń WSZYSTKIE jego sesje z bazy
+          const userIds = [...new Set(inactiveSessions.map(s => s.user_id))];
+          
+          for (const userId of userIds) {
+            const { error: deleteError } = await supabase
+              .from('user_sessions')
+              .delete()
+              .eq('user_id', userId);
+
+            if (deleteError) {
+              console.error(`Error deleting sessions for user ${userId}:`, deleteError);
+            } else {
+              console.log(`✅ Deleted all sessions for user ${userId} (inactive for 2+ hours)`);
+            }
+          }
+
+          console.log(`Inactive sessions deleted successfully for ${userIds.length} users`);
           return true;
         } catch (err) {
           console.error("Error cleaning up inactive sessions:", err);
