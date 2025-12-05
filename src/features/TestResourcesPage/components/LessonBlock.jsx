@@ -118,19 +118,37 @@ function ReSection({ ReSection, Color, activeDropdown, setActiveDropdown }) {
 
 function DropdownButton({ title, options, color, dropdownKey, activeDropdown, setActiveDropdown }) {
   const isOpen = activeDropdown === dropdownKey;
+  const timeoutRef = React.useRef(null);
 
   const handleMouseEnter = () => {
+    // Clear any pending close timeout
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
     setActiveDropdown(dropdownKey);
   };
 
   const handleMouseLeave = () => {
-    setActiveDropdown(null);
+    // Add delay before closing to allow user to move to dropdown
+    timeoutRef.current = setTimeout(() => {
+      setActiveDropdown(null);
+    }, 300); // 300ms delay
   };
 
   const handleSelect = (pdfUrl) => {
     window.open(pdfUrl, "_blank");
     setActiveDropdown(null);
   };
+
+  // Cleanup timeout on unmount
+  React.useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
 
   return (
     <div 
@@ -148,16 +166,18 @@ function DropdownButton({ title, options, color, dropdownKey, activeDropdown, se
         <motion.div
           className="absolute z-20 mt-2 w-full rounded-[12px] shadow-lg"
           style={{ background: color }}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -10 }}
           transition={{ duration: 0.2 }}
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
         >
           {options.map((opt, idx) => (
             <button
               key={idx}
               onClick={() => handleSelect(opt.pdfUrl)}
-              className="block w-full p-4 text-left hover:bg-black/20 cursor-pointer rounded-[12px] text-sm text-white"
+              className="block w-full p-4 text-left hover:bg-black/20 cursor-pointer rounded-[12px] text-sm text-white transition-colors"
             >
               {opt.label}
             </button>

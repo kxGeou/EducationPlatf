@@ -18,19 +18,31 @@ export default function CalendarPage({ isDark, setIsDark }) {
   const {
     availability,
     bookings,
+    preferences,
+    labels,
     loading,
     fetchAvailability,
     fetchUserBookings,
     createBooking,
-    cancelBooking
+    cancelBooking,
+    fetchUserPreferences,
+    fetchLabels,
+    createPreference,
+    deletePreference,
+    createLabel
   } = useCalendarStore();
 
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [showBookingModal, setShowBookingModal] = useState(false);
+  const [showPreferenceModal, setShowPreferenceModal] = useState(false);
+  const [selectedTimeRange, setSelectedTimeRange] = useState(null);
   const [bookingType, setBookingType] = useState('individual');
   const [bookingNotes, setBookingNotes] = useState('');
-  const [viewDate, setViewDate] = useState(new Date());
+  const [preferenceDescription, setPreferenceDescription] = useState('');
+  const [preferenceLabelId, setPreferenceLabelId] = useState('');
+  const [preferenceType, setPreferenceType] = useState('individual');
+  const [preferenceTopic, setPreferenceTopic] = useState('');
 
   useEffect(() => {
     // Fetch availability for the next 7 days (available for everyone)
@@ -40,10 +52,13 @@ export default function CalendarPage({ isDark, setIsDark }) {
     const endDateStr = endDate.toISOString().split('T')[0];
 
     fetchAvailability(startDate, endDateStr);
+    fetchLabels();
 
-    // Fetch user bookings only if user is logged in
+    // Fetch user bookings and preferences only if user is logged in
     if (user) {
       fetchUserBookings(user.id);
+      // Fetch preferences for the next 7 days
+      fetchUserPreferences(user.id, startDate, endDateStr);
     }
   }, [user]);
 
@@ -148,15 +163,112 @@ export default function CalendarPage({ isDark, setIsDark }) {
     }
   };
 
+  // Handle time selection (click and drag) for preferences
+  const handleSelect = (selectInfo) => {
+    if (!user) {
+      toast.error('Zaloguj się, aby dodać preferencje czasowe');
+      selectInfo.view.calendar.unselect();
+      return;
+    }
+
+    // Check if selection is in the past
+    const now = new Date();
+    if (selectInfo.start < now) {
+      toast.error('Nie można dodać preferencji w przeszłości');
+      selectInfo.view.calendar.unselect();
+      return;
+    }
+
+    const start = selectInfo.start;
+    const end = selectInfo.end;
+    const date = start.toISOString().split('T')[0];
+    
+    // Format time properly
+    const startHours = start.getHours().toString().padStart(2, '0');
+    const startMinutes = start.getMinutes().toString().padStart(2, '0');
+    const endHours = end.getHours().toString().padStart(2, '0');
+    const endMinutes = end.getMinutes().toString().padStart(2, '0');
+    
+    const startTime = `${startHours}:${startMinutes}`;
+    const endTime = `${endHours}:${endMinutes}`;
+
+    setSelectedTimeRange({ date, startTime, endTime, start, end });
+    setShowPreferenceModal(true);
+  };
+
+  const handleCreatePreference = async () => {
+    if (!selectedTimeRange || !user || !preferenceTopic) {
+      toast.error('Wypełnij wszystkie wymagane pola');
+      return;
+    }
+
+    try {
+      // First, find or create label with type and topic
+      let labelId = preferenceLabelId;
+      
+      if (!labelId) {
+        // Check if label with this type and topic exists
+        const existingLabel = labels.find(
+          l => l.type === preferenceType && l.topic === preferenceTopic
+        );
+        
+        if (existingLabel) {
+          labelId = existingLabel.id;
+        } else {
+          // Create new label
+          const newLabel = await createLabel({
+            name: `${preferenceType === 'individual' ? 'Indywidualne' : 'Grupowe'} - ${preferenceTopic}`,
+            type: preferenceType,
+            topic: preferenceTopic,
+            color: preferenceType === 'individual' ? '#3b82f6' : '#8b5cf6'
+          });
+          labelId = newLabel.id;
+        }
+      }
+
+      await createPreference({
+        userId: user.id,
+        labelId: labelId,
+        date: selectedTimeRange.date,
+        startTime: selectedTimeRange.startTime + ':00',
+        endTime: selectedTimeRange.endTime + ':00',
+        description: preferenceDescription || null
+      });
+      setShowPreferenceModal(false);
+      setSelectedTimeRange(null);
+      setPreferenceDescription('');
+      setPreferenceLabelId('');
+      setPreferenceType('individual');
+      setPreferenceTopic('');
+      await fetchUserPreferences(user.id);
+      await fetchLabels();
+      toast.success('Preferencja została dodana');
+    } catch (err) {
+      // Error handled in store
+    }
+  };
+
+  const handleDeletePreference = async (preferenceId) => {
+    if (!window.confirm('Czy na pewno chcesz usunąć tę preferencję?')) {
+      return;
+    }
+
+    try {
+      await deletePreference(preferenceId);
+      await fetchUserPreferences(user.id);
+    } catch (err) {
+      // Error handled in store
+    }
+  };
+
   // Prepare calendar events from availability
-  const calendarEvents = availability
+  const availabilityEvents = availability
     .filter((slot) => slot.is_active)
     .map((slot) => {
       const start = `${slot.date}T${slot.start_time}`;
       const end = `${slot.date}T${slot.end_time}`;
 
       // Get booking count for this slot
-      // Count bookings for this slot (only if user is logged in, otherwise show 0)
       const bookingCount = user 
         ? bookings.filter(
             (b) => b.availability_id === slot.id && ['pending', 'confirmed'].includes(b.status)
@@ -169,7 +281,7 @@ export default function CalendarPage({ isDark, setIsDark }) {
       );
 
       return {
-        id: slot.id,
+        id: `availability-${slot.id}`,
         title: `${slot.class_type === 'individual' ? 'Indywidualne' : 'Grupowe'} (${bookingCount}/${slot.max_participants})`,
         start,
         end,
@@ -188,6 +300,7 @@ export default function CalendarPage({ isDark, setIsDark }) {
           ? '#3b82f6'
           : '#8b5cf6',
         extendedProps: {
+          type: 'availability',
           slot,
           bookingCount,
           isFull,
@@ -196,19 +309,52 @@ export default function CalendarPage({ isDark, setIsDark }) {
       };
     });
 
+  // Prepare calendar events from user preferences
+  const preferenceEvents = (preferences || []).map((pref) => {
+    const start = `${pref.date}T${pref.start_time}`;
+    const end = `${pref.date}T${pref.end_time}`;
+    const labelName = pref.preference_labels?.name || 'Preferencja';
+
+    return {
+      id: `preference-${pref.id}`,
+      title: labelName,
+      start,
+      end,
+      backgroundColor: '#fbbf24', // yellow/amber for preferences
+      borderColor: '#f59e0b',
+      display: 'block',
+      extendedProps: {
+        type: 'preference',
+        preference: pref
+      }
+    };
+  });
+
+  const calendarEvents = [...availabilityEvents, ...preferenceEvents];
+
   // Handle event click
   const handleEventClick = (clickInfo) => {
+    const eventType = clickInfo.event.extendedProps.type;
+    
+    if (eventType === 'preference') {
+      // Handle preference click - show delete option
+      const preference = clickInfo.event.extendedProps.preference;
+      if (window.confirm('Czy chcesz usunąć tę preferencję?')) {
+        handleDeletePreference(preference.id);
+      }
+      return;
+    }
+
+    // Handle availability slot click
     const slot = clickInfo.event.extendedProps.slot;
     const userHasBooking = clickInfo.event.extendedProps.userHasBooking;
     const isFull = clickInfo.event.extendedProps.isFull;
 
     if (userHasBooking) {
-      // Show booking details
       const booking = bookings.find(
         (b) => b.availability_id === slot.id && b.status !== 'cancelled' && b.user_id === user?.id
       );
       if (booking) {
-        // Show booking info or cancellation option
         handleSlotClick(slot);
       }
     } else if (isFull) {
@@ -257,6 +403,12 @@ export default function CalendarPage({ isDark, setIsDark }) {
               <div className="w-4 h-4 rounded bg-red-500"></div>
               <span className="text-gray-700 dark:text-gray-300">Zajęte</span>
             </div>
+            {user && (
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 rounded bg-amber-500"></div>
+                <span className="text-gray-700 dark:text-gray-300">Twoje preferencje</span>
+              </div>
+            )}
           </div>
         </div>
 
@@ -271,7 +423,17 @@ export default function CalendarPage({ isDark, setIsDark }) {
           {!loading && (
             <FullCalendar
               plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-              initialView="timeGridWeek"
+              initialView="timeGridWeek7Days"
+              views={{
+                timeGridWeek7Days: {
+                  type: 'timeGridWeek',
+                  duration: { days: 7 },
+                  slotMinTime: '08:00:00',
+                  slotMaxTime: '20:00:00',
+                  slotDuration: '00:30:00',
+                  allDaySlot: false
+                }
+              }}
               headerToolbar={{
                 left: 'prev,next today',
                 center: 'title',
@@ -281,13 +443,16 @@ export default function CalendarPage({ isDark, setIsDark }) {
               events={calendarEvents}
               dateClick={handleDateClick}
               eventClick={handleEventClick}
+              select={handleSelect}
+              selectMirror={true}
               editable={false}
-              selectable={true}
+              selectable={user ? true : false}
+              selectOverlap={true}
+              unselectAuto={false}
               height="auto"
               eventDisplay="block"
               validRange={{
-                start: new Date().toISOString().split('T')[0],
-                end: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+                start: new Date().toISOString().split('T')[0]
               }}
               slotMinTime="08:00:00"
               slotMaxTime="20:00:00"
@@ -298,13 +463,18 @@ export default function CalendarPage({ isDark, setIsDark }) {
               eventTimeFormat={{
                 hour: '2-digit',
                 minute: '2-digit',
-                meridiem: false
+                hour12: false
               }}
-              dayHeaderFormat={{ weekday: 'short', day: 'numeric', month: 'short' }}
+              dayHeaderFormat={{ 
+                weekday: 'short', 
+                day: 'numeric', 
+                month: 'short',
+                omitCommas: false
+              }}
               slotLabelFormat={{
                 hour: '2-digit',
                 minute: '2-digit',
-                meridiem: false
+                hour12: false
               }}
             />
           )}
@@ -461,6 +631,112 @@ export default function CalendarPage({ isDark, setIsDark }) {
           </div>
         )}
       </div>
+
+      {/* Preference Modal */}
+      {showPreferenceModal && selectedTimeRange && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 animate-fadeIn p-4">
+          <div className="bg-white dark:bg-DarkblackBorder rounded-2xl shadow-xl w-full max-w-md animate-scaleIn">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+                  Dodaj preferencję czasową
+                </h3>
+                <button
+                  onClick={() => {
+                    setShowPreferenceModal(false);
+                    setSelectedTimeRange(null);
+                    setPreferenceDescription('');
+                    setPreferenceLabelId('');
+                  }}
+                  className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Data i godzina:</p>
+                  <p className="font-medium text-gray-900 dark:text-white">
+                    {new Date(selectedTimeRange.date).toLocaleDateString('pl-PL', {
+                      weekday: 'long',
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
+                    })}{' '}
+                    {selectedTimeRange.startTime} - {selectedTimeRange.endTime}
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Typ zajęć *
+                  </label>
+                  <select
+                    value={preferenceType}
+                    onChange={(e) => setPreferenceType(e.target.value)}
+                    className="w-full p-3 border border-gray-200 dark:border-DarkblackText rounded-lg focus:outline-none focus:ring-2 focus:ring-primaryBlue dark:focus:ring-primaryGreen text-sm dark:bg-DarkblackText dark:text-white"
+                    required
+                  >
+                    <option value="individual">Zajęcia indywidualne</option>
+                    <option value="group">Zajęcia grupowe</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Temat *
+                  </label>
+                  <select
+                    value={preferenceTopic}
+                    onChange={(e) => setPreferenceTopic(e.target.value)}
+                    className="w-full p-3 border border-gray-200 dark:border-DarkblackText rounded-lg focus:outline-none focus:ring-2 focus:ring-primaryBlue dark:focus:ring-primaryGreen text-sm dark:bg-DarkblackText dark:text-white"
+                    required
+                  >
+                    <option value="">Wybierz temat</option>
+                    <option value="inf 0.3">inf 0.3</option>
+                    <option value="inf 0.4">inf 0.4</option>
+                    <option value="matura z informatyki">Matura z informatyki</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Opis (opcjonalnie)
+                  </label>
+                  <textarea
+                    value={preferenceDescription}
+                    onChange={(e) => setPreferenceDescription(e.target.value)}
+                    rows="3"
+                    className="w-full p-3 border border-gray-200 dark:border-DarkblackText rounded-lg focus:outline-none focus:ring-2 focus:ring-primaryBlue dark:focus:ring-primaryGreen text-sm dark:bg-DarkblackText dark:text-white resize-none"
+                    placeholder="Dodaj opis preferencji..."
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-3 mt-6">
+                <button
+                  onClick={() => {
+                    setShowPreferenceModal(false);
+                    setSelectedTimeRange(null);
+                    setPreferenceDescription('');
+                    setPreferenceLabelId('');
+                  }}
+                  className="px-4 py-2 border border-gray-200 dark:border-DarkblackText text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-DarkblackText transition"
+                >
+                  Anuluj
+                </button>
+                <button
+                  onClick={handleCreatePreference}
+                  className="px-4 py-2 bg-primaryBlue dark:bg-primaryGreen text-white rounded-lg hover:opacity-90 transition"
+                >
+                  Dodaj preferencję
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Booking Modal */}
       {showBookingModal && selectedSlot && (

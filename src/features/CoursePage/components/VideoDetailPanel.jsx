@@ -212,9 +212,9 @@ export default function VideoDetailPanel({
   };
 
   return (
-    <div className="w-full h-full flex flex-col lg:flex-row">
+    <div className="w-full h-full flex flex-col lg:flex-row bg-white dark:bg-DarkblackText">
       {/* Lewy panel - Lista filmów i zadań */}
-      <div className="w-full lg:w-80 xl:w-96 flex flex-col h-full flex-shrink-0">
+      <div className="w-full lg:w-80 xl:w-96 flex flex-col h-full flex-shrink-0 bg-white dark:bg-DarkblackText">
         {/* Nagłówek sekcji */}
         <div className="p-4 border-b border-gray-200 dark:border-DarkblackBorder">
           <div className="flex items-center gap-2 mb-3">
@@ -341,7 +341,7 @@ export default function VideoDetailPanel({
       </div>
 
       {/* Prawy panel - Video i zadania */}
-      <div className="flex-1 flex flex-col h-full min-w-0">
+      <div className="flex-1 flex flex-col h-full min-w-0 bg-white dark:bg-DarkblackText">
         {video ? (
           <>
             {/* Nagłówek */}

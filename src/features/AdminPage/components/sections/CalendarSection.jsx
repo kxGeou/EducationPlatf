@@ -1,16 +1,22 @@
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useCalendarStore } from '../../../../store/calendarStore';
-import { Calendar, Clock, Users, User, Plus, Edit, Trash2, CheckCircle, XCircle, Eye, X, Mail, Hash, MessageSquare, Check, X as XIcon, Archive } from 'lucide-react';
+import { Calendar, Clock, Users, User, Plus, Edit, Trash2, CheckCircle, XCircle, Eye, X, Mail, Hash, MessageSquare, Check, X as XIcon, Archive, Tag, Filter } from 'lucide-react';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import '../../../CalendarPage/CalendarPage.css';
+import { formatTimeRange, formatDate } from '../../../../utils/timePreferencesUtils';
+import supabase from '../../../../util/supabaseClient';
 
 export default function CalendarSection({ timeAgo }) {
   const {
     availability,
     bookings,
+    preferences,
+    labels,
+    overlappingHours,
     loading,
     fetchAllAvailability,
     fetchAllBookings,
@@ -18,7 +24,13 @@ export default function CalendarSection({ timeAgo }) {
     updateAvailability,
     deleteAvailability,
     updateBookingStatus,
-    getBookingsForSlot
+    getBookingsForSlot,
+    fetchAllPreferences,
+    fetchOverlappingHours,
+    fetchLabels,
+    createLabel,
+    updateLabel,
+    deleteLabel
   } = useCalendarStore();
 
   const [showAddModal, setShowAddModal] = useState(false);
@@ -34,6 +46,15 @@ export default function CalendarSection({ timeAgo }) {
     maxParticipants: 1
   });
   const [formErrors, setFormErrors] = useState({});
+  const [activeTab, setActiveTab] = useState('bookings'); // 'bookings' or 'preferences'
+  
+  // Preferences tab state
+  const [showLabelModal, setShowLabelModal] = useState(false);
+  const [editingLabel, setEditingLabel] = useState(null);
+  const [labelFormData, setLabelFormData] = useState({ name: '', color: '' });
+  const [showOverlapDetailsModal, setShowOverlapDetailsModal] = useState(false);
+  const [selectedOverlap, setSelectedOverlap] = useState(null);
+  const [overlapUsers, setOverlapUsers] = useState([]);
 
   // Generate time options for dropdowns (30-minute intervals from 08:00 to 20:00)
   const timeOptions = [];
@@ -46,7 +67,24 @@ export default function CalendarSection({ timeAgo }) {
 
   useEffect(() => {
     loadData();
-  }, []);
+    if (activeTab === 'preferences') {
+      loadPreferencesData();
+    }
+  }, [activeTab]);
+
+  const loadPreferencesData = async () => {
+    try {
+      await fetchAllPreferences();
+      await fetchLabels();
+      // Automatically calculate overlapping hours after preferences are loaded
+      // Wait a bit for state to update
+      setTimeout(() => {
+        fetchOverlappingHours(null, null, null);
+      }, 100);
+    } catch (err) {
+      console.error('Error loading preferences data:', err);
+    }
+  };
 
   const loadData = async () => {
     await fetchAllAvailability();
@@ -268,8 +306,8 @@ export default function CalendarSection({ timeAgo }) {
     }
   };
 
-  // Prepare calendar events
-  const calendarEvents = availability.map((slot) => {
+  // Prepare calendar events from availability
+  const availabilityEvents = availability.map((slot) => {
     const start = `${slot.date}T${slot.start_time}`;
     const end = `${slot.date}T${slot.end_time}`;
 
@@ -281,7 +319,7 @@ export default function CalendarSection({ timeAgo }) {
     const isFull = bookingCount >= slot.max_participants;
 
     return {
-      id: slot.id,
+      id: `availability-${slot.id}`,
       title: `${slot.class_type === 'individual' ? 'Indywidualne' : 'Grupowe'} (${bookingCount}/${slot.max_participants})`,
       start,
       end,
@@ -300,6 +338,7 @@ export default function CalendarSection({ timeAgo }) {
         ? '#3b82f6'
         : '#8b5cf6',
       extendedProps: {
+        type: 'availability',
         slot,
         bookingCount,
         isFull
@@ -307,7 +346,44 @@ export default function CalendarSection({ timeAgo }) {
     };
   });
 
+  // Prepare calendar events from overlapping hours (if available)
+  const overlappingEvents = (overlappingHours || []).map((overlap, idx) => {
+    const start = `${overlap.date}T${overlap.start_time}`;
+    const end = `${overlap.date}T${overlap.end_time}`;
+
+    return {
+      id: `overlap-${idx}`,
+      title: `Część wspólna (${overlap.user_count} użytkowników)`,
+      start,
+      end,
+      backgroundColor: '#10b981', // green for overlapping hours
+      borderColor: '#059669',
+      display: 'block',
+      extendedProps: {
+        type: 'overlap',
+        overlap
+      }
+    };
+  });
+
+  // Combine events based on active tab
+  // For bookings tab: only show availability (admin-created meetings)
+  // For preferences tab: only show overlapping hours (user preferences)
+  const calendarEvents = activeTab === 'bookings' 
+    ? [...availabilityEvents] 
+    : [...overlappingEvents];
+
   const handleEventClick = (clickInfo) => {
+    const eventType = clickInfo.event.extendedProps.type;
+    
+    if (eventType === 'overlap') {
+      // Show overlap details modal (only in preferences tab)
+      const overlap = clickInfo.event.extendedProps.overlap;
+      handleOverlapClick(overlap);
+      return;
+    }
+    
+    // For availability events (bookings tab)
     const slot = clickInfo.event.extendedProps.slot;
     if (slot) {
       handleViewBookings(slot);
@@ -322,24 +398,460 @@ export default function CalendarSection({ timeAgo }) {
     return timeOptions.slice(startIndex + 1);
   };
 
+
+  const handleLabelSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      if (editingLabel) {
+        await updateLabel(editingLabel.id, labelFormData);
+      } else {
+        await createLabel(labelFormData);
+      }
+      setShowLabelModal(false);
+      setEditingLabel(null);
+      setLabelFormData({ name: '', color: '' });
+      await fetchLabels();
+    } catch (err) {
+      // Error handled in store
+    }
+  };
+
+  const handleLoadOverlapping = async () => {
+    try {
+      const startDate = preferenceFilters.startDate || null;
+      const endDate = preferenceFilters.endDate || null;
+      const labelId = preferenceFilters.labelId || null;
+      
+      await fetchOverlappingHours(startDate, endDate, labelId);
+      setShowOverlappingView(true);
+    } catch (err) {
+      console.error('Error loading overlapping hours:', err);
+    }
+  };
+
+  const handleOverlapClick = (overlap) => {
+    if (!overlap || !overlap.user_ids || overlap.user_ids.length === 0) {
+      return;
+    }
+
+    setSelectedOverlap(overlap);
+    setShowOverlapDetailsModal(true);
+
+    // Get user data directly from preferences (frontend filtering)
+    const userIds = overlap.user_ids.filter(id => id && typeof id === 'string');
+    const usersMap = new Map();
+
+    // Collect all unique users from preferences
+    preferences.forEach(pref => {
+      if (userIds.includes(pref.user_id) && pref.users) {
+        const userId = pref.user_id;
+        if (!usersMap.has(userId)) {
+          // Get all labels for this user from their preferences
+          const userPrefs = preferences.filter(p => p.user_id === userId);
+          const userLabels = userPrefs
+            .map(p => p.preference_labels)
+            .filter(Boolean)
+            .filter((label, index, self) => 
+              index === self.findIndex(l => l && l.id === label.id)
+            );
+
+          usersMap.set(userId, {
+            id: pref.users.id || userId,
+            email: pref.users.email || '',
+            full_name: pref.users.full_name || '',
+            tags: userLabels
+          });
+        }
+      }
+    });
+
+    // Convert map to array
+    const usersArray = Array.from(usersMap.values());
+    setOverlapUsers(usersArray);
+  };
+
   return (
+    <>
+      {/* Modals - rendered via Portal to ensure full screen overlay */}
+      {showOverlapDetailsModal && selectedOverlap && createPortal(
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999] p-4" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}>
+          <div className="bg-white dark:bg-DarkblackBorder rounded-lg shadow-xl max-w-md w-full max-h-[80vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-xl font-bold">Część wspólna godzin</h3>
+                <button
+                  onClick={() => {
+                    setShowOverlapDetailsModal(false);
+                    setSelectedOverlap(null);
+                    setOverlapUsers([]);
+                  }}
+                  className="p-1 hover:bg-gray-100 dark:hover:bg-DarkblackBorder/50 rounded"
+                >
+                  <X size={24} />
+                </button>
+              </div>
+              
+              <div className="space-y-4">
+                <div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Data</div>
+                  <div className="font-medium">
+                    {formatDate(selectedOverlap.date)}
+                  </div>
+                </div>
+                
+                <div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Godzina</div>
+                  <div className="font-medium">
+                    {formatTimeRange(selectedOverlap.start_time, selectedOverlap.end_time)}
+                  </div>
+                </div>
+                
+                <div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                    Użytkownicy ({selectedOverlap.user_count})
+                  </div>
+                  {overlapUsers.length > 0 ? (
+                    <div className="space-y-2">
+                      {overlapUsers.map((user) => {
+                        return (
+                          <div
+                            key={user.id}
+                            className="p-3 border border-gray-200 dark:border-DarkblackBorder rounded-lg"
+                          >
+                            <div className="flex items-center gap-3 mb-2">
+                              <div className="w-8 h-8 rounded-full bg-primaryBlue dark:bg-primaryGreen flex items-center justify-center text-white font-semibold">
+                                {user.full_name ? user.full_name.charAt(0).toUpperCase() : user.email?.charAt(0).toUpperCase() || '?'}
+                              </div>
+                              <div className="flex-1">
+                                <div className="font-medium">
+                                  {user.full_name || user.email || 'Nieznany użytkownik'}
+                                </div>
+                                {user.full_name && user.email && (
+                                  <div className="text-sm text-gray-500 dark:text-gray-400">
+                                    {user.email}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                            {user.tags && user.tags.length > 0 && (
+                              <div className="flex flex-wrap gap-2 mt-2">
+                                {user.tags.map((label) => (
+                                  <span
+                                    key={label.id}
+                                    className="px-2 py-1 rounded text-xs"
+                                    style={{
+                                      backgroundColor: label.color ? `${label.color}20` : '#f3f4f6',
+                                      color: label.color || '#374151',
+                                      border: `1px solid ${label.color || '#d1d5db'}`
+                                    }}
+                                  >
+                                    {label.type && label.topic ? `${label.type === 'individual' ? 'Indywidualne' : 'Grupowe'} - ${label.topic}` : label.name}
+                                  </span>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="text-gray-500 dark:text-gray-400">
+                      Ładowanie użytkowników...
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* Label Modal */}
+      {showLabelModal && createPortal(
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999] p-4" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}>
+          <div className="bg-white dark:bg-DarkblackBorder rounded-lg shadow-xl max-w-md w-full">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-xl font-bold">
+                  {editingLabel ? 'Edytuj etykietę' : 'Dodaj etykietę'}
+                </h3>
+                <button
+                  onClick={() => {
+                    setShowLabelModal(false);
+                    setEditingLabel(null);
+                    setLabelFormData({ name: '', color: '' });
+                  }}
+                  className="p-1 hover:bg-gray-100 dark:hover:bg-DarkblackBorder/50 rounded"
+                >
+                  <X size={24} />
+                </button>
+              </div>
+              <form onSubmit={handleLabelSubmit} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">Nazwa</label>
+                  <input
+                    type="text"
+                    value={labelFormData.name}
+                    onChange={(e) => setLabelFormData({ ...labelFormData, name: e.target.value })}
+                    className="w-full p-2 border border-gray-300 dark:border-DarkblackBorder dark:bg-DarkblackBorder/50 rounded"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Kolor (hex, opcjonalnie)</label>
+                  <input
+                    type="color"
+                    value={labelFormData.color || '#3b82f6'}
+                    onChange={(e) => setLabelFormData({ ...labelFormData, color: e.target.value })}
+                    className="w-full h-10 border border-gray-300 dark:border-DarkblackBorder rounded"
+                  />
+                </div>
+                <div className="flex gap-2 justify-end">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowLabelModal(false);
+                      setEditingLabel(null);
+                      setLabelFormData({ name: '', color: '' });
+                    }}
+                    className="px-4 py-2 border border-gray-300 dark:border-DarkblackBorder rounded hover:bg-gray-100 dark:hover:bg-DarkblackBorder/50 transition"
+                  >
+                    Anuluj
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 bg-primaryBlue dark:bg-primaryGreen text-white rounded hover:opacity-90 transition"
+                  >
+                    {editingLabel ? 'Zaktualizuj' : 'Dodaj'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+
     <div className="space-y-4 sm:space-y-6">
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <h2 className="font-bold text-xl sm:text-2xl text-blackText dark:text-white flex items-center gap-2">
           <Calendar size={20} className="sm:w-6 sm:h-6" />
           Zarządzanie kalendarzem
         </h2>
-        <button
-          onClick={openAddModal}
-          className="flex items-center justify-center gap-2 px-4 sm:px-6 py-3 bg-gradient-to-r from-primaryBlue to-secondaryBlue dark:from-primaryGreen dark:to-secondaryBlue text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:opacity-90 w-full sm:w-auto"
-        >
-          <Plus size={18} />
-          <span className="text-sm sm:text-base">Dodaj termin</span>
-        </button>
+        {activeTab === 'bookings' && (
+          <button
+            onClick={openAddModal}
+            className="flex items-center justify-center gap-2 px-4 sm:px-6 py-3 bg-gradient-to-r from-primaryBlue to-secondaryBlue dark:from-primaryGreen dark:to-secondaryBlue text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:opacity-90 w-full sm:w-auto"
+          >
+            <Plus size={18} />
+            <span className="text-sm sm:text-base">Dodaj termin</span>
+          </button>
+        )}
       </div>
 
-      {/* Calendar */}
-      <div className="bg-white dark:bg-DarkblackBorder rounded-xl shadow-lg p-4 sm:p-6 overflow-hidden">
+      {/* Tabs */}
+      <div className="border-b border-gray-200 dark:border-DarkblackBorder">
+        <div className="flex gap-4">
+          <button
+            onClick={() => setActiveTab('bookings')}
+            className={`px-4 py-2 font-medium transition ${
+              activeTab === 'bookings'
+                ? 'border-b-2 border-primaryBlue dark:border-primaryGreen text-primaryBlue dark:text-primaryGreen'
+                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+            }`}
+          >
+            Rezerwacje
+          </button>
+          <button
+            onClick={() => setActiveTab('preferences')}
+            className={`px-4 py-2 font-medium transition ${
+              activeTab === 'preferences'
+                ? 'border-b-2 border-primaryBlue dark:border-primaryGreen text-primaryBlue dark:text-primaryGreen'
+                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+            }`}
+          >
+            Preferencje czasowe
+          </button>
+        </div>
+      </div>
+
+      {/* Content based on active tab */}
+      {activeTab === 'preferences' ? (
+        <div className="space-y-6">
+
+          {/* Preferences Calendar */}
+          <div className="bg-white dark:bg-DarkblackBorder rounded-xl shadow-lg p-4 sm:p-6 overflow-hidden">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="font-semibold text-lg">Kalendarz preferencji</h3>
+              <button
+                onClick={() => {
+                  setEditingLabel(null);
+                  setLabelFormData({ name: '', color: '' });
+                  setShowLabelModal(true);
+                }}
+                className="flex items-center gap-2 px-4 py-2 bg-primaryBlue dark:bg-primaryGreen text-white rounded hover:opacity-90 transition"
+              >
+                <Plus size={18} />
+                Dodaj etykietę
+              </button>
+            </div>
+            {loading ? (
+              <div className="text-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primaryBlue dark:border-primaryGreen mx-auto"></div>
+              </div>
+            ) : (
+              <FullCalendar
+                plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
+                initialView="timeGridWeek7Days"
+                views={{
+                  timeGridWeek7Days: {
+                    type: 'timeGridWeek',
+                    duration: { days: 7 },
+                    slotMinTime: '08:00:00',
+                    slotMaxTime: '20:00:00',
+                    slotDuration: '00:30:00',
+                    allDaySlot: false
+                  }
+                }}
+                headerToolbar={{
+                  left: 'prev,next today',
+                  center: 'title',
+                  right: ''
+                }}
+                locale="pl"
+                events={[
+                  // Only overlapping hours events (green with count)
+                  ...(overlappingHours || []).map((overlap, idx) => {
+                    const start = `${overlap.date}T${overlap.start_time}`;
+                    const end = `${overlap.date}T${overlap.end_time}`;
+
+                    return {
+                      id: `overlap-${idx}`,
+                      title: `${overlap.user_count}`,
+                      start,
+                      end,
+                      backgroundColor: '#10b981', // green for overlapping hours
+                      borderColor: '#059669',
+                      display: 'block',
+                      extendedProps: {
+                        type: 'overlap',
+                        overlap
+                      }
+                    };
+                  })
+                ]}
+                editable={false}
+                selectable={false}
+                height="auto"
+                eventDisplay="block"
+                validRange={{
+                  start: new Date().toISOString().split('T')[0]
+                }}
+                slotMinTime="08:00:00"
+                slotMaxTime="20:00:00"
+                slotDuration="00:30:00"
+                allDaySlot={false}
+                firstDay={1}
+                weekends={true}
+                eventTimeFormat={{
+                  hour: '2-digit',
+                  minute: '2-digit',
+                  hour12: false
+                }}
+                dayHeaderFormat={{ weekday: 'short', day: 'numeric', month: 'short' }}
+                slotLabelFormat={{
+                  hour: '2-digit',
+                  minute: '2-digit',
+                  hour12: false
+                }}
+                eventContent={(eventInfo) => {
+                  const eventType = eventInfo.event.extendedProps.type;
+                  if (eventType === 'overlap') {
+                    const userCount = eventInfo.event.extendedProps.overlap?.user_count || 0;
+                    return (
+                      <div className="p-1 text-center">
+                        <div className="font-bold text-base">{userCount}</div>
+                        <div className="text-xs opacity-75">użytkowników</div>
+                      </div>
+                    );
+                  }
+                  return <div>{eventInfo.event.title}</div>;
+                }}
+                eventClick={(clickInfo) => {
+                  const eventType = clickInfo.event.extendedProps.type;
+                  if (eventType === 'overlap') {
+                    handleOverlapClick(clickInfo.event.extendedProps.overlap);
+                  }
+                }}
+              />
+            )}
+          </div>
+
+
+          {/* Labels Management */}
+          <div className="bg-white dark:bg-DarkblackBorder rounded-xl shadow-lg p-4 sm:p-6">
+            <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
+              <Tag size={20} />
+              Zarządzanie etykietami
+            </h3>
+            {labels.length === 0 ? (
+              <p className="text-gray-600 dark:text-gray-400">Brak etykiet. Dodaj pierwszą etykietę.</p>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {labels.map((label) => (
+                  <div
+                    key={label.id}
+                    className="p-4 border border-gray-200 dark:border-DarkblackBorder rounded-lg flex justify-between items-center"
+                  >
+                    <div className="flex items-center gap-2">
+                      {label.color && (
+                        <div
+                          className="w-4 h-4 rounded"
+                          style={{ backgroundColor: label.color }}
+                        />
+                      )}
+                      <span>{label.name}</span>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => {
+                          setEditingLabel(label);
+                          setLabelFormData({ name: label.name, color: label.color || '' });
+                          setShowLabelModal(true);
+                        }}
+                        className="p-1 text-primaryBlue dark:text-primaryGreen hover:bg-gray-100 dark:hover:bg-DarkblackBorder/50 rounded"
+                      >
+                        <Edit size={16} />
+                      </button>
+                      <button
+                        onClick={async () => {
+                          if (window.confirm('Czy na pewno chcesz usunąć tę etykietę?')) {
+                            try {
+                              await deleteLabel(label.id);
+                              await fetchLabels();
+                            } catch (err) {
+                              // Error handled in store
+                            }
+                          }
+                        }}
+                        className="p-1 text-red-500 hover:bg-gray-100 dark:hover:bg-DarkblackBorder/50 rounded"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+        </div>
+      ) : (
+        <>
+
+          {/* Calendar */}
+          <div className="bg-white dark:bg-DarkblackBorder rounded-xl shadow-lg p-4 sm:p-6 overflow-hidden">
         {loading && (
           <div className="flex justify-center items-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primaryBlue dark:border-primaryGreen"></div>
@@ -349,7 +861,17 @@ export default function CalendarSection({ timeAgo }) {
         {!loading && (
           <FullCalendar
             plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-            initialView="timeGridWeek"
+            initialView="timeGridWeek7Days"
+            views={{
+              timeGridWeek7Days: {
+                type: 'timeGridWeek',
+                duration: { days: 7 },
+                slotMinTime: '08:00:00',
+                slotMaxTime: '20:00:00',
+                slotDuration: '00:30:00',
+                allDaySlot: false
+              }
+            }}
             headerToolbar={{
               left: 'prev,next today',
               center: 'title',
@@ -363,8 +885,7 @@ export default function CalendarSection({ timeAgo }) {
             height="auto"
             eventDisplay="block"
             validRange={{
-              start: new Date().toISOString().split('T')[0],
-              end: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+              start: new Date().toISOString().split('T')[0]
             }}
             slotMinTime="08:00:00"
             slotMaxTime="20:00:00"
@@ -375,39 +896,48 @@ export default function CalendarSection({ timeAgo }) {
             eventTimeFormat={{
               hour: '2-digit',
               minute: '2-digit',
-              meridiem: false
+              hour12: false
             }}
             dayHeaderFormat={{ weekday: 'short', day: 'numeric', month: 'short' }}
             slotLabelFormat={{
               hour: '2-digit',
               minute: '2-digit',
-              meridiem: false
+              hour12: false
             }}
           />
         )}
       </div>
 
-      {/* Legend */}
+      {/* Legend - different for bookings vs preferences */}
       <div className="bg-white dark:bg-DarkblackBorder rounded-xl shadow-lg p-4 sm:p-6">
         <h3 className="font-semibold text-lg text-blackText dark:text-white mb-3">Legenda</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 bg-blue-500 rounded"></div>
-            <span className="text-sm text-gray-700 dark:text-gray-300">Indywidualne</span>
+        {activeTab === 'bookings' ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 bg-blue-500 rounded"></div>
+              <span className="text-sm text-gray-700 dark:text-gray-300">Indywidualne</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 bg-purple-500 rounded"></div>
+              <span className="text-sm text-gray-700 dark:text-gray-300">Grupowe</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 bg-red-500 rounded"></div>
+              <span className="text-sm text-gray-700 dark:text-gray-300">Zajęte</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 bg-gray-500 rounded"></div>
+              <span className="text-sm text-gray-700 dark:text-gray-300">Nieaktywne</span>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 bg-purple-500 rounded"></div>
-            <span className="text-sm text-gray-700 dark:text-gray-300">Grupowe</span>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 bg-green-500 rounded"></div>
+              <span className="text-sm text-gray-700 dark:text-gray-300">Części wspólne godzin</span>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 bg-red-500 rounded"></div>
-            <span className="text-sm text-gray-700 dark:text-gray-300">Zajęte</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 bg-gray-500 rounded"></div>
-            <span className="text-sm text-gray-700 dark:text-gray-300">Nieaktywne</span>
-          </div>
-        </div>
+        )}
       </div>
 
       {/* Availability List */}
@@ -554,10 +1084,12 @@ export default function CalendarSection({ timeAgo }) {
           </>
         );
       })()}
+        </>
+      )}
 
       {/* Add/Edit Modal */}
-      {showAddModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 animate-fadeIn p-4">
+      {showAddModal && createPortal(
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[9999] animate-fadeIn p-4" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}>
           <div
             className="bg-white dark:bg-DarkblackBorder rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto animate-scaleIn"
             onClick={(e) => e.stopPropagation()}
@@ -700,12 +1232,13 @@ export default function CalendarSection({ timeAgo }) {
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Bookings Modal */}
-      {showBookingModal && selectedSlot && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 animate-fadeIn p-4">
+      {showBookingModal && selectedSlot && createPortal(
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[9999] animate-fadeIn p-4" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}>
           <div className="bg-white dark:bg-DarkblackBorder rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col animate-scaleIn">
             <div className="p-6 border-b border-gray-200 dark:border-DarkblackText bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20">
               <div className="flex justify-between items-center">
@@ -898,9 +1431,11 @@ export default function CalendarSection({ timeAgo }) {
               </div>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
+    </>
   );
 }
 

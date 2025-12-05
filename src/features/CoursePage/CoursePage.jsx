@@ -96,7 +96,7 @@ export default function CoursePage({ isDark, setIsDark }) {
           setShowSidebar={setShowSidebar}
         />
 
-        <main className="flex flex-col w-full items-start min-h-[98vh] bg-gray-100 dark:bg-DarkblackBorder rounded-[12px] p-2">
+        <main className={`flex flex-col w-full items-start min-h-[98vh] rounded-[12px] p-2 ${activeSection === "video" ? "bg-white dark:bg-DarkblackText" : "bg-gray-100 dark:bg-DarkblackBorder"}`}>
 
           {activeSection === "info" && (
             <CourseInfo course={course} videos={videos} />
