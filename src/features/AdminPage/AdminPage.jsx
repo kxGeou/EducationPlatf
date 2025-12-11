@@ -56,7 +56,7 @@ export default function AdminPage({ isDark, setIsDark }) {
   // Reports state
   const [statusFilter, setStatusFilter] = useState("all");
   const [openDropdown, setOpenDropdown] = useState(null);
-  const [openFilter, setOpenFilter] = useState(false);
+  const [showReportsCategory, setShowReportsCategory] = useState(false);
   const [replyModal, setReplyModal] = useState(null);
   const [replyText, setReplyText] = useState("");
   
@@ -69,6 +69,7 @@ export default function AdminPage({ isDark, setIsDark }) {
   // Video reviews state
   const [selectedVideoReviews, setSelectedVideoReviews] = useState(null);
   const [sectionFilter, setSectionFilter] = useState("all");
+  const [ratingSort, setRatingSort] = useState("default");
   
   // Task answers state
   const [taskAnswers, setTaskAnswers] = useState([]);
@@ -91,6 +92,8 @@ export default function AdminPage({ isDark, setIsDark }) {
     getUserName, 
     calculateAverageRating, 
     getUniqueSections, 
+    getAllSections,
+    sectionHasReviews,
     getFilteredVideosWithReviews, 
     getStarData,
     loading: videoLoading 
@@ -251,7 +254,7 @@ export default function AdminPage({ isDark, setIsDark }) {
     const closeOnOutsideClick = (e) => {
       if (!e.target.closest(".dropdown")) {
         setOpenDropdown(null);
-        setOpenFilter(false);
+        setShowReportsCategory(false);
       }
     };
     document.addEventListener("click", closeOnOutsideClick);
@@ -353,18 +356,18 @@ export default function AdminPage({ isDark, setIsDark }) {
   }
 
   return (
-    <div className="h-screen overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 dark:from-blackText dark:to-DarkblackText " data-theme={isDark ? "dark" : "light"}>
-    
-     
-      {/* Sidebar + Content */}
-      <AdminNavigation
-        activeSection={activeSection}
-        setActiveSection={setActiveSection}
-        isDark={isDark}
-        setIsDark={setIsDark}
-      />
+    <div className="h-screen overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 dark:from-blackText dark:to-DarkblackText" data-theme={isDark ? "dark" : "light"}>
+      <div className="flex h-full w-full">
+        {/* Navigation */}
+        <AdminNavigation
+          activeSection={activeSection}
+          setActiveSection={setActiveSection}
+          isDark={isDark}
+          setIsDark={setIsDark}
+        />
 
-      <div className="bg-white/90 dark:bg-DarkblackText/90 backdrop-blur-xl shadow-lg w-full md:w-[calc(100vw-260px)] md:max-w-[calc(100vw-260px)] box-border rounded-3xl p-4 sm:p-6 lg:p-8 border border-white/20 dark:border-DarkblackBorder/20 md:ml-[260px] md:h-[calc(100vh-1.5rem)] md:overflow-y-auto">
+        {/* Content Area */}
+        <div className="flex-1 bg-white/90 dark:bg-DarkblackText/90 backdrop-blur-xl shadow-lg rounded-md p-4 sm:p-6 lg:p-8 border border-white/20 dark:border-DarkblackBorder/20 overflow-y-auto">
         {/* Reports Section */}
         {activeSection === "reports" && (
           <ReportsSection
@@ -374,8 +377,8 @@ export default function AdminPage({ isDark, setIsDark }) {
             setOpenDropdown={setOpenDropdown}
             statusFilter={statusFilter}
             setStatusFilter={setStatusFilter}
-            openFilter={openFilter}
-            setOpenFilter={setOpenFilter}
+            showReportsCategory={showReportsCategory}
+            setShowReportsCategory={setShowReportsCategory}
             updateStatus={updateStatus}
             timeAgo={timeAgo}
             setReplyModal={setReplyModal}
@@ -436,8 +439,12 @@ export default function AdminPage({ isDark, setIsDark }) {
         {activeSection === "videoReviews" && (
           <VideoReviewsSection
             getUniqueSections={getUniqueSections}
+            getAllSections={getAllSections}
+            sectionHasReviews={sectionHasReviews}
             sectionFilter={sectionFilter}
             setSectionFilter={setSectionFilter}
+            ratingSort={ratingSort}
+            setRatingSort={setRatingSort}
             getFilteredVideosWithReviews={getFilteredVideosWithReviews}
             getVideoReviews={getVideoReviews}
             calculateAverageRating={calculateAverageRating}
@@ -450,12 +457,13 @@ export default function AdminPage({ isDark, setIsDark }) {
         {activeSection === "calendar" && (
           <CalendarSection timeAgo={timeAgo} />
         )}
+        </div>
       </div>
 
       {/* Reply Modal */}
       {replyModal && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 animate-fadeIn">
-          <div className="bg-white dark:bg-DarkblackBorder rounded-2xl shadow-xl w-full max-w-lg p-6 animate-scaleIn">
+          <div className="bg-white dark:bg-DarkblackBorder rounded-lg shadow-xl w-full max-w-lg p-6 animate-scaleIn">
             <h3 className="text-lg font-semibold text-blackText dark:text-white mb-4">
               Odpowiedź na zgłoszenie
             </h3>
@@ -463,19 +471,19 @@ export default function AdminPage({ isDark, setIsDark }) {
               value={replyText}
               onChange={(e) => setReplyText(e.target.value)}
               rows="4"
-              className="w-full p-3 border border-gray-200 dark:border-DarkblackBorder rounded-lg focus:outline-none focus:ring-2 focus:ring-primaryBlue text-sm dark:bg-DarkblackText dark:text-white"
+              className="w-full p-3 border border-gray-200 dark:border-DarkblackBorder rounded-md focus:outline-none focus:ring-2 focus:ring-primaryBlue text-sm dark:bg-DarkblackText dark:text-white"
               placeholder="Wpisz odpowiedź..."
             />
             <div className="flex justify-end gap-3 mt-4">
               <button
                 onClick={() => setReplyModal(null)}
-                className="px-4 py-2 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-100 transition dark:border-DarkblackBorder dark:text-gray-300 dark:hover:bg-DarkblackText"
+                className="px-4 py-2 rounded-md border border-gray-200 text-gray-600 hover:bg-gray-100 transition dark:border-DarkblackBorder dark:text-gray-300 dark:hover:bg-DarkblackText"
               >
                 Anuluj
               </button>
               <button
                 onClick={handleSendReply}
-                className="px-4 py-2 rounded-lg bg-gradient-to-r from-primaryBlue to-secondaryBlue text-white shadow hover:scale-[1.03] transition"
+                className="px-4 py-2 rounded-md bg-gradient-to-r from-primaryBlue to-secondaryBlue text-white shadow hover:opacity-90 transition-opacity"
               >
                 Wyślij odpowiedź
               </button>
@@ -487,12 +495,11 @@ export default function AdminPage({ isDark, setIsDark }) {
       {/* Poll Creation Modal */}
       {showPollModal && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 animate-fadeIn p-3 sm:p-4">
-          <div className="bg-white dark:bg-DarkblackBorder rounded-2xl shadow-xl w-full max-w-2xl max-h-[95vh] overflow-y-auto animate-scaleIn">
+          <div className="bg-white dark:bg-DarkblackBorder rounded-lg shadow-xl w-full max-w-2xl max-h-[95vh] overflow-y-auto animate-scaleIn">
             <div className="p-4 sm:p-6">
               <div className="flex justify-between items-center mb-4 sm:mb-6">
-                <h3 className="text-lg sm:text-xl font-semibold text-blackText dark:text-white flex items-center gap-2">
-                  <PlusCircle size={20} className="sm:w-6 sm:h-6" />
-                  <span className="text-sm sm:text-base">Stwórz nową ankietę</span>
+                <h3 className="text-lg sm:text-xl font-semibold text-blackText dark:text-white">
+                  Stwórz nową ankietę
                 </h3>
                 <button
                   onClick={() => setShowPollModal(false)}
@@ -513,7 +520,7 @@ export default function AdminPage({ isDark, setIsDark }) {
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     placeholder="Wprowadź tytuł ankiety"
-                    className="w-full border rounded-lg p-3 bg-gray-50 border-gray-200 dark:border-DarkblackBorder dark:bg-DarkblackText dark:text-white focus:outline-none focus:ring-2 focus:ring-primaryBlue transition"
+                    className="w-full border rounded-md p-2 bg-gray-50 border-gray-200 dark:border-DarkblackBorder dark:bg-DarkblackText dark:text-white focus:outline-none focus:ring-2 focus:ring-primaryBlue transition"
                   />
                 </div>
                 
@@ -526,7 +533,7 @@ export default function AdminPage({ isDark, setIsDark }) {
                     onChange={(e) => setDesc(e.target.value)}
                     placeholder="Dodaj opis ankiety..."
                     rows="3"
-                    className="w-full border rounded-lg p-3 bg-gray-50 border-gray-200 dark:border-DarkblackBorder dark:bg-DarkblackText dark:text-white focus:outline-none focus:ring-2 focus:ring-primaryBlue transition resize-none"
+                    className="w-full border rounded-md p-2 bg-gray-50 border-gray-200 dark:border-DarkblackBorder dark:bg-DarkblackText dark:text-white focus:outline-none focus:ring-2 focus:ring-primaryBlue transition resize-none"
                   />
                 </div>
 
@@ -548,7 +555,7 @@ export default function AdminPage({ isDark, setIsDark }) {
                             setOptions(newOps);
                           }}
                           placeholder={`Wprowadź opcję ${i + 1}`}
-                          className="flex-1 border rounded-lg p-3 bg-gray-50 border-gray-200 dark:border-DarkblackBorder dark:bg-DarkblackText dark:text-white focus:outline-none focus:ring-2 focus:ring-primaryBlue transition"
+                          className="flex-1 border rounded-md p-2 bg-gray-50 border-gray-200 dark:border-DarkblackBorder dark:bg-DarkblackText dark:text-white focus:outline-none focus:ring-2 focus:ring-primaryBlue transition"
                         />
                       </div>
                     ))}
@@ -560,19 +567,19 @@ export default function AdminPage({ isDark, setIsDark }) {
                     onClick={() =>
                       options.length < 6 && setOptions([...options, ""])
                     }
-                    className="flex items-center gap-2 justify-center px-4 py-3 rounded-lg bg-green-500 text-white cursor-pointer hover:bg-green-600 transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed"
+                    className="px-4 py-2 rounded-md bg-green-600/80 text-white cursor-pointer hover:bg-green-600/90 transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed"
                     disabled={options.length >= 6}
                   >
-                    <PlusCircle size={18} /> Dodaj opcję
+                    Dodaj opcję
                   </button>
                   <button
                     onClick={() =>
                       options.length > 2 && setOptions(options.slice(0, -1))
                     }
-                    className="flex items-center gap-2 justify-center px-4 py-3 rounded-lg bg-red-500 text-white disabled:opacity-25 disabled:cursor-not-allowed cursor-pointer hover:bg-red-600 transition-all duration-300"
+                    className="px-4 py-2 rounded-md bg-red-600/80 text-white disabled:opacity-25 disabled:cursor-not-allowed cursor-pointer hover:bg-red-600/90 transition-all duration-300"
                     disabled={options.length <= 2}
                   >
-                    <MinusCircle size={18} /> Usuń opcję
+                    Usuń opcję
                   </button>
                 </div>
               </div>
@@ -580,13 +587,13 @@ export default function AdminPage({ isDark, setIsDark }) {
               <div className="flex justify-end gap-3 mt-8 pt-6 border-t border-gray-200 dark:border-DarkblackBorder">
                 <button
                   onClick={() => setShowPollModal(false)}
-                  className="px-6 py-3 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-100 transition dark:border-DarkblackBorder dark:text-gray-300 dark:hover:bg-DarkblackText"
+                  className="px-6 py-2 rounded-md border border-gray-200 text-gray-600 hover:bg-gray-100 transition dark:border-DarkblackBorder dark:text-gray-300 dark:hover:bg-DarkblackText"
                 >
                   Anuluj
                 </button>
                 <button
                   onClick={handleSavePoll}
-                  className="px-6 py-3 rounded-lg bg-primaryBlue dark:bg-primaryGreen text-white font-medium shadow-lg hover:shadow-xl transition-all duration-300 hover:opacity-90"
+                  className="px-6 py-2 rounded-md bg-primaryBlue dark:bg-primaryGreen text-white font-medium shadow-sm hover:opacity-90 transition-opacity duration-200"
                 >
                   Zapisz ankietę
                 </button>
@@ -639,17 +646,22 @@ export default function AdminPage({ isDark, setIsDark }) {
 
       {/* Video Reviews Modal */}
       {selectedVideoReviews && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 animate-fadeIn p-4">
-          <div className="bg-white dark:bg-DarkblackBorder rounded-2xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto animate-scaleIn">
+        <div 
+          className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 animate-fadeIn p-4"
+          onClick={() => setSelectedVideoReviews(null)}
+        >
+          <div 
+            className="bg-white dark:bg-DarkblackBorder rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto animate-scaleIn"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="p-6">
               <div className="flex justify-between items-center mb-6">
                 <div>
-                  <h3 className="text-xl font-semibold text-blackText dark:text-white flex items-center gap-2">
-                    <Video size={24} />
+                  <h3 className="text-lg font-semibold text-blackText dark:text-white">
                     Recenzje wideo
                   </h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                    {selectedVideoReviews.video.title}
+                  <p className="text-lg font-semibold text-blackText dark:text-white mt-2">
+                    Tytuł: <span className="opacity-75">{selectedVideoReviews.video.title}</span>
                   </p>
                 </div>
                 <button

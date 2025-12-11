@@ -3,7 +3,7 @@ import { Trophy, Bell, BarChart3, PenBoxIcon, Video, Gift, Sun, Moon, CreditCard
 
 export default function AdminNavigation({ activeSection, setActiveSection, isDark, setIsDark }) {
   return (
-    <nav className="hidden md:block fixed left-2 top-2 bottom-2 w-[240px] bg-white dark:bg-DarkblackBorder text-blackText dark:text-white shadow-md p-4 rounded-[12px] overflow-y-auto">
+    <nav className="hidden md:flex flex-col w-[240px] text-blackText dark:text-white p-6 overflow-y-auto">
       <div className="flex flex-col w-full h-full justify-between">
         <div className="flex flex-col gap-5 w-full">
           <span

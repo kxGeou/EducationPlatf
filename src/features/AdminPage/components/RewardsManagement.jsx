@@ -1,15 +1,14 @@
 import { useState, useEffect } from 'react';
+import React from 'react';
+import { createPortal } from 'react-dom';
 import { 
-  Gift, 
-  PlusCircle, 
   Edit3, 
   Trash2, 
   X, 
-  Video,
-  Code,
   Star,
-  CheckCircle,
-  AlertCircle
+  ChevronDown,
+  ArrowUp,
+  ArrowDown
 } from 'lucide-react';
 import supabase from '../../../util/supabaseClient';
 import { toast } from '../../../utils/toast';
@@ -19,6 +18,11 @@ export default function RewardsManagement({ isDark }) {
   const [editingReward, setEditingReward] = useState(null);
   const [rewards, setRewards] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showTypeDropdown, setShowTypeDropdown] = useState(false);
+  const [showTypeFilterDropdown, setShowTypeFilterDropdown] = useState(false);
+  const [typeFilter, setTypeFilter] = useState('all');
+  const [showInactive, setShowInactive] = useState(true);
+  const [pointsSort, setPointsSort] = useState('default');
   
   const [formData, setFormData] = useState({
     title: '',
@@ -32,6 +36,22 @@ export default function RewardsManagement({ isDark }) {
   useEffect(() => {
     fetchRewards();
   }, []);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const closeOnOutsideClick = (e) => {
+      if (!e.target.closest(".reward-type-dropdown")) {
+        setShowTypeDropdown(false);
+      }
+      if (!e.target.closest(".type-filter-dropdown")) {
+        setShowTypeFilterDropdown(false);
+      }
+    };
+    if (showTypeDropdown || showTypeFilterDropdown) {
+      document.addEventListener("click", closeOnOutsideClick);
+      return () => document.removeEventListener("click", closeOnOutsideClick);
+    }
+  }, [showTypeDropdown, showTypeFilterDropdown]);
 
   const fetchRewards = async () => {
     try {
@@ -155,34 +175,144 @@ export default function RewardsManagement({ isDark }) {
     setEditingReward(null);
   };
 
-  const getTypeIcon = (type) => {
-    return type === 'project' ? <Code className="w-4 h-4" /> : <Video className="w-4 h-4" />;
-  };
-
   const getTypeColor = (type) => {
     return type === 'project' 
       ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
       : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400';
   };
 
+  // Toggle points sort: default -> asc -> desc -> default
+  const handlePointsSortToggle = () => {
+    if (pointsSort === 'default') {
+      setPointsSort('asc');
+    } else if (pointsSort === 'asc') {
+      setPointsSort('desc');
+    } else {
+      setPointsSort('default');
+    }
+  };
+
+  // Filter and sort rewards
+  const filteredAndSortedRewards = React.useMemo(() => {
+    let filtered = rewards;
+
+    // Filter by type
+    if (typeFilter !== 'all') {
+      filtered = filtered.filter(reward => reward.type === typeFilter);
+    }
+
+    // Filter by active status
+    if (!showInactive) {
+      filtered = filtered.filter(reward => reward.is_active);
+    }
+
+    // Sort by points
+    if (pointsSort === 'default') {
+      return filtered;
+    }
+
+    const sorted = [...filtered];
+    if (pointsSort === 'asc') {
+      return sorted.sort((a, b) => a.points_required - b.points_required);
+    } else if (pointsSort === 'desc') {
+      return sorted.sort((a, b) => b.points_required - a.points_required);
+    }
+
+    return filtered;
+  }, [rewards, typeFilter, showInactive, pointsSort]);
+
   return (
     <div className="space-y-4 sm:space-y-6">
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-        <h2 className="font-bold text-xl sm:text-2xl text-blackText dark:text-white flex items-center gap-2">
-          <Gift size={20} className="sm:w-6 sm:h-6" />
-          Zarządzanie nagrodami ({rewards.length})
+      <div className="flex flex-col gap-4">
+        <h2 className="font-bold text-lg text-blackText dark:text-white">
+          Zarządzanie nagrodami ({filteredAndSortedRewards.length})
         </h2>
-        <button
-          onClick={() => {
-            resetForm();
-            setEditingReward(null);
-            setShowCreateModal(true);
-          }}
-          className="flex items-center justify-center gap-2 px-4 sm:px-6 py-3 bg-gradient-to-r from-primaryBlue to-secondaryBlue dark:from-primaryGreen dark:to-secondaryBlue text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:opacity-90 w-full sm:w-auto"
-        >
-          <PlusCircle size={18} />
-          <span className="text-sm sm:text-base">Utwórz nagrodę</span>
-        </button>
+        <div className="flex flex-wrap gap-2 items-center">
+          <button
+            onClick={() => {
+              resetForm();
+              setEditingReward(null);
+              setShowCreateModal(true);
+            }}
+            className="px-4 py-2.5 bg-primaryBlue dark:bg-primaryGreen text-white rounded-md shadow-sm hover:opacity-90 transition-opacity duration-200 text-sm"
+          >
+            Utwórz nagrodę
+          </button>
+          
+          <div className="h-8 w-px bg-gray-300 dark:bg-gray-600"></div>
+          
+          {/* Type Filter Dropdown */}
+          <div className="type-filter-dropdown relative">
+            <button
+              onClick={() => setShowTypeFilterDropdown((prev) => !prev)}
+              className={`px-4 py-2.5 rounded-md text-sm font-medium transition-all duration-200 flex items-center gap-2 ${
+                typeFilter !== 'all'
+                  ? 'bg-primaryBlue text-white'
+                  : 'bg-gray-200 dark:bg-DarkblackText text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-DarkblackBorder'
+              }`}
+            >
+              <span>{typeFilter === 'all' ? 'Wszystkie typy' : typeFilter === 'project' ? 'Projekt' : 'Film YT'}</span>
+              <ChevronDown className="w-4 h-4" />
+            </button>
+            {showTypeFilterDropdown && (
+              <div className="absolute top-full left-0 mt-2 w-48 bg-white dark:bg-DarkblackBorder dark:border-DarkblackText rounded-md border border-gray-200 z-[9999] animate-slideUp">
+                <div
+                  onClick={() => {
+                    setTypeFilter('all');
+                    setShowTypeFilterDropdown(false);
+                  }}
+                  className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-DarkblackText cursor-pointer text-sm text-blackText dark:text-white transition-colors"
+                >
+                  Wszystkie typy
+                </div>
+                <div
+                  onClick={() => {
+                    setTypeFilter('project');
+                    setShowTypeFilterDropdown(false);
+                  }}
+                  className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-DarkblackText cursor-pointer text-sm text-blackText dark:text-white transition-colors"
+                >
+                  Projekt
+                </div>
+                <div
+                  onClick={() => {
+                    setTypeFilter('video');
+                    setShowTypeFilterDropdown(false);
+                  }}
+                  className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-DarkblackText cursor-pointer text-sm text-blackText dark:text-white transition-colors"
+                >
+                  Film YT
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Show Inactive Filter */}
+          <button
+            onClick={() => setShowInactive(!showInactive)}
+            className={`px-4 py-2.5 rounded-md text-sm font-medium transition-all duration-200 ${
+              showInactive
+                ? 'bg-primaryBlue text-white'
+                : 'bg-gray-200 dark:bg-DarkblackText text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-DarkblackBorder'
+            }`}
+          >
+            {showInactive ? 'Pokaż nieaktywne' : 'Ukryj nieaktywne'}
+          </button>
+
+          {/* Points Sort */}
+          <button
+            onClick={handlePointsSortToggle}
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-md text-sm font-medium transition-all duration-200 ${
+              pointsSort !== 'default'
+                ? 'bg-primaryBlue text-white'
+                : 'bg-gray-200 dark:bg-DarkblackText text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-DarkblackBorder'
+            }`}
+          >
+            {pointsSort === 'asc' && <ArrowUp size={16} />}
+            {pointsSort === 'desc' && <ArrowDown size={16} />}
+            <span>{pointsSort === 'default' ? 'Sortuj punkty' : pointsSort === 'asc' ? 'Rosnące' : 'Malejące'}</span>
+          </button>
+        </div>
       </div>
 
       {loading ? (
@@ -190,83 +320,69 @@ export default function RewardsManagement({ isDark }) {
           Ładowanie nagród...
         </div>
       ) : rewards.length === 0 ? (
-        <div className="text-center py-12 bg-white dark:bg-DarkblackBorder rounded-2xl border border-gray-200 dark:border-DarkblackText">
-          <Gift className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <p className="text-lg text-gray-700 dark:text-gray-300 mb-2">Brak nagród</p>
-          <p className="text-sm text-gray-500 dark:text-gray-400">Kliknij "Utwórz nagrodę" aby rozpocząć</p>
+        <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+          <p className="text-lg">Brak nagród</p>
+          <p className="text-sm">Kliknij "Utwórz nagrodę" aby rozpocząć</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
-          {rewards.map((reward) => (
+          {filteredAndSortedRewards.map((reward) => (
             <div
               key={reward.id}
-              className={`bg-white/80 dark:bg-DarkblackBorder rounded-2xl shadow-lg p-4 sm:p-6 border-2 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${
-                reward.is_active 
-                  ? 'border-gray-200 dark:border-DarkblackText' 
-                  : 'border-gray-300 dark:border-gray-700 opacity-60'
+              className={`bg-white/80 dark:bg-DarkblackBorder rounded-lg shadow-sm p-4 sm:p-6 border border-gray-200 dark:border-DarkblackText flex flex-col ${
+                !reward.is_active ? 'opacity-50' : ''
               }`}
             >
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex items-center gap-2">
-                  {getTypeIcon(reward.type)}
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${getTypeColor(reward.type)}`}>
+              <div>
+                <div className="flex items-start justify-between mb-3">
+                  <span className={`px-3 py-1.5 rounded-md text-xs font-medium ${getTypeColor(reward.type)}`}>
                     {reward.type === 'project' ? 'Projekt' : 'Film YT'}
                   </span>
+                  <div className="flex gap-1">
+                    <button
+                      onClick={() => handleEdit(reward)}
+                      className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-md transition-colors"
+                      title="Edytuj"
+                    >
+                      <Edit3 size={16} className="text-blue-600 dark:text-blue-400" />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(reward.id)}
+                      className="p-2 bg-red-50 dark:bg-red-900/20 rounded-md transition-colors"
+                      title="Usuń"
+                    >
+                      <Trash2 size={16} className="text-red-600 dark:text-red-400" />
+                    </button>
+                  </div>
                 </div>
-                <div className="flex gap-1">
-                  <button
-                    onClick={() => handleEdit(reward)}
-                    className="p-2 hover:bg-gray-100 dark:hover:bg-DarkblackText rounded-lg transition-colors"
-                    title="Edytuj"
+
+                <h3 className="text-lg font-semibold mb-1.5 text-blackText dark:text-white line-clamp-2">
+                  {reward.title}
+                </h3>
+                
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">
+                  {reward.description}
+                </p>
+
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-blue-50 dark:bg-blue-900/20 rounded-md mb-3">
+                  <a 
+                    href={reward.link} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-xs text-blue-700 dark:text-blue-300 hover:underline truncate max-w-[200px]"
                   >
-                    <Edit3 size={16} className="text-gray-600 dark:text-gray-400" />
-                  </button>
-                  <button
-                    onClick={() => handleDelete(reward.id)}
-                    className="p-2 hover:bg-red-100 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-                    title="Usuń"
-                  >
-                    <Trash2 size={16} className="text-red-600 dark:text-red-400" />
-                  </button>
+                    {reward.link}
+                  </a>
                 </div>
               </div>
 
-              <h3 className="text-lg font-semibold mb-2 text-blackText dark:text-white line-clamp-2">
-                {reward.title}
-              </h3>
-              
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 line-clamp-2">
-                {reward.description}
-              </p>
-
-              <div className="flex items-center justify-between mb-4 pb-4 border-b border-gray-200 dark:border-gray-700">
-                <div className="flex items-center gap-2">
+              <div className="mt-auto">
+                <div className="flex items-center gap-1.5 px-2.5 py-1 bg-gray-100 dark:bg-DarkblackText rounded-md w-fit">
                   <Star className="w-4 h-4 text-yellow-500" fill="currentColor" />
                   <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">
                     {reward.points_required} punktów
                   </span>
                 </div>
-                <button
-                  onClick={() => toggleActive(reward)}
-                  className={`px-3 py-1 rounded-full text-xs font-semibold transition-colors ${
-                    reward.is_active
-                      ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                      : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400'
-                  }`}
-                >
-                  {reward.is_active ? 'Aktywna' : 'Nieaktywna'}
-                </button>
-              </div>
-
-              <div className="text-xs text-gray-500 dark:text-gray-400 mb-2">
-                <a 
-                  href={reward.link} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="text-primaryBlue dark:text-primaryGreen hover:underline truncate block"
-                >
-                  {reward.link}
-                </a>
               </div>
             </div>
           ))}
@@ -274,16 +390,23 @@ export default function RewardsManagement({ isDark }) {
       )}
 
       {/* Create/Edit Modal */}
-      {showCreateModal && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 animate-fadeIn p-3 sm:p-4">
-          <div className="bg-white dark:bg-DarkblackBorder rounded-2xl shadow-xl w-full max-w-2xl max-h-[95vh] overflow-y-auto animate-scaleIn">
+      {showCreateModal && createPortal(
+        <div 
+          className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 animate-fadeIn p-4"
+          style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}
+          onClick={() => {
+            setShowCreateModal(false);
+            resetForm();
+          }}
+        >
+          <div 
+            className="bg-white dark:bg-DarkblackBorder rounded-lg shadow-xl w-full max-w-2xl max-h-[95vh] overflow-y-auto animate-scaleIn"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="p-4 sm:p-6">
               <div className="flex justify-between items-center mb-4 sm:mb-6">
-                <h3 className="text-lg sm:text-xl font-semibold text-blackText dark:text-white flex items-center gap-2">
-                  <Gift size={20} className="sm:w-6 sm:h-6" />
-                  <span className="text-sm sm:text-base">
-                    {editingReward ? 'Edytuj nagrodę' : 'Utwórz nową nagrodę'}
-                  </span>
+                <h3 className="text-lg font-semibold text-blackText dark:text-white">
+                  {editingReward ? 'Edytuj nagrodę' : 'Utwórz nową nagrodę'}
                 </h3>
                 <button
                   onClick={() => {
@@ -306,7 +429,7 @@ export default function RewardsManagement({ isDark }) {
                     value={formData.title}
                     onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
                     placeholder="Np. Projekt: Aplikacja To-Do"
-                    className="w-full border rounded-lg p-3 bg-gray-50 border-gray-200 dark:border-DarkblackBorder dark:bg-DarkblackText dark:text-white focus:outline-none focus:ring-2 focus:ring-primaryBlue transition"
+                    className="w-full border rounded-md p-2 bg-gray-50 border-gray-200 dark:border-DarkblackBorder dark:bg-DarkblackText dark:text-white focus:outline-none focus:ring-2 focus:ring-primaryBlue transition"
                     required
                   />
                 </div>
@@ -320,7 +443,7 @@ export default function RewardsManagement({ isDark }) {
                     onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                     placeholder="Opisz nagrodę..."
                     rows="3"
-                    className="w-full border rounded-lg p-3 bg-gray-50 border-gray-200 dark:border-DarkblackBorder dark:bg-DarkblackText dark:text-white focus:outline-none focus:ring-2 focus:ring-primaryBlue transition resize-none"
+                    className="w-full border rounded-md p-2 bg-gray-50 border-gray-200 dark:border-DarkblackBorder dark:bg-DarkblackText dark:text-white focus:outline-none focus:ring-2 focus:ring-primaryBlue transition resize-none"
                     required
                   />
                 </div>
@@ -330,15 +453,38 @@ export default function RewardsManagement({ isDark }) {
                     <label className="block text-sm font-medium text-blackText dark:text-white mb-2">
                       Typ nagrody *
                     </label>
-                    <select
-                      value={formData.type}
-                      onChange={(e) => setFormData(prev => ({ ...prev, type: e.target.value }))}
-                      className="w-full border rounded-lg p-3 bg-gray-50 border-gray-200 dark:border-DarkblackBorder dark:bg-DarkblackText dark:text-white focus:outline-none focus:ring-2 focus:ring-primaryBlue transition"
-                      required
-                    >
-                      <option value="project">Projekt</option>
-                      <option value="video">Film YT</option>
-                    </select>
+                    <div className="reward-type-dropdown relative">
+                      <button
+                        type="button"
+                        onClick={() => setShowTypeDropdown((prev) => !prev)}
+                        className="w-full border rounded-md p-2 bg-gray-50 border-gray-200 dark:border-DarkblackBorder dark:bg-DarkblackText dark:text-white focus:outline-none focus:ring-2 focus:ring-primaryBlue transition flex items-center justify-between text-left"
+                      >
+                        <span>{formData.type === 'project' ? 'Projekt' : 'Film YT'}</span>
+                        <ChevronDown className="w-4 h-4 text-gray-500 dark:text-white/80" />
+                      </button>
+                      {showTypeDropdown && (
+                        <div className="absolute top-full left-0 mt-2 w-full bg-white dark:bg-DarkblackBorder dark:border-DarkblackText rounded-md border border-gray-200 z-[9999] animate-slideUp">
+                          <div
+                            onClick={() => {
+                              setFormData(prev => ({ ...prev, type: 'project' }));
+                              setShowTypeDropdown(false);
+                            }}
+                            className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-DarkblackText cursor-pointer text-sm text-blackText dark:text-white transition-colors"
+                          >
+                            Projekt
+                          </div>
+                          <div
+                            onClick={() => {
+                              setFormData(prev => ({ ...prev, type: 'video' }));
+                              setShowTypeDropdown(false);
+                            }}
+                            className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-DarkblackText cursor-pointer text-sm text-blackText dark:text-white transition-colors"
+                          >
+                            Film YT
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
 
                   <div>
@@ -350,7 +496,7 @@ export default function RewardsManagement({ isDark }) {
                       min="1"
                       value={formData.points_required}
                       onChange={(e) => setFormData(prev => ({ ...prev, points_required: parseInt(e.target.value) || 0 }))}
-                      className="w-full border rounded-lg p-3 bg-gray-50 border-gray-200 dark:border-DarkblackBorder dark:bg-DarkblackText dark:text-white focus:outline-none focus:ring-2 focus:ring-primaryBlue transition"
+                      className="w-full border rounded-md p-2 bg-gray-50 border-gray-200 dark:border-DarkblackBorder dark:bg-DarkblackText dark:text-white focus:outline-none focus:ring-2 focus:ring-primaryBlue transition"
                       required
                     />
                   </div>
@@ -365,7 +511,7 @@ export default function RewardsManagement({ isDark }) {
                     value={formData.link}
                     onChange={(e) => setFormData(prev => ({ ...prev, link: e.target.value }))}
                     placeholder="https://github.com/example/project lub https://youtube.com/..."
-                    className="w-full border rounded-lg p-3 bg-gray-50 border-gray-200 dark:border-DarkblackBorder dark:bg-DarkblackText dark:text-white focus:outline-none focus:ring-2 focus:ring-primaryBlue transition"
+                    className="w-full border rounded-md p-2 bg-gray-50 border-gray-200 dark:border-DarkblackBorder dark:bg-DarkblackText dark:text-white focus:outline-none focus:ring-2 focus:ring-primaryBlue transition"
                     required
                   />
                 </div>
@@ -390,13 +536,13 @@ export default function RewardsManagement({ isDark }) {
                       setShowCreateModal(false);
                       resetForm();
                     }}
-                    className="px-6 py-3 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-100 transition dark:border-DarkblackBorder dark:text-gray-300 dark:hover:bg-DarkblackText"
+                    className="px-6 py-2 rounded-md border border-gray-200 text-gray-600 hover:bg-gray-100 transition dark:border-DarkblackBorder dark:text-gray-300 dark:hover:bg-DarkblackText"
                   >
                     Anuluj
                   </button>
                   <button
                     type="submit"
-                    className="px-6 py-3 rounded-lg bg-primaryBlue dark:bg-primaryGreen text-white font-medium shadow-lg hover:shadow-xl transition-all duration-300 hover:opacity-90"
+                    className="px-6 py-2 rounded-md bg-primaryBlue dark:bg-primaryGreen text-white font-medium shadow-sm hover:opacity-90 transition-opacity duration-200"
                   >
                     {editingReward ? 'Zaktualizuj' : 'Utwórz'} nagrodę
                   </button>
@@ -404,7 +550,8 @@ export default function RewardsManagement({ isDark }) {
               </form>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

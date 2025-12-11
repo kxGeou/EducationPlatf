@@ -1,11 +1,9 @@
-import { PenBoxIcon } from "lucide-react";
 import React from "react";
 
 export default function IdeasSection({ ideas }) {
   return (
     <div className="space-y-4 sm:space-y-6">
-      <h2 className="font-bold text-xl sm:text-2xl text-blackText dark:text-white flex items-center gap-2">
-        <PenBoxIcon size={20} className="sm:w-6 sm:h-6" />
+      <h2 className="font-bold text-lg text-blackText dark:text-white">
         Pomysły użytkowników ({ideas.length})
       </h2>
       {ideas.length === 0 ? (
@@ -17,27 +15,36 @@ export default function IdeasSection({ ideas }) {
           {ideas.map((idea, index) => (
             <div
               key={index}
-              className="bg-white/80 dark:bg-DarkblackBorder shadow-lg rounded-2xl p-4 sm:p-6 border border-gray-100 dark:border-DarkblackText transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
+              className="bg-white/80 dark:bg-DarkblackBorder shadow-sm rounded-lg p-4 sm:p-6 border border-gray-200 dark:border-DarkblackText"
             >
+              {/* Typ pomysłu */}
               <span
-                className={`${
+                className={`inline-block mb-2 ${
                   idea.type === "Design" &&
-                  "bg-indigo-400 text-sm text-white px-3 py-1 border border-indigo-500/50 rounded-[8px]"
+                  "bg-indigo-500/70 text-sm text-white px-3 py-1.5 rounded-md"
                 } ${
                   idea.type === "Funkcjonalność" &&
-                  "bg-green-400 text-sm text-white px-3 py-1 border border-green-500/50 rounded-[8px]"
+                  "bg-green-500/70 text-sm text-white px-3 py-1.5 rounded-md"
                 } ${
                   idea.type === "Inne" &&
-                  "bg-red-400 text-sm text-white px-3 py-1 border border-red-500/50 rounded-[8px]"
+                  "bg-red-500/70 text-sm text-white px-3 py-1.5 rounded-md"
                 }`}
               >
                 {idea.type}
               </span>
-              <p className="text-md opacity-75 mt-2 text-gray-600 dark:text-gray-400">{idea.user_email}</p>
-              <p className="text-lg font-semibold mt-2 text-blackText dark:text-white">{idea.name}</p>
-              <p className="bg-gray-100 dark:bg-blackText/50 dark:text-white/75 p-3 text-blackText/75 mt-2 rounded-lg">
+              
+              {/* Tytuł */}
+              <p className="text-lg font-semibold mt-2 mb-1.5 text-blackText dark:text-white">{idea.name}</p>
+              
+              {/* Opis */}
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
                 {idea.description}
               </p>
+              
+              {/* Mini badge z emailem */}
+              <div className="inline-flex items-center px-2.5 py-1 bg-gray-100 dark:bg-DarkblackText rounded-md">
+                <span className="text-xs text-gray-600 dark:text-gray-400">{idea.user_email}</span>
+              </div>
             </div>
           ))}
         </div>

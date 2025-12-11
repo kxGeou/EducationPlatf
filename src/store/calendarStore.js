@@ -311,7 +311,7 @@ export const useCalendarStore = create((set, get) => ({
   },
 
   // Admin: Create availability slot
-  createAvailability: async (date, startTime, endTime, classType, maxParticipants = 1) => {
+  createAvailability: async (date, startTime, endTime, classType, maxParticipants = 1, isWebinar = false) => {
     set({ loading: true, error: null });
     try {
       // Validate max_participants based on class_type
@@ -330,7 +330,8 @@ export const useCalendarStore = create((set, get) => ({
           end_time: endTime,
           class_type: classType,
           max_participants: maxParticipants,
-          is_active: true
+          is_active: true,
+          is_webinar: isWebinar || false
         })
         .select()
         .single();
@@ -627,8 +628,13 @@ export const useCalendarStore = create((set, get) => ({
   },
 
   // Create time preference
-  createPreference: async ({ userId, labelId, date, startTime, endTime, description }) => {
-    set({ loading: true, error: null });
+  createPreference: async ({ userId, labelId, date, startTime, endTime, description, skipToast = false }) => {
+    // Only set loading if not already loading (to avoid conflicts with batch operations)
+    const currentState = get();
+    if (!currentState.loading) {
+      set({ loading: true, error: null });
+    }
+    
     try {
       const { data, error } = await supabase
         .from('user_time_preferences')
@@ -662,12 +668,16 @@ export const useCalendarStore = create((set, get) => ({
         loading: false
       }));
 
-      toast.success('Preferencja została dodana');
+      if (!skipToast) {
+        toast.success('Preferencja została dodana');
+      }
       return data;
     } catch (err) {
       console.error('Error creating preference:', err);
       set({ error: err.message, loading: false });
-      toast.error(err.message || 'Nie udało się dodać preferencji');
+      if (!skipToast) {
+        toast.error(err.message || 'Nie udało się dodać preferencji');
+      }
       throw err;
     }
   },
@@ -1032,6 +1042,42 @@ export const useCalendarStore = create((set, get) => ({
       set({ error: err.message, loading: false });
       toast.error('Nie udało się usunąć etykiety');
       throw err;
+    }
+  },
+
+  // Get next webinar (is_webinar = true)
+  getNextWebinar: async () => {
+    try {
+      const now = new Date().toISOString();
+      const { data, error } = await supabase
+        .from('class_availability')
+        .select('*')
+        .eq('is_webinar', true)
+        .eq('is_active', true)
+        .gte('date', new Date().toISOString().split('T')[0])
+        .order('date', { ascending: true })
+        .order('start_time', { ascending: true })
+        .limit(1)
+        .single();
+
+      if (error) {
+        // If no webinar found, return null
+        if (error.code === 'PGRST116') {
+          return null;
+        }
+        throw error;
+      }
+
+      // Check if the webinar hasn't passed yet (check date and time)
+      const webinarDateTime = new Date(`${data.date}T${data.end_time}`);
+      if (webinarDateTime < new Date()) {
+        return null;
+      }
+
+      return data;
+    } catch (err) {
+      console.error('Error fetching next webinar:', err);
+      return null;
     }
   }
 }));

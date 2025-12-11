@@ -1,12 +1,8 @@
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useCalendarStore } from '../../../../store/calendarStore';
-import { Calendar, Clock, Users, User, Plus, Edit, Trash2, CheckCircle, XCircle, Eye, X, Mail, Hash, MessageSquare, Check, X as XIcon, Archive, Tag, Filter } from 'lucide-react';
-import FullCalendar from '@fullcalendar/react';
-import dayGridPlugin from '@fullcalendar/daygrid';
-import timeGridPlugin from '@fullcalendar/timegrid';
-import interactionPlugin from '@fullcalendar/interaction';
-import '../../../CalendarPage/CalendarPage.css';
+import { Calendar, Clock, Users, User, Plus, Edit, Trash2, CheckCircle, XCircle, Eye, X, Mail, Hash, MessageSquare, Check, X as XIcon, Archive, Tag, Filter, ChevronDown } from 'lucide-react';
+import CustomCalendar from '../../../CalendarPage/components/CustomCalendar';
 import { formatTimeRange, formatDate } from '../../../../utils/timePreferencesUtils';
 import supabase from '../../../../util/supabaseClient';
 
@@ -43,18 +39,30 @@ export default function CalendarSection({ timeAgo }) {
     startTime: '09:00',
     endTime: '10:00',
     classType: 'individual',
-    maxParticipants: 1
+    maxParticipants: 1,
+    isWebinar: false
   });
   const [formErrors, setFormErrors] = useState({});
-  const [activeTab, setActiveTab] = useState('bookings'); // 'bookings' or 'preferences'
+  const [activeTab, setActiveTab] = useState('bookings'); // 'bookings', 'upcoming', 'archived', or 'preferences'
   
   // Preferences tab state
   const [showLabelModal, setShowLabelModal] = useState(false);
+  const [showLabelsManagementModal, setShowLabelsManagementModal] = useState(false);
   const [editingLabel, setEditingLabel] = useState(null);
   const [labelFormData, setLabelFormData] = useState({ name: '', color: '' });
   const [showOverlapDetailsModal, setShowOverlapDetailsModal] = useState(false);
   const [selectedOverlap, setSelectedOverlap] = useState(null);
   const [overlapUsers, setOverlapUsers] = useState([]);
+  const [preferenceFilters, setPreferenceFilters] = useState({
+    classType: null, // 'individual' or 'group' or null
+    meetingType: null, // 'webinar' or 'regular' or null
+    topic: null // topic filter
+  });
+  const [openClassTypeDropdown, setOpenClassTypeDropdown] = useState(false);
+  const [openTopicDropdown, setOpenTopicDropdown] = useState(false);
+  const [openStartTimeDropdown, setOpenStartTimeDropdown] = useState(false);
+  const [openEndTimeDropdown, setOpenEndTimeDropdown] = useState(false);
+  const [openClassTypeModalDropdown, setOpenClassTypeModalDropdown] = useState(false);
 
   // Generate time options for dropdowns (30-minute intervals from 08:00 to 20:00)
   const timeOptions = [];
@@ -71,6 +79,21 @@ export default function CalendarSection({ timeAgo }) {
       loadPreferencesData();
     }
   }, [activeTab]);
+
+  // Close dropdowns on outside click
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (!event.target.closest('.dropdown-container')) {
+        setOpenClassTypeDropdown(false);
+        setOpenTopicDropdown(false);
+        setOpenStartTimeDropdown(false);
+        setOpenEndTimeDropdown(false);
+        setOpenClassTypeModalDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const loadPreferencesData = async () => {
     try {
@@ -104,7 +127,8 @@ export default function CalendarSection({ timeAgo }) {
       startTime: '09:00',
       endTime: '10:00',
       classType: 'individual',
-      maxParticipants: 1
+      maxParticipants: 1,
+      isWebinar: false
     });
     setFormErrors({});
     setEditingSlot(null);
@@ -122,7 +146,8 @@ export default function CalendarSection({ timeAgo }) {
       startTime: slot.start_time.substring(0, 5),
       endTime: slot.end_time.substring(0, 5),
       classType: slot.class_type,
-      maxParticipants: slot.max_participants
+      maxParticipants: slot.max_participants,
+      isWebinar: slot.is_webinar || false
     });
     setFormErrors({});
     setShowAddModal(true);
@@ -235,7 +260,8 @@ export default function CalendarSection({ timeAgo }) {
           start_time: `${formData.startTime.trim()}:00`,
           end_time: `${formData.endTime.trim()}:00`,
           class_type: formData.classType.trim(),
-          max_participants: maxParticipants
+          max_participants: maxParticipants,
+          is_webinar: formData.isWebinar || false
         });
       } else {
         await createAvailability(
@@ -243,7 +269,8 @@ export default function CalendarSection({ timeAgo }) {
           `${formData.startTime.trim()}:00`,
           `${formData.endTime.trim()}:00`,
           formData.classType.trim(),
-          maxParticipants
+          maxParticipants,
+          formData.isWebinar || false
         );
       }
 
@@ -346,14 +373,87 @@ export default function CalendarSection({ timeAgo }) {
     };
   });
 
-  // Prepare calendar events from overlapping hours (if available)
-  const overlappingEvents = (overlappingHours || []).map((overlap, idx) => {
+  // Prepare calendar events from user preferences (yellow squares) with filters
+  const filteredPreferences = (preferences || []).filter((pref) => {
+    // Filter by class type (individual/group)
+    if (preferenceFilters.classType) {
+      const prefType = pref.preference_labels?.type;
+      if (prefType !== preferenceFilters.classType) {
+        return false;
+      }
+    }
+    // Filter by topic
+    if (preferenceFilters.topic) {
+      const prefTopic = pref.preference_labels?.topic;
+      if (prefTopic !== preferenceFilters.topic) {
+        return false;
+      }
+    }
+    return true;
+  });
+
+  const preferenceEvents = filteredPreferences.map((pref) => {
+    const start = `${pref.date}T${pref.start_time}`;
+    const end = `${pref.date}T${pref.end_time}`;
+    const labelName = pref.preference_labels?.name || 'Preferencja';
+
+    return {
+      id: `preference-${pref.id}`,
+      title: labelName,
+      start,
+      end,
+      backgroundColor: '#fbbf24', // yellow/amber for preferences
+      borderColor: '#f59e0b',
+      display: 'block',
+      extendedProps: {
+        type: 'preference',
+        preference: pref
+      }
+    };
+  });
+
+  // Prepare calendar events from overlapping hours (if available) with filters
+  const filteredOverlappingHours = (overlappingHours || []).filter((overlap) => {
+    // Filter by class type - check if any preference in overlap matches
+    if (preferenceFilters.classType) {
+      const overlapPrefs = preferences.filter(p => 
+        overlap.user_ids?.includes(p.user_id) &&
+        p.date === overlap.date &&
+        p.start_time < overlap.end_time &&
+        p.end_time > overlap.start_time
+      );
+      const hasMatchingType = overlapPrefs.some(p => 
+        p.preference_labels?.type === preferenceFilters.classType
+      );
+      if (!hasMatchingType) {
+        return false;
+      }
+    }
+    // Filter by topic - check if any preference in overlap matches
+    if (preferenceFilters.topic) {
+      const overlapPrefs = preferences.filter(p => 
+        overlap.user_ids?.includes(p.user_id) &&
+        p.date === overlap.date &&
+        p.start_time < overlap.end_time &&
+        p.end_time > overlap.start_time
+      );
+      const hasMatchingTopic = overlapPrefs.some(p => 
+        p.preference_labels?.topic === preferenceFilters.topic
+      );
+      if (!hasMatchingTopic) {
+        return false;
+      }
+    }
+    return true;
+  });
+
+  const overlappingEvents = filteredOverlappingHours.map((overlap, idx) => {
     const start = `${overlap.date}T${overlap.start_time}`;
     const end = `${overlap.date}T${overlap.end_time}`;
 
     return {
       id: `overlap-${idx}`,
-      title: `Część wspólna (${overlap.user_count} użytkowników)`,
+      title: `${overlap.user_count} użytkowników`,
       start,
       end,
       backgroundColor: '#10b981', // green for overlapping hours
@@ -368,26 +468,86 @@ export default function CalendarSection({ timeAgo }) {
 
   // Combine events based on active tab
   // For bookings tab: only show availability (admin-created meetings)
-  // For preferences tab: only show overlapping hours (user preferences)
+  // For preferences tab: show both individual preferences (yellow) and overlapping hours (green)
   const calendarEvents = activeTab === 'bookings' 
     ? [...availabilityEvents] 
-    : [...overlappingEvents];
+    : [...preferenceEvents, ...overlappingEvents];
 
-  const handleEventClick = (clickInfo) => {
-    const eventType = clickInfo.event.extendedProps.type;
+  const handleEventClick = (event) => {
+    const eventType = event.extendedProps?.type;
+    
+    if (eventType === 'preference') {
+      // Handle preference click - show users with overlapping hours
+      const preference = event.extendedProps?.preference;
+      if (preference) {
+        handlePreferenceClick(preference);
+      }
+      return;
+    }
     
     if (eventType === 'overlap') {
       // Show overlap details modal (only in preferences tab)
-      const overlap = clickInfo.event.extendedProps.overlap;
-      handleOverlapClick(overlap);
+      const overlap = event.extendedProps?.overlap;
+      if (overlap) {
+        handleOverlapClick(overlap);
+      }
       return;
     }
     
     // For availability events (bookings tab)
-    const slot = clickInfo.event.extendedProps.slot;
+    const slot = event.extendedProps?.slot;
     if (slot) {
       handleViewBookings(slot);
     }
+  };
+
+  // Handle preference click - find users with overlapping hours
+  const handlePreferenceClick = (preference) => {
+    if (!preference) return;
+
+    setSelectedOverlap({
+      date: preference.date,
+      start_time: preference.start_time,
+      end_time: preference.end_time
+    });
+    
+    // Find all preferences that overlap with this one
+    const overlappingPrefs = (preferences || []).filter((pref) => {
+      // Same date
+      if (pref.date !== preference.date) return false;
+      // Different user
+      if (pref.user_id === preference.user_id) return false;
+      // Times overlap
+      const prefStart = pref.start_time;
+      const prefEnd = pref.end_time;
+      const selectedStart = preference.start_time;
+      const selectedEnd = preference.end_time;
+      
+      return prefStart < selectedEnd && prefEnd > selectedStart;
+    });
+
+    // Get unique users with their preferences
+    const usersMap = new Map();
+    overlappingPrefs.forEach((pref) => {
+      if (!usersMap.has(pref.user_id)) {
+        usersMap.set(pref.user_id, {
+          id: pref.users?.id || pref.user_id,
+          email: pref.users?.email || '',
+          full_name: pref.users?.full_name || '',
+          preferences: []
+        });
+      }
+      usersMap.get(pref.user_id).preferences.push({
+        start_time: pref.start_time,
+        end_time: pref.end_time,
+        label: pref.preference_labels,
+        type: pref.preference_labels?.type || 'unknown',
+        topic: pref.preference_labels?.topic || ''
+      });
+    });
+
+    setOverlapUsers(Array.from(usersMap.values()));
+    setShowOverlapDetailsModal(true);
   };
 
   // Filter end time options based on selected start time
@@ -429,45 +589,103 @@ export default function CalendarSection({ timeAgo }) {
     }
   };
 
-  const handleOverlapClick = (overlap) => {
+  const handleOverlapClick = async (overlap) => {
     if (!overlap || !overlap.user_ids || overlap.user_ids.length === 0) {
       return;
     }
 
     setSelectedOverlap(overlap);
     setShowOverlapDetailsModal(true);
+    setOverlapUsers([]); // Clear previous users
 
     // Get user data directly from preferences (frontend filtering)
-    const userIds = overlap.user_ids.filter(id => id && typeof id === 'string');
+    // Convert all IDs to strings for reliable comparison
+    const userIds = overlap.user_ids.map(id => String(id));
     const usersMap = new Map();
 
-    // Collect all unique users from preferences
+    // Collect all unique users from preferences with their time preferences
     preferences.forEach(pref => {
-      if (userIds.includes(pref.user_id) && pref.users) {
-        const userId = pref.user_id;
-        if (!usersMap.has(userId)) {
-          // Get all labels for this user from their preferences
-          const userPrefs = preferences.filter(p => p.user_id === userId);
-          const userLabels = userPrefs
-            .map(p => p.preference_labels)
-            .filter(Boolean)
-            .filter((label, index, self) => 
-              index === self.findIndex(l => l && l.id === label.id)
-            );
-
-          usersMap.set(userId, {
-            id: pref.users.id || userId,
-            email: pref.users.email || '',
-            full_name: pref.users.full_name || '',
-            tags: userLabels
+      const prefUserId = String(pref.user_id);
+      
+      // Check if this user is in the overlap
+      if (userIds.includes(prefUserId)) {
+        // Check if this preference overlaps with the selected overlap time range
+        const prefStart = pref.start_time;
+        const prefEnd = pref.end_time;
+        const overlapStart = overlap.start_time;
+        const overlapEnd = overlap.end_time;
+        const sameDate = pref.date === overlap.date;
+        const timesOverlap = prefStart < overlapEnd && prefEnd > overlapStart;
+        
+        if (sameDate && timesOverlap) {
+          if (!usersMap.has(prefUserId)) {
+            // Try to get user data from pref.users (should be populated by fetchAllPreferences)
+            const userData = pref.users || {};
+            usersMap.set(prefUserId, {
+              id: userData.id || prefUserId,
+              email: userData.email || '',
+              full_name: userData.full_name || '',
+              preferences: []
+            });
+          }
+          
+          // Add this preference time range
+          usersMap.get(prefUserId).preferences.push({
+            start_time: pref.start_time,
+            end_time: pref.end_time,
+            label: pref.preference_labels,
+            type: pref.preference_labels?.type || 'unknown',
+            topic: pref.preference_labels?.topic || ''
           });
         }
       }
     });
 
-    // Convert map to array
+    // If we still don't have user data, try to fetch it from Supabase
     const usersArray = Array.from(usersMap.values());
-    setOverlapUsers(usersArray);
+    
+    // If we have user_ids but no user data, fetch user details
+    if (usersArray.length === 0 && userIds.length > 0) {
+      try {
+        const { data: usersData, error } = await supabase
+          .from('users')
+          .select('id, email, full_name')
+          .in('id', userIds);
+        
+        if (!error && usersData) {
+          // Now match users with their preferences
+          usersData.forEach(user => {
+            const userPrefs = preferences.filter(p => 
+              String(p.user_id) === String(user.id) &&
+              p.date === overlap.date &&
+              p.start_time < overlap.end_time &&
+              p.end_time > overlap.start_time
+            );
+            
+            if (userPrefs.length > 0) {
+              usersMap.set(String(user.id), {
+                id: user.id,
+                email: user.email || '',
+                full_name: user.full_name || '',
+                preferences: userPrefs.map(pref => ({
+                  start_time: pref.start_time,
+                  end_time: pref.end_time,
+                  label: pref.preference_labels,
+                  type: pref.preference_labels?.type || 'unknown',
+                  topic: pref.preference_labels?.topic || ''
+                }))
+              });
+            }
+          });
+        }
+      } catch (err) {
+        console.error('Error fetching user data:', err);
+      }
+    }
+
+    // Convert map to array
+    const finalUsersArray = Array.from(usersMap.values());
+    setOverlapUsers(finalUsersArray);
   };
 
   return (
@@ -475,9 +693,9 @@ export default function CalendarSection({ timeAgo }) {
       {/* Modals - rendered via Portal to ensure full screen overlay */}
       {showOverlapDetailsModal && selectedOverlap && createPortal(
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999] p-4" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}>
-          <div className="bg-white dark:bg-DarkblackBorder rounded-lg shadow-xl max-w-md w-full max-h-[80vh] overflow-y-auto">
+          <div className="bg-white dark:bg-DarkblackBorder rounded shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
-              <div className="flex justify-between items-center mb-4">
+              <div className="flex justify-between items-center mb-6">
                 <h3 className="text-xl font-bold">Część wspólna godzin</h3>
                 <button
                   onClick={() => {
@@ -491,7 +709,7 @@ export default function CalendarSection({ timeAgo }) {
                 </button>
               </div>
               
-              <div className="space-y-4">
+              <div className="space-y-4 mb-6">
                 <div>
                   <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Data</div>
                   <div className="font-medium">
@@ -505,62 +723,185 @@ export default function CalendarSection({ timeAgo }) {
                     {formatTimeRange(selectedOverlap.start_time, selectedOverlap.end_time)}
                   </div>
                 </div>
-                
-                <div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                    Użytkownicy ({selectedOverlap.user_count})
-                  </div>
-                  {overlapUsers.length > 0 ? (
-                    <div className="space-y-2">
-                      {overlapUsers.map((user) => {
-                        return (
-                          <div
-                            key={user.id}
-                            className="p-3 border border-gray-200 dark:border-DarkblackBorder rounded-lg"
-                          >
-                            <div className="flex items-center gap-3 mb-2">
-                              <div className="w-8 h-8 rounded-full bg-primaryBlue dark:bg-primaryGreen flex items-center justify-center text-white font-semibold">
-                                {user.full_name ? user.full_name.charAt(0).toUpperCase() : user.email?.charAt(0).toUpperCase() || '?'}
-                              </div>
-                              <div className="flex-1">
-                                <div className="font-medium">
-                                  {user.full_name || user.email || 'Nieznany użytkownik'}
-                                </div>
-                                {user.full_name && user.email && (
-                                  <div className="text-sm text-gray-500 dark:text-gray-400">
-                                    {user.email}
-                                  </div>
-                                )}
-                              </div>
+              </div>
+              
+              <div>
+                <div className="text-sm text-gray-600 dark:text-gray-400 mb-3 font-medium">
+                  Użytkownicy ({overlapUsers.length})
+                </div>
+                {overlapUsers.length > 0 ? (
+                  <div className="space-y-3">
+                    {overlapUsers.map((user, idx) => {
+                      const initials = user.full_name 
+                        ? user.full_name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2)
+                        : user.email 
+                        ? user.email.substring(0, 2).toUpperCase()
+                        : '?';
+                      
+                      return (
+                        <div
+                          key={user.id || idx}
+                          className="p-4 border border-gray-200 dark:border-DarkblackBorder rounded shadow-sm bg-white dark:bg-DarkblackText"
+                        >
+                          <div className="flex items-start gap-4 mb-3">
+                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
+                              {initials}
                             </div>
-                            {user.tags && user.tags.length > 0 && (
-                              <div className="flex flex-wrap gap-2 mt-2">
-                                {user.tags.map((label) => (
-                                  <span
-                                    key={label.id}
-                                    className="px-2 py-1 rounded text-xs"
-                                    style={{
-                                      backgroundColor: label.color ? `${label.color}20` : '#f3f4f6',
-                                      color: label.color || '#374151',
-                                      border: `1px solid ${label.color || '#d1d5db'}`
-                                    }}
+                            <div className="flex-1 min-w-0">
+                              <div className="font-semibold text-lg text-gray-900 dark:text-white mb-1">
+                                {user.full_name || 'Brak nazwy użytkownika'}
+                              </div>
+                              {user.email && (
+                                <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                                  <Mail className="w-4 h-4" />
+                                  <span>{user.email}</span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                          
+                          {user.preferences && user.preferences.length > 0 && (
+                            <div className="mt-4 pt-4 border-t border-gray-200 dark:border-DarkblackText">
+                              <div className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Godziny preferencji:
+                              </div>
+                              <div className="space-y-2">
+                                {user.preferences.map((pref, prefIdx) => (
+                                  <div
+                                    key={prefIdx}
+                                    className="p-3 bg-gray-50 dark:bg-DarkblackBorder rounded"
                                   >
-                                    {label.type && label.topic ? `${label.type === 'individual' ? 'Indywidualne' : 'Grupowe'} - ${label.topic}` : label.name}
-                                  </span>
+                                    <div className="flex items-center gap-2 mb-2">
+                                      <Clock className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                                      <span className="text-sm font-medium text-gray-900 dark:text-white">
+                                        {pref.start_time.substring(0, 5)} - {pref.end_time.substring(0, 5)}
+                                      </span>
+                                    </div>
+                                    {pref.label && (
+                                      <div className="flex flex-wrap gap-2">
+                                        <span
+                                          className="px-2 py-1 rounded text-xs font-medium"
+                                          style={{
+                                            backgroundColor: pref.label.color ? `${pref.label.color}20` : '#f3f4f6',
+                                            color: pref.label.color || '#374151',
+                                            border: `1px solid ${pref.label.color || '#d1d5db'}`
+                                          }}
+                                        >
+                                          {pref.type === 'individual' ? 'Indywidualne' : pref.type === 'group' ? 'Grupowe' : 'Nieznany'} - {pref.topic || pref.label.name || 'Brak tematu'}
+                                        </span>
+                                      </div>
+                                    )}
+                                  </div>
                                 ))}
                               </div>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  ) : (
-                    <div className="text-gray-500 dark:text-gray-400">
-                      Ładowanie użytkowników...
-                    </div>
-                  )}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                    Ładowanie użytkowników...
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* Labels Management Modal */}
+      {showLabelsManagementModal && createPortal(
+        <div 
+          className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 animate-fadeIn p-4"
+          style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}
+          onClick={() => setShowLabelsManagementModal(false)}
+        >
+          <div 
+            className="bg-white dark:bg-DarkblackBorder rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto animate-scaleIn"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-6 border-b border-gray-200 dark:border-DarkblackText">
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-semibold text-blackText dark:text-white">
+                  Zarządzanie etykietami
+                </h3>
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => {
+                      setEditingLabel(null);
+                      setLabelFormData({ name: '', color: '' });
+                      setShowLabelModal(true);
+                      setShowLabelsManagementModal(false);
+                    }}
+                    className="px-4 py-2 bg-primaryBlue dark:bg-primaryGreen text-white rounded-md text-sm font-medium hover:opacity-90 transition"
+                  >
+                    Dodaj etykietę
+                  </button>
+                  <button
+                    onClick={() => setShowLabelsManagementModal(false)}
+                    className="p-2 hover:bg-gray-100 dark:hover:bg-DarkblackText rounded-md transition-colors"
+                  >
+                    <X size={20} className="text-gray-500 dark:text-gray-400" />
+                  </button>
                 </div>
               </div>
+            </div>
+            <div className="p-6">
+              {labels.length === 0 ? (
+                <p className="text-gray-600 dark:text-gray-400 text-center py-8">Brak etykiet. Dodaj pierwszą etykietę.</p>
+              ) : (
+                <div className="max-h-[calc(90vh-200px)] overflow-y-auto">
+                  <div className="grid grid-cols-2 gap-4">
+                    {labels.map((label) => (
+                      <div
+                        key={label.id}
+                        className="p-4 bg-white dark:bg-DarkblackText border border-gray-200 dark:border-DarkblackBorder rounded-md shadow-sm flex justify-between items-center"
+                      >
+                        <div className="flex items-center gap-2 flex-1 min-w-0">
+                          {label.color && (
+                            <div
+                              className="w-4 h-4 rounded-full flex-shrink-0"
+                              style={{ backgroundColor: label.color }}
+                            />
+                          )}
+                          <span className="text-gray-900 dark:text-white truncate">{label.name}</span>
+                        </div>
+                        <div className="flex gap-2 flex-shrink-0">
+                          <button
+                            onClick={() => {
+                              setEditingLabel(label);
+                              setLabelFormData({ name: label.name, color: label.color || '' });
+                              setShowLabelModal(true);
+                              setShowLabelsManagementModal(false);
+                            }}
+                            className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-md hover:bg-blue-100 dark:hover:bg-blue-900/30 transition"
+                          >
+                            <Edit size={16} className="text-blue-400 dark:text-blue-300" />
+                          </button>
+                          <button
+                            onClick={async () => {
+                              if (window.confirm('Czy na pewno chcesz usunąć tę etykietę?')) {
+                                try {
+                                  await deleteLabel(label.id);
+                                  await fetchLabels();
+                                } catch (err) {
+                                  // Error handled in store
+                                }
+                              }
+                            }}
+                            className="p-2 bg-red-50 dark:bg-red-900/20 rounded-md hover:bg-red-100 dark:hover:bg-red-900/30 transition"
+                          >
+                            <Trash2 size={16} className="text-red-400 dark:text-red-300" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>,
@@ -569,8 +910,19 @@ export default function CalendarSection({ timeAgo }) {
 
       {/* Label Modal */}
       {showLabelModal && createPortal(
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999] p-4" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}>
-          <div className="bg-white dark:bg-DarkblackBorder rounded-lg shadow-xl max-w-md w-full">
+        <div 
+          className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 animate-fadeIn p-4"
+          style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}
+          onClick={() => {
+            setShowLabelModal(false);
+            setEditingLabel(null);
+            setLabelFormData({ name: '', color: '' });
+          }}
+        >
+          <div 
+            className="bg-white dark:bg-DarkblackBorder rounded-lg shadow-xl max-w-md w-full animate-scaleIn"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="p-6">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-xl font-bold">
@@ -594,7 +946,7 @@ export default function CalendarSection({ timeAgo }) {
                     type="text"
                     value={labelFormData.name}
                     onChange={(e) => setLabelFormData({ ...labelFormData, name: e.target.value })}
-                    className="w-full p-2 border border-gray-300 dark:border-DarkblackBorder dark:bg-DarkblackBorder/50 rounded"
+                    className="w-full px-4 py-2 border border-gray-200 dark:border-DarkblackBorder dark:bg-DarkblackText rounded-md"
                     required
                   />
                 </div>
@@ -604,7 +956,7 @@ export default function CalendarSection({ timeAgo }) {
                     type="color"
                     value={labelFormData.color || '#3b82f6'}
                     onChange={(e) => setLabelFormData({ ...labelFormData, color: e.target.value })}
-                    className="w-full h-10 border border-gray-300 dark:border-DarkblackBorder rounded"
+                    className="w-full h-10 border border-gray-200 dark:border-DarkblackBorder rounded-md"
                   />
                 </div>
                 <div className="flex gap-2 justify-end">
@@ -615,13 +967,13 @@ export default function CalendarSection({ timeAgo }) {
                       setEditingLabel(null);
                       setLabelFormData({ name: '', color: '' });
                     }}
-                    className="px-4 py-2 border border-gray-300 dark:border-DarkblackBorder rounded hover:bg-gray-100 dark:hover:bg-DarkblackBorder/50 transition"
+                    className="px-4 py-2 border border-gray-300 dark:border-DarkblackBorder rounded-md hover:bg-gray-100 dark:hover:bg-DarkblackBorder/50 transition"
                   >
                     Anuluj
                   </button>
                   <button
                     type="submit"
-                    className="px-4 py-2 bg-primaryBlue dark:bg-primaryGreen text-white rounded hover:opacity-90 transition"
+                    className="px-4 py-2 bg-primaryBlue dark:bg-primaryGreen text-white rounded-md hover:opacity-90 transition"
                   >
                     {editingLabel ? 'Zaktualizuj' : 'Dodaj'}
                   </button>
@@ -634,18 +986,16 @@ export default function CalendarSection({ timeAgo }) {
       )}
 
     <div className="space-y-4 sm:space-y-6">
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-        <h2 className="font-bold text-xl sm:text-2xl text-blackText dark:text-white flex items-center gap-2">
-          <Calendar size={20} className="sm:w-6 sm:h-6" />
+      <div className="flex flex-col gap-4">
+        <h2 className="text-lg font-semibold text-blackText dark:text-white">
           Zarządzanie kalendarzem
         </h2>
         {activeTab === 'bookings' && (
           <button
             onClick={openAddModal}
-            className="flex items-center justify-center gap-2 px-4 sm:px-6 py-3 bg-gradient-to-r from-primaryBlue to-secondaryBlue dark:from-primaryGreen dark:to-secondaryBlue text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:opacity-90 w-full sm:w-auto"
+            className="px-4 py-2.5 bg-primaryBlue dark:bg-primaryGreen text-white rounded-md shadow-sm max-w-[300px] transition-opacity hover:opacity-90"
           >
-            <Plus size={18} />
-            <span className="text-sm sm:text-base">Dodaj termin</span>
+            Dodaj termin
           </button>
         )}
       </div>
@@ -673,429 +1023,465 @@ export default function CalendarSection({ timeAgo }) {
           >
             Preferencje czasowe
           </button>
+          <button
+            onClick={() => setActiveTab('upcoming')}
+            className={`px-4 py-2 font-medium transition ${
+              activeTab === 'upcoming'
+                ? 'border-b-2 border-primaryBlue dark:border-primaryGreen text-primaryBlue dark:text-primaryGreen'
+                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+            }`}
+          >
+            Nadchodzące terminy
+          </button>
+          <button
+            onClick={() => setActiveTab('archived')}
+            className={`px-4 py-2 font-medium transition ${
+              activeTab === 'archived'
+                ? 'border-b-2 border-primaryBlue dark:border-primaryGreen text-primaryBlue dark:text-primaryGreen'
+                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+            }`}
+          >
+            Archiwalne terminy
+          </button>
         </div>
       </div>
 
       {/* Content based on active tab */}
-      {activeTab === 'preferences' ? (
+      {activeTab === 'upcoming' ? (
         <div className="space-y-6">
+          {/* Upcoming Terms Only */}
+          {(() => {
+              const now = new Date();
+              now.setHours(0, 0, 0, 0);
+              
+              const activeSlots = availability.filter((slot) => {
+                const slotDateTime = new Date(`${slot.date}T${slot.end_time}`);
+                return slotDateTime >= now;
+              });
 
-          {/* Preferences Calendar */}
-          <div className="bg-white dark:bg-DarkblackBorder rounded-xl shadow-lg p-4 sm:p-6 overflow-hidden">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="font-semibold text-lg">Kalendarz preferencji</h3>
+              const renderSlot = (slot) => {
+                const bookingCount = bookings.filter(
+                  (b) => b.availability_id === slot.id && ['pending', 'confirmed'].includes(b.status)
+                ).length;
+                const isFull = bookingCount >= slot.max_participants;
+
+                return (
+                  <div
+                    key={slot.id}
+                    className={`p-4 rounded-lg border ${
+                      slot.is_active
+                        ? 'bg-white dark:bg-DarkblackText border-gray-200 dark:border-DarkblackBorder'
+                        : 'bg-gray-100 dark:bg-DarkblackBorder border-gray-300 dark:border-DarkblackText opacity-60'
+                    }`}
+                  >
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-2">
+                          <p className="font-semibold text-gray-900 dark:text-white">
+                            {new Date(slot.date).toLocaleDateString('pl-PL', {
+                              weekday: 'long',
+                              year: 'numeric',
+                              month: 'long',
+                              day: 'numeric'
+                            })}
+                          </p>
+                          <span
+                            className={`px-2 py-1 rounded text-xs ${
+                              slot.is_active
+                                ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300'
+                                : 'bg-gray-100 text-gray-700 dark:bg-gray-900 dark:text-gray-300'
+                            }`}
+                          >
+                            {slot.is_active ? 'Aktywny' : 'Nieaktywny'}
+                          </span>
+                        </div>
+                        <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
+                          <div className="flex items-center gap-1">
+                            <Clock className="w-4 h-4" />
+                            <span>
+                              {slot.start_time.substring(0, 5)} - {slot.end_time.substring(0, 5)}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            {slot.class_type === 'individual' ? (
+                              <User className="w-4 h-4" />
+                            ) : (
+                              <Users className="w-4 h-4" />
+                            )}
+                            <span>{slot.class_type === 'individual' ? 'Indywidualne' : 'Grupowe'}</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Users className="w-4 h-4" />
+                            <span>
+                              {bookingCount}/{slot.max_participants} {isFull && '(Pełne)'}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <button
+                          onClick={() => handleViewBookings(slot)}
+                          className="p-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-md hover:bg-blue-100 dark:hover:bg-blue-900/30 transition"
+                          title="Zobacz rezerwacje"
+                        >
+                          <Eye className="w-5 h-5" />
+                        </button>
+                        <button
+                          onClick={() => openEditModal(slot)}
+                          className="p-2 bg-yellow-50 dark:bg-yellow-900/20 text-yellow-600 dark:text-yellow-400 rounded-md hover:bg-yellow-100 dark:hover:bg-yellow-900/30 transition"
+                          title="Edytuj"
+                        >
+                          <Edit className="w-5 h-5" />
+                        </button>
+                        <button
+                          onClick={() => handleToggleActive(slot)}
+                          className={`p-2 rounded-md transition ${
+                            slot.is_active
+                              ? 'bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 hover:bg-orange-100 dark:hover:bg-orange-900/30'
+                              : 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-900/30'
+                          }`}
+                          title={slot.is_active ? 'Dezaktywuj' : 'Aktywuj'}
+                        >
+                          {slot.is_active ? <XCircle className="w-5 h-5" /> : <CheckCircle className="w-5 h-5" />}
+                        </button>
+                        <button
+                          onClick={() => handleDeleteSlot(slot.id)}
+                          className="p-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-md hover:bg-red-100 dark:hover:bg-red-900/30 transition"
+                          title="Usuń"
+                        >
+                          <Trash2 className="w-5 h-5" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              };
+
+              return (
+                <div className="space-y-3">
+                  {activeSlots.length === 0 ? (
+                    <p className="text-gray-600 dark:text-gray-400 text-center py-8">Brak nadchodzących terminów</p>
+                  ) : (
+                    activeSlots.map(renderSlot)
+                  )}
+                </div>
+              );
+            })()}
+        </div>
+      ) : activeTab === 'archived' ? (
+        <div className="space-y-6">
+          {/* Archived Terms Only */}
+          {(() => {
+              const now = new Date();
+              now.setHours(0, 0, 0, 0);
+              
+              const archivedSlots = availability.filter((slot) => {
+                const slotDateTime = new Date(`${slot.date}T${slot.end_time}`);
+                return slotDateTime < now;
+              });
+
+              const renderSlot = (slot) => {
+                const bookingCount = bookings.filter(
+                  (b) => b.availability_id === slot.id && ['pending', 'confirmed'].includes(b.status)
+                ).length;
+                const isFull = bookingCount >= slot.max_participants;
+
+                return (
+                  <div
+                    key={slot.id}
+                    className={`p-4 rounded-lg border opacity-75 ${
+                      slot.is_active
+                        ? 'bg-white dark:bg-DarkblackText border-gray-200 dark:border-DarkblackBorder'
+                        : 'bg-gray-100 dark:bg-DarkblackBorder border-gray-300 dark:border-DarkblackText opacity-60'
+                    }`}
+                  >
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-2">
+                          <p className="font-semibold text-gray-900 dark:text-white">
+                            {new Date(slot.date).toLocaleDateString('pl-PL', {
+                              weekday: 'long',
+                              year: 'numeric',
+                              month: 'long',
+                              day: 'numeric'
+                            })}
+                          </p>
+                          <span
+                            className={`px-2 py-1 rounded text-xs ${
+                              slot.is_active
+                                ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300'
+                                : 'bg-gray-100 text-gray-700 dark:bg-gray-900 dark:text-gray-300'
+                            }`}
+                          >
+                            {slot.is_active ? 'Aktywny' : 'Nieaktywny'}
+                          </span>
+                        </div>
+                        <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
+                          <div className="flex items-center gap-1">
+                            <Clock className="w-4 h-4" />
+                            <span>
+                              {slot.start_time.substring(0, 5)} - {slot.end_time.substring(0, 5)}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            {slot.class_type === 'individual' ? (
+                              <User className="w-4 h-4" />
+                            ) : (
+                              <Users className="w-4 h-4" />
+                            )}
+                            <span>{slot.class_type === 'individual' ? 'Indywidualne' : 'Grupowe'}</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Users className="w-4 h-4" />
+                            <span>
+                              {bookingCount}/{slot.max_participants} {isFull && '(Pełne)'}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <button
+                          onClick={() => handleViewBookings(slot)}
+                          className="p-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-md hover:bg-blue-100 dark:hover:bg-blue-900/30 transition"
+                          title="Zobacz rezerwacje"
+                        >
+                          <Eye className="w-5 h-5" />
+                        </button>
+                        <button
+                          onClick={() => openEditModal(slot)}
+                          className="p-2 bg-yellow-50 dark:bg-yellow-900/20 text-yellow-600 dark:text-yellow-400 rounded-md hover:bg-yellow-100 dark:hover:bg-yellow-900/30 transition"
+                          title="Edytuj"
+                        >
+                          <Edit className="w-5 h-5" />
+                        </button>
+                        <button
+                          onClick={() => handleToggleActive(slot)}
+                          className={`p-2 rounded-md transition ${
+                            slot.is_active
+                              ? 'bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 hover:bg-orange-100 dark:hover:bg-orange-900/30'
+                              : 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-900/30'
+                          }`}
+                          title={slot.is_active ? 'Dezaktywuj' : 'Aktywuj'}
+                        >
+                          {slot.is_active ? <XCircle className="w-5 h-5" /> : <CheckCircle className="w-5 h-5" />}
+                        </button>
+                        <button
+                          onClick={() => handleDeleteSlot(slot.id)}
+                          className="p-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-md hover:bg-red-100 dark:hover:bg-red-900/30 transition"
+                          title="Usuń"
+                        >
+                          <Trash2 className="w-5 h-5" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              };
+
+              return (
+                <div className="space-y-3">
+                  {archivedSlots.length === 0 ? (
+                    <p className="text-gray-600 dark:text-gray-400 text-center py-8">Brak archiwalnych terminów</p>
+                  ) : (
+                    archivedSlots.map(renderSlot)
+                  )}
+                </div>
+              );
+            })()}
+        </div>
+      ) : activeTab === 'preferences' ? (
+        <div className="space-y-6">
+          {/* Filters and Labels */}
+          <div className="flex flex-wrap items-center gap-4">
+            {/* Class Type Filter */}
+            <div className="relative dropdown-container">
               <button
                 onClick={() => {
-                  setEditingLabel(null);
-                  setLabelFormData({ name: '', color: '' });
-                  setShowLabelModal(true);
+                  setOpenClassTypeDropdown(!openClassTypeDropdown);
+                  setOpenTopicDropdown(false);
                 }}
-                className="flex items-center gap-2 px-4 py-2 bg-primaryBlue dark:bg-primaryGreen text-white rounded hover:opacity-90 transition"
+                className="px-4 py-2.5 bg-white dark:bg-DarkblackBorder border border-gray-200 dark:border-DarkblackBorder rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-DarkblackText transition"
               >
-                <Plus size={18} />
-                Dodaj etykietę
+                {preferenceFilters.classType === 'individual' ? 'Indywidualne' : preferenceFilters.classType === 'group' ? 'Grupowe' : 'Typ zajęć'}
+                <ChevronDown size={16} />
               </button>
-            </div>
-            {loading ? (
-              <div className="text-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primaryBlue dark:border-primaryGreen mx-auto"></div>
-              </div>
-            ) : (
-              <FullCalendar
-                plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-                initialView="timeGridWeek7Days"
-                views={{
-                  timeGridWeek7Days: {
-                    type: 'timeGridWeek',
-                    duration: { days: 7 },
-                    slotMinTime: '08:00:00',
-                    slotMaxTime: '20:00:00',
-                    slotDuration: '00:30:00',
-                    allDaySlot: false
-                  }
-                }}
-                headerToolbar={{
-                  left: 'prev,next today',
-                  center: 'title',
-                  right: ''
-                }}
-                locale="pl"
-                events={[
-                  // Only overlapping hours events (green with count)
-                  ...(overlappingHours || []).map((overlap, idx) => {
-                    const start = `${overlap.date}T${overlap.start_time}`;
-                    const end = `${overlap.date}T${overlap.end_time}`;
-
-                    return {
-                      id: `overlap-${idx}`,
-                      title: `${overlap.user_count}`,
-                      start,
-                      end,
-                      backgroundColor: '#10b981', // green for overlapping hours
-                      borderColor: '#059669',
-                      display: 'block',
-                      extendedProps: {
-                        type: 'overlap',
-                        overlap
-                      }
-                    };
-                  })
-                ]}
-                editable={false}
-                selectable={false}
-                height="auto"
-                eventDisplay="block"
-                validRange={{
-                  start: new Date().toISOString().split('T')[0]
-                }}
-                slotMinTime="08:00:00"
-                slotMaxTime="20:00:00"
-                slotDuration="00:30:00"
-                allDaySlot={false}
-                firstDay={1}
-                weekends={true}
-                eventTimeFormat={{
-                  hour: '2-digit',
-                  minute: '2-digit',
-                  hour12: false
-                }}
-                dayHeaderFormat={{ weekday: 'short', day: 'numeric', month: 'short' }}
-                slotLabelFormat={{
-                  hour: '2-digit',
-                  minute: '2-digit',
-                  hour12: false
-                }}
-                eventContent={(eventInfo) => {
-                  const eventType = eventInfo.event.extendedProps.type;
-                  if (eventType === 'overlap') {
-                    const userCount = eventInfo.event.extendedProps.overlap?.user_count || 0;
-                    return (
-                      <div className="p-1 text-center">
-                        <div className="font-bold text-base">{userCount}</div>
-                        <div className="text-xs opacity-75">użytkowników</div>
-                      </div>
-                    );
-                  }
-                  return <div>{eventInfo.event.title}</div>;
-                }}
-                eventClick={(clickInfo) => {
-                  const eventType = clickInfo.event.extendedProps.type;
-                  if (eventType === 'overlap') {
-                    handleOverlapClick(clickInfo.event.extendedProps.overlap);
-                  }
-                }}
-              />
-            )}
-          </div>
-
-
-          {/* Labels Management */}
-          <div className="bg-white dark:bg-DarkblackBorder rounded-xl shadow-lg p-4 sm:p-6">
-            <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
-              <Tag size={20} />
-              Zarządzanie etykietami
-            </h3>
-            {labels.length === 0 ? (
-              <p className="text-gray-600 dark:text-gray-400">Brak etykiet. Dodaj pierwszą etykietę.</p>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {labels.map((label) => (
-                  <div
-                    key={label.id}
-                    className="p-4 border border-gray-200 dark:border-DarkblackBorder rounded-lg flex justify-between items-center"
+              {openClassTypeDropdown && (
+                <div className="absolute top-full left-0 mt-1 bg-white dark:bg-DarkblackBorder border border-gray-200 dark:border-DarkblackBorder rounded-md shadow-sm z-10 min-w-[200px] animate-slideUp">
+                  <button
+                    onClick={() => {
+                      setPreferenceFilters({ ...preferenceFilters, classType: null });
+                      setOpenClassTypeDropdown(false);
+                    }}
+                    className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-DarkblackText transition"
                   >
-                    <div className="flex items-center gap-2">
+                    Wszystkie
+                  </button>
+                  <button
+                    onClick={() => {
+                      setPreferenceFilters({ ...preferenceFilters, classType: 'individual' });
+                      setOpenClassTypeDropdown(false);
+                    }}
+                    className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-DarkblackText transition"
+                  >
+                    Indywidualne
+                  </button>
+                  <button
+                    onClick={() => {
+                      setPreferenceFilters({ ...preferenceFilters, classType: 'group' });
+                      setOpenClassTypeDropdown(false);
+                    }}
+                    className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-DarkblackText transition"
+                  >
+                    Grupowe
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Topic Filter */}
+            <div className="relative dropdown-container">
+              <button
+                onClick={() => {
+                  setOpenTopicDropdown(!openTopicDropdown);
+                  setOpenClassTypeDropdown(false);
+                }}
+                className="px-4 py-2.5 bg-white dark:bg-DarkblackBorder border border-gray-200 dark:border-DarkblackBorder rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-DarkblackText transition"
+              >
+                {preferenceFilters.topic || 'Temat zajęć'}
+                <ChevronDown size={16} />
+              </button>
+              {openTopicDropdown && (
+                <div className="absolute top-full left-0 mt-1 bg-white dark:bg-DarkblackBorder border border-gray-200 dark:border-DarkblackBorder rounded-md shadow-sm z-10 min-w-[200px] animate-slideUp">
+                  <button
+                    onClick={() => {
+                      setPreferenceFilters({ ...preferenceFilters, topic: null });
+                      setOpenTopicDropdown(false);
+                    }}
+                    className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-DarkblackText transition"
+                  >
+                    Wszystkie
+                  </button>
+                  <button
+                    onClick={() => {
+                      setPreferenceFilters({ ...preferenceFilters, topic: 'inf 0.3' });
+                      setOpenTopicDropdown(false);
+                    }}
+                    className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-DarkblackText transition"
+                  >
+                    inf 0.3
+                  </button>
+                  <button
+                    onClick={() => {
+                      setPreferenceFilters({ ...preferenceFilters, topic: 'inf 0.4' });
+                      setOpenTopicDropdown(false);
+                    }}
+                    className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-DarkblackText transition"
+                  >
+                    inf 0.4
+                  </button>
+                  <button
+                    onClick={() => {
+                      setPreferenceFilters({ ...preferenceFilters, topic: 'matura z informatyki' });
+                      setOpenTopicDropdown(false);
+                    }}
+                    className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-DarkblackText transition"
+                  >
+                    Matura z informatyki
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Clear Filters Button */}
+            <button
+              onClick={() => {
+                setPreferenceFilters({ classType: null, meetingType: null, topic: null });
+              }}
+              className="px-4 py-2.5 border border-gray-200 dark:border-DarkblackBorder rounded-md hover:bg-gray-100 dark:hover:bg-DarkblackText transition text-sm"
+            >
+              Wyczyść filtry
+            </button>
+
+            {/* Labels Section */}
+            <div className="flex items-center gap-2 ml-auto">
+              {labels.length > 0 && (
+                <div className="flex items-center gap-2 flex-wrap">
+                  {labels.slice(0, 3).map((label) => (
+                    <div
+                      key={label.id}
+                      className="px-3 py-1.5 bg-white dark:bg-DarkblackBorder border border-gray-200 dark:border-DarkblackBorder rounded-md shadow-sm flex items-center gap-2"
+                    >
                       {label.color && (
                         <div
-                          className="w-4 h-4 rounded"
+                          className="w-3 h-3 rounded-full"
                           style={{ backgroundColor: label.color }}
                         />
                       )}
-                      <span>{label.name}</span>
+                      <span className="text-sm text-gray-700 dark:text-gray-300">{label.name}</span>
                     </div>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => {
-                          setEditingLabel(label);
-                          setLabelFormData({ name: label.name, color: label.color || '' });
-                          setShowLabelModal(true);
-                        }}
-                        className="p-1 text-primaryBlue dark:text-primaryGreen hover:bg-gray-100 dark:hover:bg-DarkblackBorder/50 rounded"
-                      >
-                        <Edit size={16} />
-                      </button>
-                      <button
-                        onClick={async () => {
-                          if (window.confirm('Czy na pewno chcesz usunąć tę etykietę?')) {
-                            try {
-                              await deleteLabel(label.id);
-                              await fetchLabels();
-                            } catch (err) {
-                              // Error handled in store
-                            }
-                          }
-                        }}
-                        className="p-1 text-red-500 hover:bg-gray-100 dark:hover:bg-DarkblackBorder/50 rounded"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
+                  ))}
+                  {labels.length > 3 && (
+                    <span className="text-sm text-gray-500 dark:text-gray-400">+{labels.length - 3}</span>
+                  )}
+                </div>
+              )}
+              <button
+                onClick={() => setShowLabelsManagementModal(true)}
+                className="px-4 py-2.5 bg-primaryBlue dark:bg-primaryGreen text-white rounded-md text-sm font-medium hover:opacity-90 transition"
+              >
+                Zarządzaj etykietami
+              </button>
+            </div>
           </div>
 
+          {/* Calendar - Full Width, No Box */}
+          {loading ? (
+            <div className="text-center py-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primaryBlue dark:border-primaryGreen mx-auto"></div>
+            </div>
+          ) : (
+            <CustomCalendar
+              events={calendarEvents}
+              onEventClick={handleEventClick}
+              selectable={false}
+            />
+          )}
         </div>
       ) : (
         <>
-
-          {/* Calendar */}
-          <div className="bg-white dark:bg-DarkblackBorder rounded-xl shadow-lg p-4 sm:p-6 overflow-hidden">
-        {loading && (
-          <div className="flex justify-center items-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primaryBlue dark:border-primaryGreen"></div>
-          </div>
-        )}
-
-        {!loading && (
-          <FullCalendar
-            plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-            initialView="timeGridWeek7Days"
-            views={{
-              timeGridWeek7Days: {
-                type: 'timeGridWeek',
-                duration: { days: 7 },
-                slotMinTime: '08:00:00',
-                slotMaxTime: '20:00:00',
-                slotDuration: '00:30:00',
-                allDaySlot: false
-              }
-            }}
-            headerToolbar={{
-              left: 'prev,next today',
-              center: 'title',
-              right: ''
-            }}
-            locale="pl"
-            events={calendarEvents}
-            eventClick={handleEventClick}
-            editable={false}
-            selectable={false}
-            height="auto"
-            eventDisplay="block"
-            validRange={{
-              start: new Date().toISOString().split('T')[0]
-            }}
-            slotMinTime="08:00:00"
-            slotMaxTime="20:00:00"
-            slotDuration="00:30:00"
-            allDaySlot={false}
-            firstDay={1}
-            weekends={true}
-            eventTimeFormat={{
-              hour: '2-digit',
-              minute: '2-digit',
-              hour12: false
-            }}
-            dayHeaderFormat={{ weekday: 'short', day: 'numeric', month: 'short' }}
-            slotLabelFormat={{
-              hour: '2-digit',
-              minute: '2-digit',
-              hour12: false
-            }}
-          />
-        )}
-      </div>
-
-      {/* Legend - different for bookings vs preferences */}
-      <div className="bg-white dark:bg-DarkblackBorder rounded-xl shadow-lg p-4 sm:p-6">
-        <h3 className="font-semibold text-lg text-blackText dark:text-white mb-3">Legenda</h3>
-        {activeTab === 'bookings' ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 bg-blue-500 rounded"></div>
-              <span className="text-sm text-gray-700 dark:text-gray-300">Indywidualne</span>
+          {/* Calendar only for bookings tab */}
+          {loading && (
+            <div className="flex justify-center items-center py-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primaryBlue dark:border-primaryGreen"></div>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 bg-purple-500 rounded"></div>
-              <span className="text-sm text-gray-700 dark:text-gray-300">Grupowe</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 bg-red-500 rounded"></div>
-              <span className="text-sm text-gray-700 dark:text-gray-300">Zajęte</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 bg-gray-500 rounded"></div>
-              <span className="text-sm text-gray-700 dark:text-gray-300">Nieaktywne</span>
-            </div>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 bg-green-500 rounded"></div>
-              <span className="text-sm text-gray-700 dark:text-gray-300">Części wspólne godzin</span>
-            </div>
-          </div>
-        )}
-      </div>
+          )}
 
-      {/* Availability List */}
-      {(() => {
-        const now = new Date();
-        now.setHours(0, 0, 0, 0);
-        
-        const activeSlots = availability.filter((slot) => {
-          const slotDateTime = new Date(`${slot.date}T${slot.end_time}`);
-          return slotDateTime >= now;
-        });
-
-        const archivedSlots = availability.filter((slot) => {
-          const slotDateTime = new Date(`${slot.date}T${slot.end_time}`);
-          return slotDateTime < now;
-        });
-
-        const renderSlot = (slot) => {
-          const bookingCount = bookings.filter(
-            (b) => b.availability_id === slot.id && ['pending', 'confirmed'].includes(b.status)
-          ).length;
-          const isFull = bookingCount >= slot.max_participants;
-          const slotDateTime = new Date(`${slot.date}T${slot.end_time}`);
-          const isPast = slotDateTime < now;
-
-          return (
-            <div
-              key={slot.id}
-              className={`p-4 rounded-lg border ${
-                slot.is_active
-                  ? 'bg-white dark:bg-DarkblackText border-gray-200 dark:border-DarkblackBorder'
-                  : 'bg-gray-100 dark:bg-DarkblackBorder border-gray-300 dark:border-DarkblackText opacity-60'
-              } ${isPast ? 'opacity-75' : ''}`}
-            >
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
-                    <p className="font-semibold text-gray-900 dark:text-white">
-                      {new Date(slot.date).toLocaleDateString('pl-PL', {
-                        weekday: 'long',
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                      })}
-                    </p>
-                    <span
-                      className={`px-2 py-1 rounded text-xs ${
-                        slot.is_active
-                          ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300'
-                          : 'bg-gray-100 text-gray-700 dark:bg-gray-900 dark:text-gray-300'
-                      }`}
-                    >
-                      {slot.is_active ? 'Aktywny' : 'Nieaktywny'}
-                    </span>
-                  </div>
-                  <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
-                    <div className="flex items-center gap-1">
-                      <Clock className="w-4 h-4" />
-                      <span>
-                        {slot.start_time.substring(0, 5)} - {slot.end_time.substring(0, 5)}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      {slot.class_type === 'individual' ? (
-                        <User className="w-4 h-4" />
-                      ) : (
-                        <Users className="w-4 h-4" />
-                      )}
-                      <span>{slot.class_type === 'individual' ? 'Indywidualne' : 'Grupowe'}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Users className="w-4 h-4" />
-                      <span>
-                        {bookingCount}/{slot.max_participants} {isFull && '(Pełne)'}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <button
-                    onClick={() => handleViewBookings(slot)}
-                    className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition"
-                    title="Zobacz rezerwacje"
-                  >
-                    <Eye className="w-5 h-5" />
-                  </button>
-                  <button
-                    onClick={() => openEditModal(slot)}
-                    className="p-2 text-yellow-600 hover:bg-yellow-50 dark:hover:bg-yellow-900/20 rounded-lg transition"
-                    title="Edytuj"
-                  >
-                    <Edit className="w-5 h-5" />
-                  </button>
-                  <button
-                    onClick={() => handleToggleActive(slot)}
-                    className={`p-2 rounded-lg transition ${
-                      slot.is_active
-                        ? 'text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-900/20'
-                        : 'text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20'
-                    }`}
-                    title={slot.is_active ? 'Dezaktywuj' : 'Aktywuj'}
-                  >
-                    {slot.is_active ? <XCircle className="w-5 h-5" /> : <CheckCircle className="w-5 h-5" />}
-                  </button>
-                  <button
-                    onClick={() => handleDeleteSlot(slot.id)}
-                    className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition"
-                    title="Usuń"
-                  >
-                    <Trash2 className="w-5 h-5" />
-                  </button>
-                </div>
-              </div>
-            </div>
-          );
-        };
-
-        return (
-          <>
-            {/* Active Slots */}
-            <div className="bg-white dark:bg-DarkblackBorder rounded-xl shadow-lg p-4 sm:p-6">
-              <h3 className="font-semibold text-lg text-blackText dark:text-white mb-4">Nadchodzące terminy</h3>
-              <div className="space-y-3">
-                {activeSlots.length === 0 ? (
-                  <p className="text-gray-600 dark:text-gray-400 text-center py-8">Brak nadchodzących terminów</p>
-                ) : (
-                  activeSlots.map(renderSlot)
-                )}
-              </div>
-            </div>
-
-            {/* Archived Slots */}
-            {archivedSlots.length > 0 && (
-              <div className="bg-white dark:bg-DarkblackBorder rounded-xl shadow-lg p-4 sm:p-6">
-                <h3 className="font-semibold text-lg text-blackText dark:text-white mb-4 flex items-center gap-2">
-                  <Archive className="w-5 h-5" />
-                  Archiwalne terminy
-                </h3>
-                <div className="space-y-3">
-                  {archivedSlots.map(renderSlot)}
-                </div>
-              </div>
-            )}
-          </>
-        );
-      })()}
+          {!loading && (
+            <CustomCalendar
+              events={calendarEvents}
+              onEventClick={handleEventClick}
+              selectable={false}
+            />
+          )}
         </>
       )}
 
       {/* Add/Edit Modal */}
       {showAddModal && createPortal(
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[9999] animate-fadeIn p-4" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}>
+        <div 
+          className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 animate-fadeIn p-4"
+          style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}
+          onClick={() => {
+            setShowAddModal(false);
+            resetForm();
+          }}
+        >
           <div
-            className="bg-white dark:bg-DarkblackBorder rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto animate-scaleIn"
+            className="bg-white dark:bg-DarkblackBorder rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto animate-scaleIn"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="p-6 border-b border-gray-200 dark:border-DarkblackText flex items-center justify-between">
-              <h3 className="text-xl font-bold text-blackText dark:text-white">
+              <h3 className="text-lg font-semibold text-blackText dark:text-white">
                 {editingSlot ? 'Edytuj termin' : 'Dodaj nowy termin'}
               </h3>
               <button
@@ -1103,7 +1489,7 @@ export default function CalendarSection({ timeAgo }) {
                   setShowAddModal(false);
                   resetForm();
                 }}
-                className="p-2 hover:bg-gray-100 dark:hover:bg-DarkblackText rounded-lg transition-colors"
+                className="p-2 hover:bg-gray-100 dark:hover:bg-DarkblackText rounded-md transition-colors"
               >
                 <X className="w-6 h-6 text-gray-500 dark:text-gray-400" />
               </button>
@@ -1120,70 +1506,136 @@ export default function CalendarSection({ timeAgo }) {
                   value={formData.date || getTomorrowDate()}
                   onChange={(e) => handleFormChange('date', e.target.value)}
                   min={new Date().toISOString().split('T')[0]}
-                  className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primaryBlue dark:bg-DarkblackText dark:text-white dark:border-DarkblackBorder ${
-                    formErrors.date ? 'border-red-500' : 'border-gray-300'
+                  className={`w-full px-4 py-2 border border-gray-200 dark:border-DarkblackBorder rounded-md focus:outline-none focus:ring-2 focus:ring-primaryBlue dark:bg-DarkblackText dark:text-white ${
+                    formErrors.date ? 'border-red-500' : ''
                   }`}
                 />
                 {formErrors.date && <p className="text-red-500 text-xs mt-1">{formErrors.date}</p>}
               </div>
 
               {/* Start Time */}
-              <div>
+              <div className="relative dropdown-container">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Godzina rozpoczęcia <span className="text-red-500">*</span>
                 </label>
-                <select
-                  value={formData.startTime}
-                  onChange={(e) => handleFormChange('startTime', e.target.value)}
-                  className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primaryBlue dark:bg-DarkblackText dark:text-white dark:border-DarkblackBorder ${
-                    formErrors.startTime ? 'border-red-500' : 'border-gray-300'
+                <button
+                  type="button"
+                  onClick={() => {
+                    setOpenStartTimeDropdown(!openStartTimeDropdown);
+                    setOpenEndTimeDropdown(false);
+                    setOpenClassTypeModalDropdown(false);
+                  }}
+                  className={`w-full px-4 py-2 border border-gray-200 dark:border-DarkblackBorder rounded-md bg-white dark:bg-DarkblackText text-left flex items-center justify-between ${
+                    formErrors.startTime ? 'border-red-500' : ''
                   }`}
                 >
-                  {timeOptions.map((time) => (
-                    <option key={time} value={time}>
-                      {time}
-                    </option>
-                  ))}
-                </select>
+                  <span className="text-gray-900 dark:text-white">{formData.startTime || 'Wybierz godzinę'}</span>
+                  <ChevronDown size={16} className="text-gray-500" />
+                </button>
+                {openStartTimeDropdown && (
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-DarkblackBorder border border-gray-200 dark:border-DarkblackBorder rounded-md shadow-sm z-10 max-h-[200px] overflow-y-auto animate-slideUp">
+                    {timeOptions.map((time) => (
+                      <button
+                        key={time}
+                        type="button"
+                        onClick={() => {
+                          handleFormChange('startTime', time);
+                          setOpenStartTimeDropdown(false);
+                        }}
+                        className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-DarkblackText transition"
+                      >
+                        {time}
+                      </button>
+                    ))}
+                  </div>
+                )}
                 {formErrors.startTime && <p className="text-red-500 text-xs mt-1">{formErrors.startTime}</p>}
               </div>
 
               {/* End Time */}
-              <div>
+              <div className="relative dropdown-container">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Godzina zakończenia <span className="text-red-500">*</span>
                 </label>
-                <select
-                  value={formData.endTime}
-                  onChange={(e) => handleFormChange('endTime', e.target.value)}
-                  className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primaryBlue dark:bg-DarkblackText dark:text-white dark:border-DarkblackBorder ${
-                    formErrors.endTime ? 'border-red-500' : 'border-gray-300'
+                <button
+                  type="button"
+                  onClick={() => {
+                    setOpenEndTimeDropdown(!openEndTimeDropdown);
+                    setOpenStartTimeDropdown(false);
+                    setOpenClassTypeModalDropdown(false);
+                  }}
+                  className={`w-full px-4 py-2 border border-gray-200 dark:border-DarkblackBorder rounded-md bg-white dark:bg-DarkblackText text-left flex items-center justify-between ${
+                    formErrors.endTime ? 'border-red-500' : ''
                   }`}
                 >
-                  {getEndTimeOptions().map((time) => (
-                    <option key={time} value={time}>
-                      {time}
-                    </option>
-                  ))}
-                </select>
+                  <span className="text-gray-900 dark:text-white">{formData.endTime || 'Wybierz godzinę'}</span>
+                  <ChevronDown size={16} className="text-gray-500" />
+                </button>
+                {openEndTimeDropdown && (
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-DarkblackBorder border border-gray-200 dark:border-DarkblackBorder rounded-md shadow-sm z-10 max-h-[200px] overflow-y-auto animate-slideUp">
+                    {getEndTimeOptions().map((time) => (
+                      <button
+                        key={time}
+                        type="button"
+                        onClick={() => {
+                          handleFormChange('endTime', time);
+                          setOpenEndTimeDropdown(false);
+                        }}
+                        className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-DarkblackText transition"
+                      >
+                        {time}
+                      </button>
+                    ))}
+                  </div>
+                )}
                 {formErrors.endTime && <p className="text-red-500 text-xs mt-1">{formErrors.endTime}</p>}
               </div>
 
               {/* Class Type */}
-              <div>
+              <div className="relative dropdown-container">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Typ zajęć <span className="text-red-500">*</span>
                 </label>
-                <select
-                  value={formData.classType}
-                  onChange={(e) => handleFormChange('classType', e.target.value)}
-                  className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primaryBlue dark:bg-DarkblackText dark:text-white dark:border-DarkblackBorder ${
-                    formErrors.classType ? 'border-red-500' : 'border-gray-300'
+                <button
+                  type="button"
+                  onClick={() => {
+                    setOpenClassTypeModalDropdown(!openClassTypeModalDropdown);
+                    setOpenStartTimeDropdown(false);
+                    setOpenEndTimeDropdown(false);
+                  }}
+                  className={`w-full px-4 py-2 border border-gray-200 dark:border-DarkblackBorder rounded-md bg-white dark:bg-DarkblackText text-left flex items-center justify-between ${
+                    formErrors.classType ? 'border-red-500' : ''
                   }`}
                 >
-                  <option value="individual">Indywidualne</option>
-                  <option value="group">Grupowe</option>
-                </select>
+                  <span className="text-gray-900 dark:text-white">
+                    {formData.classType === 'individual' ? 'Indywidualne' : formData.classType === 'group' ? 'Grupowe' : 'Wybierz typ'}
+                  </span>
+                  <ChevronDown size={16} className="text-gray-500" />
+                </button>
+                {openClassTypeModalDropdown && (
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-DarkblackBorder border border-gray-200 dark:border-DarkblackBorder rounded-md shadow-sm z-10 animate-slideUp">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        handleFormChange('classType', 'individual');
+                        setOpenClassTypeModalDropdown(false);
+                      }}
+                      className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-DarkblackText transition"
+                    >
+                      Indywidualne
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        handleFormChange('classType', 'group');
+                        setOpenClassTypeModalDropdown(false);
+                      }}
+                      className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-DarkblackText transition"
+                    >
+                      Grupowe
+                    </button>
+                  </div>
+                )}
                 {formErrors.classType && <p className="text-red-500 text-xs mt-1">{formErrors.classType}</p>}
               </div>
 
@@ -1199,8 +1651,8 @@ export default function CalendarSection({ timeAgo }) {
                   min={formData.classType === 'individual' ? 1 : 2}
                   max={50}
                   disabled={formData.classType === 'individual'}
-                  className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primaryBlue dark:bg-DarkblackText dark:text-white dark:border-DarkblackBorder ${
-                    formErrors.maxParticipants ? 'border-red-500' : 'border-gray-300'
+                  className={`w-full px-4 py-2 border border-gray-200 dark:border-DarkblackBorder rounded-md focus:outline-none focus:ring-2 focus:ring-primaryBlue dark:bg-DarkblackText dark:text-white ${
+                    formErrors.maxParticipants ? 'border-red-500' : ''
                   } ${formData.classType === 'individual' ? 'opacity-60 cursor-not-allowed' : ''}`}
                 />
                 {formErrors.maxParticipants && (
@@ -1211,6 +1663,20 @@ export default function CalendarSection({ timeAgo }) {
                 )}
               </div>
 
+              {/* Is Webinar */}
+              <div className="flex items-center gap-3">
+                <input
+                  type="checkbox"
+                  id="isWebinar"
+                  checked={formData.isWebinar}
+                  onChange={(e) => handleFormChange('isWebinar', e.target.checked)}
+                  className="w-5 h-5 text-primaryBlue dark:text-primaryGreen border-gray-300 rounded focus:ring-2 focus:ring-primaryBlue dark:focus:ring-primaryGreen"
+                />
+                <label htmlFor="isWebinar" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  To jest webinar (będzie widoczny w powiadomieniach)
+                </label>
+              </div>
+
               {/* Submit Button */}
               <div className="flex justify-end gap-3 pt-4">
                 <button
@@ -1219,13 +1685,13 @@ export default function CalendarSection({ timeAgo }) {
                     setShowAddModal(false);
                     resetForm();
                   }}
-                  className="px-6 py-2 border border-gray-300 dark:border-DarkblackText rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-DarkblackText transition"
+                  className="px-6 py-2 border border-gray-200 dark:border-DarkblackBorder rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-DarkblackText transition"
                 >
                   Anuluj
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2 bg-gradient-to-r from-primaryBlue to-secondaryBlue text-white rounded-lg shadow hover:shadow-lg transition hover:scale-[1.02]"
+                  className="px-6 py-2 bg-primaryBlue dark:bg-primaryGreen text-white rounded-md hover:opacity-90 transition"
                 >
                   {editingSlot ? 'Zapisz zmiany' : 'Dodaj termin'}
                 </button>
@@ -1238,13 +1704,23 @@ export default function CalendarSection({ timeAgo }) {
 
       {/* Bookings Modal */}
       {showBookingModal && selectedSlot && createPortal(
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[9999] animate-fadeIn p-4" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}>
-          <div className="bg-white dark:bg-DarkblackBorder rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col animate-scaleIn">
-            <div className="p-6 border-b border-gray-200 dark:border-DarkblackText bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20">
+        <div 
+          className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 animate-fadeIn p-4"
+          style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}
+          onClick={() => {
+            setShowBookingModal(false);
+            setSelectedSlot(null);
+            setSlotBookings([]);
+          }}
+        >
+          <div 
+            className="bg-white dark:bg-DarkblackBorder rounded-lg shadow-xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col animate-scaleIn"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-6 border-b border-gray-200 dark:border-DarkblackText">
               <div className="flex justify-between items-center">
                 <div>
-                  <h3 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                    <Users className="w-6 h-6 text-blue-500" />
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                     Rezerwacje dla terminu
                   </h3>
                   <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">

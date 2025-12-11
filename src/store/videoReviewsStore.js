@@ -114,6 +114,35 @@ export const useVideoReviewsStore = create((set, get) => ({
     return sections;
   },
 
+  // Get all unique sections (not just those with reviews)
+  getAllSections: () => {
+    const { videoBase } = get();
+    const sectionsMap = new Map();
+    
+    videoBase.forEach(video => {
+      if (video.section_id && video.section_title) {
+        if (!sectionsMap.has(video.section_id)) {
+          sectionsMap.set(video.section_id, {
+            id: video.section_id,
+            title: video.section_title
+          });
+        }
+      }
+    });
+    
+    return Array.from(sectionsMap.values());
+  },
+
+  // Check if section has reviews
+  sectionHasReviews: (sectionId) => {
+    const { videoBase } = get();
+    return videoBase.some(video => {
+      if (video.section_id !== sectionId) return false;
+      const reviews = get().getVideoReviews(video.videoId);
+      return reviews.length > 0;
+    });
+  },
+
   // Filter videos to show only those with reviews and apply section filter
   getFilteredVideosWithReviews: (sectionFilter = "all") => {
     const { videoBase } = get();

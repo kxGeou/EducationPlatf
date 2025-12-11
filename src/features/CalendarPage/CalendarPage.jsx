@@ -1,14 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import FullCalendar from '@fullcalendar/react';
-import dayGridPlugin from '@fullcalendar/daygrid';
-import timeGridPlugin from '@fullcalendar/timegrid';
-import interactionPlugin from '@fullcalendar/interaction';
 import { useCalendarStore } from '../../store/calendarStore';
 import { useAuthStore } from '../../store/authStore';
 import { useToast } from '../../context/ToastContext';
 import PageLayout from '../../components/systemLayouts/PageLayout';
 import { Calendar, Clock, Users, User, X, LogIn, Archive } from 'lucide-react';
+import CustomCalendar from './components/CustomCalendar';
 import './CalendarPage.css';
 
 export default function CalendarPage({ isDark, setIsDark }) {
@@ -28,8 +25,10 @@ export default function CalendarPage({ isDark, setIsDark }) {
     fetchUserPreferences,
     fetchLabels,
     createPreference,
+    updatePreference,
     deletePreference,
-    createLabel
+    createLabel,
+    getNextWebinar
   } = useCalendarStore();
 
   const [selectedDate, setSelectedDate] = useState(null);
@@ -43,6 +42,12 @@ export default function CalendarPage({ isDark, setIsDark }) {
   const [preferenceLabelId, setPreferenceLabelId] = useState('');
   const [preferenceType, setPreferenceType] = useState('individual');
   const [preferenceTopic, setPreferenceTopic] = useState('');
+  const [isRecurring, setIsRecurring] = useState(false);
+  const [nextWebinar, setNextWebinar] = useState(null);
+  const [showEditPreferenceModal, setShowEditPreferenceModal] = useState(false);
+  const [editingPreference, setEditingPreference] = useState(null);
+  const [calendarDate, setCalendarDate] = useState(null);
+  const [activeTab, setActiveTab] = useState('bookings'); // 'bookings' or 'preferences'
 
   useEffect(() => {
     // Fetch availability for the next 7 days (available for everyone)
@@ -53,28 +58,20 @@ export default function CalendarPage({ isDark, setIsDark }) {
 
     fetchAvailability(startDate, endDateStr);
     fetchLabels();
+    
+    // Fetch next webinar
+    getNextWebinar().then(webinar => {
+      setNextWebinar(webinar);
+    });
 
     // Fetch user bookings and preferences only if user is logged in
     if (user) {
       fetchUserBookings(user.id);
-      // Fetch preferences for the next 7 days
+      // Fetch user's own preferences for display
       fetchUserPreferences(user.id, startDate, endDateStr);
     }
   }, [user]);
 
-  const handleDateClick = (arg) => {
-    const clickedDate = arg.dateStr;
-    const slotsForDate = availability.filter(
-      (slot) => slot.date === clickedDate && slot.is_active
-    );
-
-    if (slotsForDate.length > 0) {
-      setSelectedDate(clickedDate);
-      setSelectedSlot(null);
-    } else {
-      toast.error('Brak dostępnych terminów w tym dniu');
-    }
-  };
 
   const handleSlotClick = (slot) => {
     // If user is not logged in, show booking modal with login prompt
@@ -226,23 +223,82 @@ export default function CalendarPage({ isDark, setIsDark }) {
         }
       }
 
-      await createPreference({
-        userId: user.id,
-        labelId: labelId,
-        date: selectedTimeRange.date,
-        startTime: selectedTimeRange.startTime + ':00',
-        endTime: selectedTimeRange.endTime + ':00',
-        description: preferenceDescription || null
-      });
+      if (isRecurring) {
+        // Create recurring preference for all future occurrences of this weekday
+        const selectedDate = new Date(selectedTimeRange.date + 'T00:00:00');
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        // Generate dates for the next 12 weeks (3 months)
+        const dates = [];
+        
+        // Start from the selected date (even if it's in the past, we'll create it)
+        for (let week = 0; week < 12; week++) {
+          const date = new Date(selectedDate);
+          date.setDate(selectedDate.getDate() + (week * 7));
+          dates.push(date.toISOString().split('T')[0]);
+        }
+
+        // Create preferences for all dates (skip toast for each individual preference)
+        let createdCount = 0;
+        let errorCount = 0;
+        const errors = [];
+        
+        for (const date of dates) {
+          try {
+            await createPreference({
+              userId: user.id,
+              labelId: labelId,
+              date: date,
+              startTime: selectedTimeRange.startTime + ':00',
+              endTime: selectedTimeRange.endTime + ':00',
+              description: preferenceDescription || null,
+              skipToast: true // Skip individual toasts
+            });
+            createdCount++;
+          } catch (err) {
+            errorCount++;
+            errors.push(err.message || 'Nieznany błąd');
+            console.error('Error creating recurring preference for date', date, ':', err);
+          }
+        }
+        
+        // Show single summary toast
+        if (createdCount > 0) {
+          const dayName = new Date(selectedTimeRange.date).toLocaleDateString('pl-PL', { weekday: 'long' });
+          if (errorCount > 0) {
+            toast.success(`Utworzono ${createdCount} preferencji cyklicznych na wszystkie ${dayName} (${errorCount} błędów)`);
+          } else {
+            toast.success(`Utworzono ${createdCount} preferencji cyklicznych na wszystkie ${dayName}`);
+          }
+        } else {
+          const errorMsg = errors.length > 0 ? errors.slice(0, 3).join(', ') : 'Nieznany błąd';
+          toast.error(`Nie udało się utworzyć preferencji cyklicznych. Błędy: ${errorMsg}`);
+        }
+      } else {
+        // Create single preference
+        await createPreference({
+          userId: user.id,
+          labelId: labelId,
+          date: selectedTimeRange.date,
+          startTime: selectedTimeRange.startTime + ':00',
+          endTime: selectedTimeRange.endTime + ':00',
+          description: preferenceDescription || null
+        });
+      }
+      
+      // Refresh preferences and labels
+      await fetchUserPreferences(user.id);
+      await fetchLabels();
+      
+      // Reset form
       setShowPreferenceModal(false);
       setSelectedTimeRange(null);
       setPreferenceDescription('');
       setPreferenceLabelId('');
       setPreferenceType('individual');
       setPreferenceTopic('');
-      await fetchUserPreferences(user.id);
-      await fetchLabels();
-      toast.success('Preferencja została dodana');
+      setIsRecurring(false);
     } catch (err) {
       // Error handled in store
     }
@@ -256,9 +312,96 @@ export default function CalendarPage({ isDark, setIsDark }) {
     try {
       await deletePreference(preferenceId);
       await fetchUserPreferences(user.id);
+      setShowEditPreferenceModal(false);
+      setEditingPreference(null);
     } catch (err) {
       // Error handled in store
     }
+  };
+
+  const handleUpdatePreference = async () => {
+    if (!selectedTimeRange || !user || !preferenceTopic || !editingPreference) {
+      toast.error('Wypełnij wszystkie wymagane pola');
+      return;
+    }
+
+    try {
+      // First, find or create label with type and topic
+      let labelId = preferenceLabelId;
+      
+      if (!labelId) {
+        // Check if label with this type and topic exists
+        const existingLabel = labels.find(
+          l => l.type === preferenceType && l.topic === preferenceTopic
+        );
+        
+        if (existingLabel) {
+          labelId = existingLabel.id;
+        } else {
+          // Create new label
+          const newLabel = await createLabel({
+            name: `${preferenceType === 'individual' ? 'Indywidualne' : 'Grupowe'} - ${preferenceTopic}`,
+            type: preferenceType,
+            topic: preferenceTopic,
+            color: preferenceType === 'individual' ? '#3b82f6' : '#8b5cf6'
+          });
+          labelId = newLabel.id;
+        }
+      }
+
+      await updatePreference(editingPreference.id, {
+        date: selectedTimeRange.date,
+        start_time: selectedTimeRange.startTime + ':00',
+        end_time: selectedTimeRange.endTime + ':00',
+        label_id: labelId,
+        description: preferenceDescription || null
+      });
+      
+      setShowEditPreferenceModal(false);
+      setEditingPreference(null);
+      setSelectedTimeRange(null);
+      setPreferenceDescription('');
+      setPreferenceLabelId('');
+      setPreferenceType('individual');
+      setPreferenceTopic('');
+      await fetchUserPreferences(user.id);
+      await fetchLabels();
+      toast.success('Preferencja została zaktualizowana');
+    } catch (err) {
+      // Error handled in store
+    }
+  };
+
+  // Handle preference click - user can edit or delete their own preference
+  const handlePreferenceClick = (preference) => {
+    if (!preference || !user) return;
+    
+    // Check if this is user's own preference
+    if (preference.user_id !== user.id) {
+      toast.error('Możesz edytować tylko swoje preferencje');
+      return;
+    }
+
+    // Show edit/delete modal
+    setEditingPreference(preference);
+    setPreferenceType(preference.preference_labels?.type || 'individual');
+    setPreferenceTopic(preference.preference_labels?.topic || '');
+    setPreferenceDescription(preference.description || '');
+    setPreferenceLabelId(preference.label_id || '');
+    
+    const date = new Date(preference.date);
+    const startTime = preference.start_time.substring(0, 5);
+    const endTime = preference.end_time.substring(0, 5);
+    
+    setSelectedTimeRange({
+      date: preference.date,
+      startTime,
+      endTime,
+      start: new Date(`${preference.date}T${preference.start_time}`),
+      end: new Date(`${preference.date}T${preference.end_time}`)
+    });
+    
+    setShowEditPreferenceModal(true);
   };
 
   // Prepare calendar events from availability
@@ -330,37 +473,46 @@ export default function CalendarPage({ isDark, setIsDark }) {
     };
   });
 
-  const calendarEvents = [...availabilityEvents, ...preferenceEvents];
+  // Combine events based on active tab
+  // For bookings tab: only show availability (concrete classes/bookings)
+  // For preferences tab: only show user preferences
+  const calendarEvents = activeTab === 'bookings' 
+    ? [...availabilityEvents] 
+    : [...preferenceEvents];
 
   // Handle event click
-  const handleEventClick = (clickInfo) => {
-    const eventType = clickInfo.event.extendedProps.type;
+  const handleEventClick = (event) => {
+    const eventType = event.extendedProps?.type;
     
     if (eventType === 'preference') {
-      // Handle preference click - show delete option
-      const preference = clickInfo.event.extendedProps.preference;
-      if (window.confirm('Czy chcesz usunąć tę preferencję?')) {
-        handleDeletePreference(preference.id);
+      // Handle preference click - user can edit or delete
+      const preference = event.extendedProps?.preference;
+      if (preference) {
+        handlePreferenceClick(preference);
       }
       return;
     }
-
+    
     // Handle availability slot click
-    const slot = clickInfo.event.extendedProps.slot;
-    const userHasBooking = clickInfo.event.extendedProps.userHasBooking;
-    const isFull = clickInfo.event.extendedProps.isFull;
+    if (eventType === 'availability') {
+      const slot = event.extendedProps?.slot;
+      if (slot) {
+        const userHasBooking = event.extendedProps?.userHasBooking;
+        const isFull = event.extendedProps?.isFull;
 
-    if (userHasBooking) {
-      const booking = bookings.find(
-        (b) => b.availability_id === slot.id && b.status !== 'cancelled' && b.user_id === user?.id
-      );
-      if (booking) {
-        handleSlotClick(slot);
+        if (userHasBooking) {
+          const booking = bookings.find(
+            (b) => b.availability_id === slot.id && b.status !== 'cancelled' && b.user_id === user?.id
+          );
+          if (booking) {
+            handleSlotClick(slot);
+          }
+        } else if (isFull) {
+          toast.error('Ten termin jest już zajęty');
+        } else {
+          handleSlotClick(slot);
+        }
       }
-    } else if (isFull) {
-      toast.error('Ten termin jest już zajęty');
-    } else {
-      handleSlotClick(slot);
     }
   };
 
@@ -369,172 +521,214 @@ export default function CalendarPage({ isDark, setIsDark }) {
       <div className="w-full max-w-7xl mx-auto mt-24 mb-12">
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-12 h-12 bg-gradient-to-br from-primaryBlue to-secondaryBlue rounded-xl flex items-center justify-center shadow-lg">
-              <Calendar className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-                Kalendarz zajęć
-              </h1>
-              <p className="text-gray-600 dark:text-gray-400 mt-1">
-                Umów się na zajęcia indywidualne lub grupowe
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Legend */}
-        <div className="mb-6 p-4 bg-white dark:bg-DarkblackBorder rounded-lg shadow-sm">
-          <div className="flex flex-wrap gap-4 items-center text-sm">
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded bg-blue-500"></div>
-              <span className="text-gray-700 dark:text-gray-300">Indywidualne - dostępne</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded bg-purple-500"></div>
-              <span className="text-gray-700 dark:text-gray-300">Grupowe - dostępne</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded bg-green-500"></div>
-              <span className="text-gray-700 dark:text-gray-300">Twoja rezerwacja</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded bg-red-500"></div>
-              <span className="text-gray-700 dark:text-gray-300">Zajęte</span>
-            </div>
+          <div className="flex flex-col gap-4">
+            <h1 className="text-lg font-semibold text-gray-900 dark:text-white">
+              Kalendarz zajęć
+            </h1>
             {user && (
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 rounded bg-amber-500"></div>
-                <span className="text-gray-700 dark:text-gray-300">Twoje preferencje</span>
-              </div>
+              <button
+                onClick={() => {
+                  if (activeTab === 'preferences') {
+                    // Open preference modal by setting a default time range
+                    const now = new Date();
+                    const tomorrow = new Date(now);
+                    tomorrow.setDate(tomorrow.getDate() + 1);
+                    tomorrow.setHours(9, 0, 0, 0);
+                    const endTime = new Date(tomorrow);
+                    endTime.setHours(10, 0, 0, 0);
+                    
+                    setSelectedTimeRange({
+                      date: tomorrow.toISOString().split('T')[0],
+                      startTime: '09:00',
+                      endTime: '10:00',
+                      start: tomorrow,
+                      end: endTime
+                    });
+                    setShowPreferenceModal(true);
+                  } else {
+                    // Switch to preferences tab
+                    setActiveTab('preferences');
+                  }
+                }}
+                className="px-4 py-2.5 bg-primaryBlue dark:bg-primaryGreen text-white rounded-md shadow-sm max-w-[300px] transition-opacity hover:opacity-90"
+              >
+                Dodaj preferencję czasową
+              </button>
             )}
           </div>
         </div>
 
+        {/* Next Webinar Block */}
+        {nextWebinar && (
+          <div 
+            className="mb-6 p-6 bg-gradient-to-r from-primaryBlue to-secondaryBlue dark:from-primaryGreen dark:to-secondaryGreen rounded-xl shadow-lg cursor-pointer hover:opacity-90 transition-opacity"
+            onClick={() => {
+              // Navigate to webinar date in calendar
+              const webinarDate = new Date(nextWebinar.date);
+              setCalendarDate(webinarDate);
+            }}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
+                  <Calendar className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-white mb-1">
+                    Najbliższy webinar
+                  </h3>
+                  <p className="text-white/90">
+                    {new Date(nextWebinar.date).toLocaleDateString('pl-PL', { 
+                      weekday: 'long', 
+                      year: 'numeric', 
+                      month: 'long', 
+                      day: 'numeric' 
+                    })} o {nextWebinar.start_time.substring(0, 5)} - {nextWebinar.end_time.substring(0, 5)}
+                  </p>
+                  <p className="text-white/80 text-sm mt-1">
+                    {nextWebinar.class_type === 'individual' ? 'Zajęcia indywidualne' : `Zajęcia grupowe (max ${nextWebinar.max_participants} osób)`}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Tabs */}
+        <div className="mb-6 border-b border-gray-200 dark:border-DarkblackBorder">
+          <div className="flex gap-4">
+            <button
+              onClick={() => setActiveTab('bookings')}
+              className={`px-4 py-2 font-medium transition ${
+                activeTab === 'bookings'
+                  ? 'border-b-2 border-primaryBlue dark:border-primaryGreen text-primaryBlue dark:text-primaryGreen'
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+              }`}
+            >
+              Zajęcia
+            </button>
+            <button
+              onClick={() => setActiveTab('preferences')}
+              className={`px-4 py-2 font-medium transition ${
+                activeTab === 'preferences'
+                  ? 'border-b-2 border-primaryBlue dark:border-primaryGreen text-primaryBlue dark:text-primaryGreen'
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+              }`}
+            >
+              Preferencje
+            </button>
+          </div>
+        </div>
+
+
         {/* Calendar */}
-        <div className="bg-white dark:bg-DarkblackBorder rounded-xl shadow-lg p-4 sm:p-6 overflow-hidden">
+        <div className="mb-6">
           {loading && (
-            <div className="flex justify-center items-center py-12">
+            <div className="flex justify-center items-center py-12 bg-white dark:bg-DarkblackBorder rounded-xl shadow-lg">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primaryBlue dark:border-primaryGreen"></div>
             </div>
           )}
 
           {!loading && (
-            <FullCalendar
-              plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-              initialView="timeGridWeek7Days"
-              views={{
-                timeGridWeek7Days: {
-                  type: 'timeGridWeek',
-                  duration: { days: 7 },
-                  slotMinTime: '08:00:00',
-                  slotMaxTime: '20:00:00',
-                  slotDuration: '00:30:00',
-                  allDaySlot: false
+            <CustomCalendar
+              events={calendarEvents}
+              initialDate={calendarDate}
+              onEventClick={handleEventClick}
+              onTimeSlotClick={(day, timeSlot) => {
+                // Find availability slot for this time
+                const dateStr = day.toISOString().split('T')[0];
+                const slot = availability.find(a => 
+                  a.date === dateStr && 
+                  a.start_time.substring(0, 5) === timeSlot.time &&
+                  a.is_active
+                );
+                if (slot) {
+                  handleSlotClick(slot);
                 }
               }}
-              headerToolbar={{
-                left: 'prev,next today',
-                center: 'title',
-                right: ''
-              }}
-              locale="pl"
-              events={calendarEvents}
-              dateClick={handleDateClick}
-              eventClick={handleEventClick}
-              select={handleSelect}
-              selectMirror={true}
-              editable={false}
-              selectable={user ? true : false}
-              selectOverlap={true}
-              unselectAuto={false}
-              height="auto"
-              eventDisplay="block"
-              validRange={{
-                start: new Date().toISOString().split('T')[0]
-              }}
-              slotMinTime="08:00:00"
-              slotMaxTime="20:00:00"
-              slotDuration="00:30:00"
-              allDaySlot={false}
-              firstDay={1}
-              weekends={true}
-              eventTimeFormat={{
-                hour: '2-digit',
-                minute: '2-digit',
-                hour12: false
-              }}
-              dayHeaderFormat={{ 
-                weekday: 'short', 
-                day: 'numeric', 
-                month: 'short',
-                omitCommas: false
-              }}
-              slotLabelFormat={{
-                hour: '2-digit',
-                minute: '2-digit',
-                hour12: false
+              selectable={user && activeTab === 'preferences' ? true : false}
+              onSelect={(selectInfo) => {
+                if (user && activeTab === 'preferences') {
+                  // Check if selection is in the past
+                  const now = new Date();
+                  if (selectInfo.start < now) {
+                    toast.error('Nie można dodać preferencji w przeszłości');
+                    return;
+                  }
+                  
+                  const date = selectInfo.start.toISOString().split('T')[0];
+                  const startHours = selectInfo.start.getHours().toString().padStart(2, '0');
+                  const startMinutes = selectInfo.start.getMinutes().toString().padStart(2, '0');
+                  const endHours = selectInfo.end.getHours().toString().padStart(2, '0');
+                  const endMinutes = selectInfo.end.getMinutes().toString().padStart(2, '0');
+                  
+                  const startTime = `${startHours}:${startMinutes}`;
+                  const endTime = `${endHours}:${endMinutes}`;
+
+                  setSelectedTimeRange({ date, startTime, endTime, start: selectInfo.start, end: selectInfo.end });
+                  setShowPreferenceModal(true);
+                } else if (!user) {
+                  toast.error('Zaloguj się, aby dodać preferencje czasowe');
+                }
               }}
             />
           )}
         </div>
 
-        {/* User Bookings - Only show if user is logged in */}
-        {user && (() => {
-          const now = new Date();
-          now.setHours(0, 0, 0, 0);
-          
-          const activeBookings = bookings.filter((b) => {
-            if (b.status === 'cancelled') return false;
-            const slot = b.class_availability;
-            if (!slot) return false;
-            const slotDate = new Date(slot.date);
-            slotDate.setHours(0, 0, 0, 0);
-            // Check if slot date and time has passed
-            const slotDateTime = new Date(`${slot.date}T${slot.end_time}`);
-            return slotDateTime >= now;
-          });
+        {/* Terms Panels - Below calendar, only show if user is logged in */}
+        {user && activeTab === 'bookings' && (() => {
+            const now = new Date();
+            now.setHours(0, 0, 0, 0);
+            
+            const activeBookings = bookings.filter((b) => {
+              if (b.status === 'cancelled') return false;
+              const slot = b.class_availability;
+              if (!slot) return false;
+              const slotDate = new Date(slot.date);
+              slotDate.setHours(0, 0, 0, 0);
+              // Check if slot date and time has passed
+              const slotDateTime = new Date(`${slot.date}T${slot.end_time}`);
+              return slotDateTime >= now;
+            });
 
-          const archivedBookings = bookings.filter((b) => {
-            if (b.status === 'cancelled') return false;
-            const slot = b.class_availability;
-            if (!slot) return false;
-            const slotDateTime = new Date(`${slot.date}T${slot.end_time}`);
-            return slotDateTime < now;
-          });
+            const archivedBookings = bookings.filter((b) => {
+              if (b.status === 'cancelled') return false;
+              const slot = b.class_availability;
+              if (!slot) return false;
+              const slotDateTime = new Date(`${slot.date}T${slot.end_time}`);
+              return slotDateTime < now;
+            });
 
-          const renderBooking = (booking) => {
-            const slot = booking.class_availability;
-            if (!slot) return null;
+            const renderBooking = (booking) => {
+              const slot = booking.class_availability;
+              if (!slot) return null;
 
-            const date = new Date(slot.date);
-            const startTime = slot.start_time.substring(0, 5);
-            const endTime = slot.end_time.substring(0, 5);
-            const slotDateTime = new Date(`${slot.date}T${slot.end_time}`);
-            const isPast = slotDateTime < now;
+              const date = new Date(slot.date);
+              const startTime = slot.start_time.substring(0, 5);
+              const endTime = slot.end_time.substring(0, 5);
+              const slotDateTime = new Date(`${slot.date}T${slot.end_time}`);
+              const isPast = slotDateTime < now;
 
-            return (
-              <div
-                key={booking.id}
-                className={`p-4 border rounded-lg flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 ${
-                  isPast 
-                    ? 'border-gray-200 dark:border-DarkblackText opacity-75' 
-                    : 'border-gray-200 dark:border-DarkblackText'
-                }`}
-              >
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
+              return (
+                <div
+                  key={booking.id}
+                  className={`p-3 border rounded-lg flex flex-col gap-2 ${
+                    isPast 
+                      ? 'border-gray-200 dark:border-DarkblackText opacity-75' 
+                      : 'border-gray-200 dark:border-DarkblackText'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
                     {slot.class_type === 'individual' ? (
                       <User className="w-4 h-4 text-blue-500" />
                     ) : (
                       <Users className="w-4 h-4 text-purple-500" />
                     )}
-                    <span className="font-semibold text-gray-900 dark:text-white">
-                      {slot.class_type === 'individual' ? 'Zajęcia indywidualne' : 'Zajęcia grupowe'}
+                    <span className="font-semibold text-sm text-gray-900 dark:text-white">
+                      {slot.class_type === 'individual' ? 'Indywidualne' : 'Grupowe'}
                     </span>
                     <span
-                      className={`px-2 py-1 rounded text-xs ${
+                      className={`px-2 py-0.5 rounded text-xs ${
                         booking.status === 'confirmed'
                           ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300'
                           : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300'
@@ -543,67 +737,60 @@ export default function CalendarPage({ isDark, setIsDark }) {
                       {booking.status === 'confirmed' ? 'Potwierdzone' : 'Oczekujące'}
                     </span>
                   </div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                  <p className="text-xs text-gray-600 dark:text-gray-400">
                     {date.toLocaleDateString('pl-PL', {
-                      weekday: 'long',
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric'
+                      day: 'numeric',
+                      month: 'short'
                     })}{' '}
                     {startTime} - {endTime}
                   </p>
-                  {booking.notes && (
-                    <p className="text-sm text-gray-500 dark:text-gray-500 mt-1">
-                      Notatka: {booking.notes}
-                    </p>
+                  {!isPast && (
+                    <button
+                      onClick={() => handleCancelBooking(booking.id)}
+                      className="px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white rounded-md transition flex items-center gap-1 text-xs w-fit"
+                    >
+                      <X className="w-3 h-3" />
+                      Anuluj
+                    </button>
                   )}
                 </div>
-                {!isPast && (
-                  <button
-                    onClick={() => handleCancelBooking(booking.id)}
-                    className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition flex items-center gap-2 text-sm"
-                  >
-                    <X className="w-4 h-4" />
-                    Anuluj
-                  </button>
+              );
+            };
+
+            return (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Active Bookings */}
+                <div className="bg-white dark:bg-DarkblackBorder rounded-lg shadow-sm border border-gray-200 dark:border-DarkblackText p-4">
+                  <h2 className="text-base font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+                    <Clock className="w-4 h-4" />
+                    Nadchodzące terminy
+                  </h2>
+
+                  {activeBookings.length === 0 ? (
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Brak nadchodzących rezerwacji</p>
+                  ) : (
+                    <div className="space-y-2 max-h-[400px] overflow-y-auto">
+                      {activeBookings.map(renderBooking)}
+                    </div>
+                  )}
+                </div>
+
+                {/* Archived Bookings */}
+                {archivedBookings.length > 0 && (
+                  <div className="bg-white dark:bg-DarkblackBorder rounded-lg shadow-sm border border-gray-200 dark:border-DarkblackText p-4">
+                    <h2 className="text-base font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+                      <Archive className="w-4 h-4" />
+                      Archiwalne terminy
+                    </h2>
+                    <div className="space-y-2 max-h-[400px] overflow-y-auto">
+                      {archivedBookings.map(renderBooking)}
+                    </div>
+                  </div>
                 )}
               </div>
             );
-          };
+          })()}
 
-          return (
-            <>
-              {/* Active Bookings */}
-              <div className="mt-8 bg-white dark:bg-DarkblackBorder rounded-lg shadow-lg p-4 sm:p-6">
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                  <Clock className="w-5 h-5" />
-                  Nadchodzące rezerwacje
-                </h2>
-
-                {activeBookings.length === 0 ? (
-                  <p className="text-gray-600 dark:text-gray-400">Brak nadchodzących rezerwacji</p>
-                ) : (
-                  <div className="space-y-3">
-                    {activeBookings.map(renderBooking)}
-                  </div>
-                )}
-              </div>
-
-              {/* Archived Bookings */}
-              {archivedBookings.length > 0 && (
-                <div className="mt-6 bg-white dark:bg-DarkblackBorder rounded-lg shadow-lg p-4 sm:p-6">
-                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                    <Archive className="w-5 h-5" />
-                    Archiwalne rezerwacje
-                  </h2>
-                  <div className="space-y-3">
-                    {archivedBookings.map(renderBooking)}
-                  </div>
-                </div>
-              )}
-            </>
-          );
-        })()}
 
         {/* Info for non-logged in users */}
         {!user && (
@@ -712,6 +899,27 @@ export default function CalendarPage({ isDark, setIsDark }) {
                     placeholder="Dodaj opis preferencji..."
                   />
                 </div>
+
+                <div className="flex items-start gap-3 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                  <input
+                    type="checkbox"
+                    id="recurring"
+                    checked={isRecurring}
+                    onChange={(e) => setIsRecurring(e.target.checked)}
+                    className="mt-1 w-4 h-4 text-primaryBlue dark:text-primaryGreen border-gray-300 rounded focus:ring-primaryBlue dark:focus:ring-primaryGreen"
+                  />
+                  <div className="flex-1">
+                    <label htmlFor="recurring" className="block text-sm font-medium text-gray-900 dark:text-white mb-1 cursor-pointer">
+                      Preferencja cykliczna
+                    </label>
+                    <p className="text-xs text-gray-600 dark:text-gray-400">
+                      {isRecurring && selectedTimeRange
+                        ? `Preferencja zostanie utworzona na wszystkie ${new Date(selectedTimeRange.date).toLocaleDateString('pl-PL', { weekday: 'long' })} w ciągu najbliższych 12 tygodni. Jest to preferencja cykliczna potrzebna do utworzenia grupy.`
+                        : 'Zaznacz, aby utworzyć preferencję na wszystkie przyszłe wystąpienia tego dnia tygodnia (np. wszystkie poniedziałki).'
+                      }
+                    </p>
+                  </div>
+                </div>
               </div>
 
               <div className="flex justify-end gap-3 mt-6">
@@ -721,6 +929,7 @@ export default function CalendarPage({ isDark, setIsDark }) {
                     setSelectedTimeRange(null);
                     setPreferenceDescription('');
                     setPreferenceLabelId('');
+                    setIsRecurring(false);
                   }}
                   className="px-4 py-2 border border-gray-200 dark:border-DarkblackText text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-DarkblackText transition"
                 >
@@ -912,6 +1121,130 @@ export default function CalendarPage({ isDark, setIsDark }) {
                     </div>
                   </div>
                 )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Preference Modal */}
+      {showEditPreferenceModal && editingPreference && selectedTimeRange && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 animate-fadeIn p-4">
+          <div className="bg-white dark:bg-DarkblackBorder rounded-2xl shadow-xl w-full max-w-md animate-scaleIn">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+                  Edytuj preferencję
+                </h3>
+                <button
+                  onClick={() => {
+                    setShowEditPreferenceModal(false);
+                    setEditingPreference(null);
+                    setSelectedTimeRange(null);
+                    setPreferenceDescription('');
+                    setPreferenceLabelId('');
+                    setPreferenceType('individual');
+                    setPreferenceTopic('');
+                  }}
+                  className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Data i godzina:</p>
+                  <p className="font-medium text-gray-900 dark:text-white">
+                    {new Date(selectedTimeRange.date).toLocaleDateString('pl-PL', {
+                      weekday: 'long',
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
+                    })}{' '}
+                    {selectedTimeRange.startTime} - {selectedTimeRange.endTime}
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Typ zajęć *
+                  </label>
+                  <select
+                    value={preferenceType}
+                    onChange={(e) => setPreferenceType(e.target.value)}
+                    className="w-full p-3 border border-gray-200 dark:border-DarkblackText rounded-lg focus:outline-none focus:ring-2 focus:ring-primaryBlue dark:focus:ring-primaryGreen text-sm dark:bg-DarkblackText dark:text-white"
+                    required
+                  >
+                    <option value="individual">Zajęcia indywidualne</option>
+                    <option value="group">Zajęcia grupowe</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Temat *
+                  </label>
+                  <select
+                    value={preferenceTopic}
+                    onChange={(e) => setPreferenceTopic(e.target.value)}
+                    className="w-full p-3 border border-gray-200 dark:border-DarkblackText rounded-lg focus:outline-none focus:ring-2 focus:ring-primaryBlue dark:focus:ring-primaryGreen text-sm dark:bg-DarkblackText dark:text-white"
+                    required
+                  >
+                    <option value="">Wybierz temat</option>
+                    <option value="inf 0.3">inf 0.3</option>
+                    <option value="inf 0.4">inf 0.4</option>
+                    <option value="matura z informatyki">Matura z informatyki</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Opis (opcjonalnie)
+                  </label>
+                  <textarea
+                    value={preferenceDescription}
+                    onChange={(e) => setPreferenceDescription(e.target.value)}
+                    rows="3"
+                    className="w-full p-3 border border-gray-200 dark:border-DarkblackText rounded-lg focus:outline-none focus:ring-2 focus:ring-primaryBlue dark:focus:ring-primaryGreen text-sm dark:bg-DarkblackText dark:text-white resize-none"
+                    placeholder="Dodaj opis preferencji..."
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-between gap-3 mt-6">
+                <button
+                  onClick={() => {
+                    if (window.confirm('Czy na pewno chcesz usunąć tę preferencję?')) {
+                      handleDeletePreference(editingPreference.id);
+                    }
+                  }}
+                  className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition"
+                >
+                  Usuń
+                </button>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => {
+                      setShowEditPreferenceModal(false);
+                      setEditingPreference(null);
+                      setSelectedTimeRange(null);
+                      setPreferenceDescription('');
+                      setPreferenceLabelId('');
+                      setPreferenceType('individual');
+                      setPreferenceTopic('');
+                    }}
+                    className="px-4 py-2 border border-gray-200 dark:border-DarkblackText text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-DarkblackText transition"
+                  >
+                    Anuluj
+                  </button>
+                  <button
+                    onClick={handleUpdatePreference}
+                    className="px-4 py-2 bg-primaryBlue dark:bg-primaryGreen text-white rounded-lg hover:opacity-90 transition"
+                  >
+                    Zapisz zmiany
+                  </button>
+                </div>
               </div>
             </div>
           </div>

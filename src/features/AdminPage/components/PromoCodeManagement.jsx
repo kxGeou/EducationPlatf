@@ -1,12 +1,9 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { 
-  Tag, 
-  PlusCircle, 
   Edit3, 
   Trash2, 
   X,
-  CheckCircle,
-  XCircle,
   Percent,
   DollarSign,
   Calendar,
@@ -165,16 +162,15 @@ export default function PromoCodeManagement({ isDark }) {
 
   return (
     <div className="space-y-4 sm:space-y-6">
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-        <h2 className="font-bold text-xl sm:text-2xl text-blackText dark:text-white flex items-center gap-2">
-          <Tag size={20} className="sm:w-6 sm:h-6" />
-          Kody promocyjne ({promoCodes.length})
+      <div className="flex flex-col gap-4">
+        <h2 className="font-bold text-lg text-blackText dark:text-white">
+          Kody promocyjne ({filteredCodes.length})
         </h2>
-        <div className="flex gap-3">
-          <div className="flex gap-2 bg-gray-100 dark:bg-DarkblackText rounded-lg p-1">
+        <div className="flex flex-wrap gap-2 items-center">
+          <div className="flex gap-2 bg-gray-100 dark:bg-DarkblackText rounded-md p-1">
             <button
               onClick={() => setFilterActive('all')}
-              className={`px-3 py-1.5 text-sm rounded transition-colors ${
+              className={`px-3 py-1.5 text-sm rounded-md transition-colors ${
                 filterActive === 'all'
                   ? 'bg-white dark:bg-DarkblackBorder text-blackText dark:text-white shadow-sm'
                   : 'text-gray-600 dark:text-gray-400'
@@ -184,7 +180,7 @@ export default function PromoCodeManagement({ isDark }) {
             </button>
             <button
               onClick={() => setFilterActive('active')}
-              className={`px-3 py-1.5 text-sm rounded transition-colors ${
+              className={`px-3 py-1.5 text-sm rounded-md transition-colors ${
                 filterActive === 'active'
                   ? 'bg-white dark:bg-DarkblackBorder text-blackText dark:text-white shadow-sm'
                   : 'text-gray-600 dark:text-gray-400'
@@ -194,7 +190,7 @@ export default function PromoCodeManagement({ isDark }) {
             </button>
             <button
               onClick={() => setFilterActive('inactive')}
-              className={`px-3 py-1.5 text-sm rounded transition-colors ${
+              className={`px-3 py-1.5 text-sm rounded-md transition-colors ${
                 filterActive === 'inactive'
                   ? 'bg-white dark:bg-DarkblackBorder text-blackText dark:text-white shadow-sm'
                   : 'text-gray-600 dark:text-gray-400'
@@ -203,16 +199,18 @@ export default function PromoCodeManagement({ isDark }) {
               Nieaktywne
             </button>
           </div>
+          
+          <div className="h-8 w-px bg-gray-300 dark:bg-gray-600"></div>
+          
           <button
             onClick={() => {
               resetForm();
               setEditingCode(null);
               setShowCreateModal(true);
             }}
-            className="flex items-center justify-center gap-2 px-4 sm:px-6 py-3 bg-gradient-to-r from-primaryBlue to-secondaryBlue dark:from-primaryGreen dark:to-secondaryBlue text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:opacity-90"
+            className="px-4 py-2.5 bg-primaryBlue dark:bg-primaryGreen text-white rounded-md shadow-sm hover:opacity-90 transition-opacity duration-200 text-sm"
           >
-            <PlusCircle size={18} />
-            <span className="text-sm sm:text-base">Utwórz kod</span>
+            Utwórz kod
           </button>
         </div>
       </div>
@@ -223,7 +221,6 @@ export default function PromoCodeManagement({ isDark }) {
         </div>
       ) : filteredCodes.length === 0 ? (
         <div className="text-center py-12 text-gray-500 dark:text-gray-400">
-          <Tag size={48} className="mx-auto mb-4 opacity-50" />
           <p className="text-lg">Brak kodów promocyjnych</p>
           <p className="text-sm">Kliknij "Utwórz kod" aby rozpocząć</p>
         </div>
@@ -236,54 +233,49 @@ export default function PromoCodeManagement({ isDark }) {
             return (
               <div
                 key={code.id}
-                className={`bg-white/80 dark:bg-DarkblackBorder rounded-2xl shadow-lg p-4 sm:p-6 border transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${
-                  valid ? 'border-green-200 dark:border-green-900/30' : 'border-gray-100 dark:border-DarkblackText'
-                }`}
+                className="bg-white/80 dark:bg-DarkblackBorder rounded-lg shadow-sm p-4 sm:p-6 border border-gray-200 dark:border-DarkblackText"
               >
                 <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 px-3 py-1.5 bg-green-50 dark:bg-green-900/10 rounded-md">
                     {code.discount_type === 'percentage' ? (
-                      <Percent size={20} className="text-primaryBlue dark:text-primaryGreen" />
+                      <Percent size={16} className="text-green-600 dark:text-green-400" />
                     ) : (
-                      <DollarSign size={20} className="text-primaryBlue dark:text-primaryGreen" />
+                      <DollarSign size={16} className="text-green-600 dark:text-green-400" />
                     )}
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-bold text-lg text-blackText dark:text-white font-mono">
-                          {code.code}
-                        </span>
-                        {valid ? (
-                          <CheckCircle size={16} className="text-green-500" />
-                        ) : (
-                          <XCircle size={16} className="text-red-500" />
-                        )}
-                      </div>
-                      <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                        code.discount_type === 'percentage'
-                          ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
-                          : 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                      }`}>
-                        {code.discount_type === 'percentage' 
-                          ? `${code.discount_value}%` 
-                          : `${code.discount_value.toFixed(2)} zł`}
-                      </span>
-                    </div>
+                    <span className="text-sm font-medium text-green-700 dark:text-green-400">
+                      {code.discount_type === 'percentage' ? 'Procentowy' : 'Kwotowy'}
+                    </span>
                   </div>
                   <div className="flex gap-1">
                     <button
                       onClick={() => handleEdit(code)}
-                      className="p-2 hover:bg-gray-100 dark:hover:bg-DarkblackText rounded-lg transition-colors"
+                      className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-md transition-colors"
                       title="Edytuj"
                     >
-                      <Edit3 size={16} className="text-gray-600 dark:text-gray-400" />
+                      <Edit3 size={16} className="text-blue-600 dark:text-blue-400" />
                     </button>
                     <button
                       onClick={() => handleDelete(code.id)}
-                      className="p-2 hover:bg-red-100 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                      className="p-2 bg-red-50 dark:bg-red-900/20 rounded-md transition-colors"
                       title="Usuń"
                     >
                       <Trash2 size={16} className="text-red-600 dark:text-red-400" />
                     </button>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="px-3 py-1.5 bg-gray-100 dark:bg-DarkblackText rounded-md h-full flex items-center">
+                    <span className="font-bold text-lg text-blackText dark:text-white font-mono">
+                      {code.code}
+                    </span>
+                  </div>
+                  <div className="px-3 py-1.5 bg-gray-100 dark:bg-DarkblackText rounded-md h-full flex items-center">
+                    <span className="text-lg font-semibold text-green-600 dark:text-green-400">
+                      {code.discount_type === 'percentage' 
+                        ? `${code.discount_value}%` 
+                        : `${code.discount_value.toFixed(2)} zł`}
+                    </span>
                   </div>
                 </div>
 
@@ -351,14 +343,22 @@ export default function PromoCodeManagement({ isDark }) {
       )}
 
       {/* Modal tworzenia/edycji */}
-      {showCreateModal && (
-        <div className="fixed inset-0 bg-black/50 dark:bg-black/70 z-50 flex items-center justify-center p-4" onClick={() => setShowCreateModal(false)}>
+      {showCreateModal && createPortal(
+        <div 
+          className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 animate-fadeIn p-4"
+          style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}
+          onClick={() => {
+            setShowCreateModal(false);
+            resetForm();
+            setEditingCode(null);
+          }}
+        >
           <div 
-            className="bg-white dark:bg-DarkblackBorder rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+            className="bg-white dark:bg-DarkblackBorder rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto animate-scaleIn"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="p-6 border-b border-gray-200 dark:border-DarkblackText flex items-center justify-between">
-              <h3 className="text-xl font-bold text-blackText dark:text-white">
+              <h3 className="text-lg font-semibold text-blackText dark:text-white">
                 {editingCode ? 'Edytuj kod promocyjny' : 'Utwórz kod promocyjny'}
               </h3>
               <button
@@ -382,7 +382,7 @@ export default function PromoCodeManagement({ isDark }) {
                   type="text"
                   value={formData.code}
                   onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-DarkblackText rounded-lg bg-white dark:bg-DarkblackText text-blackText dark:text-white font-mono"
+                  className="w-full px-4 py-2 border border-gray-200 dark:border-DarkblackBorder rounded-md bg-gray-50 dark:bg-DarkblackText text-blackText dark:text-white font-mono"
                   placeholder="SUMMER2024"
                   required
                 />
@@ -420,14 +420,14 @@ export default function PromoCodeManagement({ isDark }) {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Wartość zniżki * {formData.discount_type === 'percentage' ? '(%)' : '(w złotych, np. 50 = 50 zł)'}
                 </label>
-                <input
-                  type="number"
-                  value={formData.discount_value}
-                  onChange={(e) => setFormData({ ...formData, discount_value: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-DarkblackText rounded-lg bg-white dark:bg-DarkblackText text-blackText dark:text-white"
-                  min="1"
-                  required
-                />
+                  <input
+                    type="number"
+                    value={formData.discount_value}
+                    onChange={(e) => setFormData({ ...formData, discount_value: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-200 dark:border-DarkblackBorder rounded-md bg-gray-50 dark:bg-DarkblackText text-blackText dark:text-white"
+                    min="1"
+                    required
+                  />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -439,7 +439,7 @@ export default function PromoCodeManagement({ isDark }) {
                     type="date"
                     value={formData.valid_from}
                     onChange={(e) => setFormData({ ...formData, valid_from: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-DarkblackText rounded-lg bg-white dark:bg-DarkblackText text-blackText dark:text-white"
+                    className="w-full px-4 py-2 border border-gray-200 dark:border-DarkblackBorder rounded-md bg-gray-50 dark:bg-DarkblackText text-blackText dark:text-white"
                   />
                 </div>
                 <div>
@@ -450,7 +450,7 @@ export default function PromoCodeManagement({ isDark }) {
                     type="date"
                     value={formData.valid_until}
                     onChange={(e) => setFormData({ ...formData, valid_until: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-DarkblackText rounded-lg bg-white dark:bg-DarkblackText text-blackText dark:text-white"
+                    className="w-full px-4 py-2 border border-gray-200 dark:border-DarkblackBorder rounded-md bg-gray-50 dark:bg-DarkblackText text-blackText dark:text-white"
                   />
                 </div>
               </div>
@@ -464,7 +464,7 @@ export default function PromoCodeManagement({ isDark }) {
                     type="number"
                     value={formData.max_uses_global}
                     onChange={(e) => setFormData({ ...formData, max_uses_global: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-DarkblackText rounded-lg bg-white dark:bg-DarkblackText text-blackText dark:text-white"
+                    className="w-full px-4 py-2 border border-gray-200 dark:border-DarkblackBorder rounded-md bg-gray-50 dark:bg-DarkblackText text-blackText dark:text-white"
                     min="1"
                   />
                 </div>
@@ -476,7 +476,7 @@ export default function PromoCodeManagement({ isDark }) {
                     type="number"
                     value={formData.max_uses_per_user}
                     onChange={(e) => setFormData({ ...formData, max_uses_per_user: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-DarkblackText rounded-lg bg-white dark:bg-DarkblackText text-blackText dark:text-white"
+                    className="w-full px-4 py-2 border border-gray-200 dark:border-DarkblackBorder rounded-md bg-gray-50 dark:bg-DarkblackText text-blackText dark:text-white"
                     min="1"
                   />
                 </div>
@@ -515,7 +515,7 @@ export default function PromoCodeManagement({ isDark }) {
                 <textarea
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-DarkblackText rounded-lg bg-white dark:bg-DarkblackText text-blackText dark:text-white"
+                  className="w-full px-4 py-2 border border-gray-200 dark:border-DarkblackBorder rounded-md bg-gray-50 dark:bg-DarkblackText text-blackText dark:text-white"
                   rows="3"
                   placeholder="Opis kodu dla administratora..."
                 />
@@ -529,20 +529,21 @@ export default function PromoCodeManagement({ isDark }) {
                     resetForm();
                     setEditingCode(null);
                   }}
-                  className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-DarkblackText rounded-lg transition-colors"
+                  className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-DarkblackText rounded-md transition-colors"
                 >
                   Anuluj
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2 bg-primaryBlue dark:bg-primaryGreen text-white rounded-lg font-medium transition-all hover:opacity-90"
+                  className="px-6 py-2.5 bg-primaryBlue dark:bg-primaryGreen text-white rounded-md font-medium transition-opacity hover:opacity-90"
                 >
                   {editingCode ? 'Zaktualizuj' : 'Utwórz'}
                 </button>
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
