@@ -322,8 +322,8 @@ export default function TransactionsSection({ timeAgo }) {
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-3">
                       <span className="px-3 py-1.5 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-md text-sm font-mono font-bold">
-                        #{transaction.transaction_number || transaction.id.slice(0, 8)}
-                      </span>
+                          #{transaction.transaction_number || transaction.id.slice(0, 8)}
+                        </span>
                       {hasAllAccess(transaction) ? (
                         <div className="px-3 py-1.5 bg-green-100 dark:bg-green-900/20 rounded-md flex items-center justify-center h-full">
                           <Check size={16} className="text-green-600 dark:text-green-400" />

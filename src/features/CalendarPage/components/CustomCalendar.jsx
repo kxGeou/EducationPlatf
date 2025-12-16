@@ -125,7 +125,11 @@ export default function CustomCalendar({
   };
 
   const getDateString = (date) => {
-    return date.toISOString().split('T')[0];
+    // Format date as YYYY-MM-DD in local timezone to avoid timezone issues
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   };
 
   const getEventsForSlot = (date, timeSlot) => {
@@ -140,29 +144,104 @@ export default function CustomCalendar({
         
         if (eventDate === dateStr) {
           // Check if this time slot is within the event
-          // For the first slot of the event, we need to check if slotTime matches eventStart
-          // For subsequent slots, we check if slotTime is between eventStart and eventEnd
-          return slotTime >= eventStart && slotTime < eventEnd;
+          // Convert times to minutes for easier comparison
+          const slotMinutes = parseInt(slotTime.split(':')[0]) * 60 + parseInt(slotTime.split(':')[1]);
+          const eventStartMinutes = parseInt(eventStart.split(':')[0]) * 60 + parseInt(eventStart.split(':')[1]);
+          const eventEndMinutes = parseInt(eventEnd.split(':')[0]) * 60 + parseInt(eventEnd.split(':')[1]);
+          
+          // Check if slot overlaps with event (slot starts before event ends and slot ends after event starts)
+          // Since each slot is 30 minutes, slot ends at slotMinutes + 30
+          return slotMinutes < eventEndMinutes && (slotMinutes + 30) > eventStartMinutes;
         }
       }
       return false;
     });
   };
   
-  // Get events that start at this specific slot
-  const getEventsStartingAtSlot = (date, timeSlot) => {
+  // Get events that should be rendered at this specific slot (events that start in this slot)
+  const getEventsToRenderAtSlot = (date, timeSlot) => {
     const dateStr = getDateString(date);
     const slotTime = timeSlot.time;
     
-    return events.filter(event => {
-      if (event.start && event.end) {
-        const eventDate = event.start.split('T')[0];
-        const eventStart = event.start.split('T')[1]?.substring(0, 5);
-        
-        return eventDate === dateStr && eventStart === slotTime;
-      }
-      return false;
+    // Debug: log all events for this date
+    const eventsForDate = events.filter(event => {
+      if (!event.start) return false;
+      const eventDate = event.start.split('T')[0];
+      return eventDate === dateStr;
     });
+    
+    if (eventsForDate.length > 0 && slotTime === '08:00') {
+      console.log('Events for date:', dateStr, eventsForDate.map(e => ({ 
+        title: e.title, 
+        start: e.start, 
+        end: e.end,
+        type: e.extendedProps?.type 
+      })));
+    }
+    
+    const filteredEvents = events.filter(event => {
+      if (!event.start || !event.end) {
+        return false;
+      }
+      
+      // Extract date and time from event.start (format: YYYY-MM-DDTHH:mm:ss or YYYY-MM-DDTHH:mm)
+      const eventDate = event.start.split('T')[0];
+      const eventTimePart = event.start.split('T')[1];
+      if (!eventTimePart) {
+        return false;
+      }
+      
+      // Extract time (HH:mm) - handle both HH:mm:ss and HH:mm formats
+      const eventStart = eventTimePart.substring(0, 5);
+      
+      // Compare dates (both should be in YYYY-MM-DD format)
+      if (eventDate !== dateStr) {
+        return false;
+      }
+      
+      // Convert times to minutes for easier comparison
+      const slotMinutes = parseInt(slotTime.split(':')[0]) * 60 + parseInt(slotTime.split(':')[1]);
+      const eventStartMinutes = parseInt(eventStart.split(':')[0]) * 60 + parseInt(eventStart.split(':')[1]);
+      
+      // Render event only at the slot where it starts (slot that contains the start time)
+      // Check if event starts in this slot (slotMinutes <= eventStartMinutes < slotMinutes + 30)
+      const matches = slotMinutes <= eventStartMinutes && eventStartMinutes < slotMinutes + 30;
+      
+      // Debug: log all comparisons for events on this date
+      if (eventsForDate.length > 0 && slotTime === '08:00') {
+        console.log('Time slot comparisons:', {
+          dateStr,
+          slotTime,
+          slotMinutes,
+          events: eventsForDate.map(e => {
+            const eTime = e.start.split('T')[1]?.substring(0, 5);
+            const eMinutes = parseInt(eTime.split(':')[0]) * 60 + parseInt(eTime.split(':')[1]);
+            return {
+              title: e.title,
+              eventStart: eTime,
+              eventStartMinutes: eMinutes,
+              matches: slotMinutes <= eMinutes && eMinutes < slotMinutes + 30
+            };
+          })
+        });
+      }
+      
+      if (matches) {
+        console.log('Event matches slot:', { 
+          eventTitle: event.title, 
+          eventStart, 
+          slotTime, 
+          eventDate, 
+          dateStr,
+          slotMinutes,
+          eventStartMinutes
+        });
+      }
+      
+      return matches;
+    });
+    
+    return filteredEvents;
   };
 
   const handleSlotMouseDown = (date, timeSlot, e) => {
@@ -305,7 +384,9 @@ export default function CustomCalendar({
               {/* Day cells */}
               {weekDays.map((day, dayIdx) => {
                 const dateStr = getDateString(day);
-                const slotEvents = slotIdx % 2 === 0 ? getEventsStartingAtSlot(day, timeSlot) : [];
+                // Get events that should be rendered at this slot (events that start in this slot)
+                // Check all slots, not just even ones, because events can start at :30 minutes
+                const slotEvents = getEventsToRenderAtSlot(day, timeSlot);
                 const isSelected = isSlotInSelectedRange(day, timeSlot);
                 const isCurrentSlot = isToday(day) && timeSlot.time === new Date().toTimeString().substring(0, 5);
 
@@ -338,17 +419,27 @@ export default function CustomCalendar({
                       }
                     }}
                   >
-                    {/* Events - only render on even slots (hourly) and only events that start here */}
-                    {slotIdx % 2 === 0 && slotEvents.length > 0 && (
+                    {/* Events - render events that start in this slot */}
+                    {slotEvents.length > 0 && (
                       <>
                         {slotEvents.map((event, eventIdx) => {
-                          // Calculate height (number of 30-min slots)
-                          const startTime = new Date(event.start);
-                          const endTime = new Date(event.end);
-                          const durationMinutes = (endTime - startTime) / (1000 * 60);
-                          const heightSlots = Math.max(1, durationMinutes / 30);
-                          // Each slot is 30px, so height in pixels
-                          const heightPx = heightSlots * 30;
+                          // Calculate height and position based on exact start/end times
+                          const eventStart = event.start.split('T')[1]?.substring(0, 5);
+                          const eventEnd = event.end.split('T')[1]?.substring(0, 5);
+                          
+                          // Convert to minutes
+                          const eventStartMinutes = parseInt(eventStart.split(':')[0]) * 60 + parseInt(eventStart.split(':')[1]);
+                          const eventEndMinutes = parseInt(eventEnd.split(':')[0]) * 60 + parseInt(eventEnd.split(':')[1]);
+                          const slotMinutes = parseInt(timeSlot.time.split(':')[0]) * 60 + parseInt(timeSlot.time.split(':')[1]);
+                          
+                          // Calculate duration in minutes
+                          const durationMinutes = eventEndMinutes - eventStartMinutes;
+                          
+                          // Calculate offset from slot start (in pixels, each minute = 1px since slot is 30px for 30 minutes)
+                          const offsetFromSlotStart = (eventStartMinutes - slotMinutes) * (30 / 30); // 1px per minute
+                          
+                          // Calculate height in pixels (each minute = 1px)
+                          const heightPx = Math.max(24, durationMinutes * (30 / 30)); // 1px per minute, min 24px
 
                           // Special handling for overlap events (green with user count)
                           const isOverlap = event.extendedProps?.type === 'overlap';
@@ -367,7 +458,7 @@ export default function CustomCalendar({
                                 height: `${heightPx}px`,
                                 minHeight: '24px',
                                 position: 'absolute',
-                                top: '2px',
+                                top: `${2 + offsetFromSlotStart}px`,
                                 left: '2px',
                                 right: '2px',
                                 zIndex: 10,

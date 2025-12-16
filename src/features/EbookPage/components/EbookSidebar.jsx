@@ -1,77 +1,45 @@
 import MobileLogo from '../../../assets/logoMobile.svg';
 import DesktopLogo from '../../../assets/logoDesk.png';
 import WhiteLogo from '../../../assets/logo_biale.svg';
-import UserPanel from "./UserPanel";
+import UserPanel from "../../CoursePage/components/UserPanel";
 import {
-  ChartColumnBig,
-  Clapperboard,
   Moon,
-  NotepadText,
-  SearchCode,
   SidebarClose,
   Sun,
   Undo2,
   Menu,
   X,
-  Notebook,
-  ListTodo,
-  User,
-  ShoppingBag,
-  ShoppingCart,
   BookOpen,
+  SearchCode,
+  ListTodo,
 } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useCartStore } from '../../../store/cartStore';
-import { useAuthStore } from '../../../store/authStore';
 
-export default function CourseSidebar({
+export default function EbookSidebar({
   user,
+  ebook,
   isDark,
   setIsDark,
   activeSection,
   setActiveSection,
-  userDataModal,
-  setUserDataModal,
   showSidebar: externalShowSidebar,
   setShowSidebar: externalSetShowSidebar,
 }) {
   const navigate = useNavigate();
   const [internalShowSidebar, setInternalShowSidebar] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const cartItemCount = useCartStore((state) => state.getItemCount());
-  const { purchasedEbooks } = useAuthStore();
   
   // Użyj zewnętrznego stanu jeśli jest przekazany, w przeciwnym razie użyj wewnętrznego
   const showSidebar = externalShowSidebar !== undefined ? externalShowSidebar : internalShowSidebar;
   const setShowSidebar = externalSetShowSidebar || setInternalShowSidebar;
 
-  // Build menu items - add E-book above Wideo if user has purchased ebooks
-  const baseMenuItems = [
+  const menuItems = [
     { icon: <SearchCode size={20} />, label: "Informacje", key: "info" },
-  ];
-
-  // Add E-book menu item if user has purchased ebooks
-  const ebookMenuItem = purchasedEbooks && purchasedEbooks.length > 0 ? [
-    { 
-      icon: <BookOpen size={20} />, 
-      label: "E-book", 
-      key: "ebook", 
-      action: () => navigate(`/ebook/${purchasedEbooks[0]}`) // Navigate to first purchased ebook
-    }
-  ] : [];
-
-  const restMenuItems = [
-    { icon: <Clapperboard size={20} />, label: "Wideo", key: "video" },
-    { icon: <ShoppingBag size={20} />, label: "Sklep", key: "shop" },
-    { icon: <ShoppingCart size={20} />, label: "Koszyk", key: "cart", badge: cartItemCount },
-    { icon: <NotepadText size={20} />, label: "Fiszki", key: "flashcards" },
-    { icon: <ChartColumnBig size={20} />, label: "Postęp", key: "chart" },
+    { icon: <BookOpen size={20} />, label: "Ebook", key: "ebook" },
     { icon: <ListTodo size={20} />, label: "Zadania", key: "tasks" },
     { icon: <Undo2 size={20} />, label: "Powrót", key: "back", highlight: true, action: () => navigate("/user_page") },
   ];
-
-  const menuItems = [...baseMenuItems, ...ebookMenuItem, ...restMenuItems];
 
   const toggleTheme = () => {
     setIsDark(prev => {
@@ -121,7 +89,6 @@ export default function CourseSidebar({
                 expanded={true}
                 active={activeSection === item.key}
                 highlight={item.highlight}
-                badge={item.badge}
                 onClick={() => {
                   setMobileMenuOpen(false);
                   if (item.action) item.action();
@@ -196,7 +163,6 @@ export default function CourseSidebar({
                   active={activeSection === item.key}
                   expanded={showSidebar}
                   highlight={item.highlight}
-                  badge={item.badge}
                   onClick={() => {
                     if (item.action) item.action();
                     else setActiveSection(item.key);
@@ -231,7 +197,7 @@ export default function CourseSidebar({
   );
 }
 
-function SidebarButton({ icon, label, expanded, active, onClick, highlight, badge }) {
+function SidebarButton({ icon, label, expanded, active, onClick, highlight }) {
   return (
     <button
       onClick={onClick}
@@ -242,11 +208,6 @@ function SidebarButton({ icon, label, expanded, active, onClick, highlight, badg
     >
       <div className="relative">
       {icon}
-        {badge > 0 && (
-          <span className="absolute -top-2 -right-2 bg-primaryBlue dark:bg-primaryGreen text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
-            {badge}
-          </span>
-        )}
       </div>
       {expanded && (
         <span className="whitespace-nowrap flex items-center gap-2">
@@ -256,3 +217,6 @@ function SidebarButton({ icon, label, expanded, active, onClick, highlight, badg
     </button>
   );
 }
+
+
+

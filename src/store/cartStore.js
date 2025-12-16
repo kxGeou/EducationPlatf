@@ -10,36 +10,39 @@ export const useCartStore = create(
       appliedPromoCode: null, // { code, discount_amount_cents, discount_type, discount_value }
       referralDiscountApplied: false, // Whether 75% referral discount is being used
 
-      addItem: (packageId, packageData, coursePackages = []) => {
+      addItem: (packageId, packageData, coursePackages = [], isEbook = false) => {
         const { items } = get();
         
         // Check if item already in cart
-        if (items.find(item => item.packageId === packageId)) {
+        if (items.find(item => item.packageId === packageId && item.isEbook === isEbook)) {
           toast.info("Produkt już jest w koszyku");
           return false;
         }
 
-        // Verify order - check if previous section is purchased or in cart
-        const { purchasedCourses } = useAuthStore.getState();
-        const packageIndex = coursePackages.findIndex(pkg => pkg.id === packageId);
-        
-        if (packageIndex > 0) {
-          const previousPackage = coursePackages[packageIndex - 1];
-          const previousInCart = items.some(item => item.packageId === previousPackage.id);
-          const previousPurchased = purchasedCourses.includes(previousPackage.id);
+        // For courses, verify order - check if previous section is purchased or in cart
+        if (!isEbook) {
+          const { purchasedCourses } = useAuthStore.getState();
+          const packageIndex = coursePackages.findIndex(pkg => pkg.id === packageId);
           
-          if (!previousInCart && !previousPurchased) {
-            toast.error("Musisz najpierw kupić poprzednią sekcję");
-            return false;
+          if (packageIndex > 0) {
+            const previousPackage = coursePackages[packageIndex - 1];
+            const previousInCart = items.some(item => item.packageId === previousPackage.id && !item.isEbook);
+            const previousPurchased = purchasedCourses.includes(previousPackage.id);
+            
+            if (!previousInCart && !previousPurchased) {
+              toast.error("Musisz najpierw kupić poprzednią sekcję");
+              return false;
+            }
           }
         }
 
         // Add item to cart
         const newItem = {
           packageId,
+          isEbook,
           packageData: {
             id: packageData.id,
-            title: packageData.title,
+            title: packageData.title || packageData.name,
             section_title: packageData.section_title,
             price_cents: packageData.price_cents,
           }
@@ -50,9 +53,9 @@ export const useCartStore = create(
         return true;
       },
 
-      removeItem: (packageId) => {
+      removeItem: (packageId, isEbook = false) => {
         const { items } = get();
-        const updatedItems = items.filter(item => item.packageId !== packageId);
+        const updatedItems = items.filter(item => !(item.packageId === packageId && item.isEbook === isEbook));
         set({ items: updatedItems });
         toast.info("Produkt usunięty z koszyka");
       },
@@ -139,9 +142,9 @@ export const useCartStore = create(
         return get().items.length;
       },
 
-      isInCart: (packageId) => {
+      isInCart: (packageId, isEbook = false) => {
         const { items } = get();
-        return items.some(item => item.packageId === packageId);
+        return items.some(item => item.packageId === packageId && item.isEbook === isEbook);
       },
 
       // Validate cart order before checkout

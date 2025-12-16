@@ -19,7 +19,31 @@ export const useNotificationStore = create((set, get) => ({
     set({ loading: true, error: null });
     
     try {
-      // Get all active notifications
+      // Get user-specific notifications first (from user_notifications)
+      const { data: userNotificationsData, error: userNotificationsError } = await supabase
+        .from('user_notifications')
+        .select(`
+          notification_id,
+          read_at,
+          hidden_at,
+          notifications (
+            id,
+            title,
+            message,
+            type,
+            file_url,
+            file_name,
+            created_at,
+            expires_at,
+            is_active
+          )
+        `)
+        .eq('user_id', userId)
+        .is('hidden_at', null); // Only get notifications that are not hidden
+
+      if (userNotificationsError) throw userNotificationsError;
+
+      // Get all active general notifications (not user-specific)
       const { data: notificationsData, error: notificationsError } = await supabase
         .from('notifications')
         .select(`
@@ -39,34 +63,44 @@ export const useNotificationStore = create((set, get) => ({
 
       if (notificationsError) throw notificationsError;
 
-        // Get user's notification read status (exclude hidden notifications)
-        const { data: userNotificationsData, error: userNotificationsError } = await supabase
-          .from('user_notifications')
-          .select('notification_id, read_at, hidden_at')
-          .eq('user_id', userId)
-          .is('hidden_at', null); // Only get notifications that are not hidden
+      // Extract user-specific notifications and filter out duplicates
+      const userSpecificNotificationIds = new Set(
+        (userNotificationsData || []).map(un => un.notification_id)
+      );
+      
+      // Combine user-specific notifications with general notifications (excluding duplicates)
+      const userSpecificNotifications = (userNotificationsData || [])
+        .map(un => un.notifications)
+        .filter(Boolean)
+        .filter(n => n.is_active && (!n.expires_at || new Date(n.expires_at) > new Date()));
+      
+      const generalNotifications = (notificationsData || [])
+        .filter(n => !userSpecificNotificationIds.has(n.id)); // Exclude user-specific ones
 
-      if (userNotificationsError) throw userNotificationsError;
+      // Merge all notifications (user-specific + general)
+      const allNotifications = [...userSpecificNotifications, ...generalNotifications]
+        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
-      // Merge server read with localStorage fallback
+      // Get read status for all notifications
+      const readNotificationIds = new Set(
+        (userNotificationsData || []).filter(un => un.read_at).map(un => un.notification_id)
+      );
+      
+      // Merge with localStorage fallback
       const localKey = `userNotificationReads:${userId}`;
       let localReads = [];
       try {
         localReads = JSON.parse(localStorage.getItem(localKey) || '[]');
-      } catch (_) { localReads = []; }
-
-      const readNotificationIds = new Set([
-        ...localReads,
-        ...(userNotificationsData?.map(un => un.notification_id) || [])
-      ]);
+        localReads.forEach(id => readNotificationIds.add(id));
+      } catch (_) { }
       
-      const unreadCount = notificationsData?.filter(n => !readNotificationIds.has(n.id)).length || 0;
+      const unreadCount = allNotifications.filter(n => !readNotificationIds.has(n.id)).length;
 
       // Store merged userNotifications locally in state for quick checks
       const mergedUserNotifications = Array.from(readNotificationIds).map(id => ({ notification_id: id }));
 
       set({ 
-        notifications: notificationsData || [], 
+        notifications: allNotifications, 
         userNotifications: mergedUserNotifications,
         unreadCount 
       });
@@ -129,22 +163,45 @@ export const useNotificationStore = create((set, get) => ({
 
 
   // Admin: Create new notification
-  createNotification: async (notificationData) => {
+  createNotification: async (notificationData, skipToast = false) => {
     try {
+      // Extract user_id if present (for targeted notifications)
+      const { user_id, ...notificationPayload } = notificationData;
+      
+      // Insert notification
       const { data, error } = await supabase
         .from('notifications')
-        .insert([notificationData])
+        .insert([notificationPayload])
         .select()
         .single();
 
       if (error) throw error;
 
-      toast.success('Powiadomienie zostało utworzone');
+      // If user_id is provided, create a user-specific notification entry
+      if (user_id && data?.id) {
+        const { error: userNotifError } = await supabase
+          .from('user_notifications')
+          .insert({
+            user_id: user_id,
+            notification_id: data.id
+          });
+
+        if (userNotifError) {
+          console.error('Error creating user notification:', userNotifError);
+          // Don't throw - notification was created, just user link failed
+        }
+      }
+
+      if (!skipToast) {
+        toast.success('Powiadomienie zostało utworzone');
+      }
       return data;
 
     } catch (error) {
       console.error('Error creating notification:', error);
-      toast.error('Błąd podczas tworzenia powiadomienia');
+      if (!skipToast) {
+        toast.error('Błąd podczas tworzenia powiadomienia');
+      }
       throw error;
     }
   },

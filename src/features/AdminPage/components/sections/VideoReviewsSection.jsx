@@ -72,20 +72,20 @@ export default function VideoReviewsSection({
           {allSections.map((section) => {
             const hasReviews = sectionHasReviews(section.id);
             return (
-              <button
-                key={section.id}
+            <button
+              key={section.id}
                 onClick={() => hasReviews && setSectionFilter(section.id)}
                 disabled={!hasReviews}
                 className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
-                  sectionFilter === section.id
-                    ? "bg-primaryBlue text-white"
+                sectionFilter === section.id
+                  ? "bg-primaryBlue text-white"
                     : hasReviews
                     ? "bg-gray-200 dark:bg-DarkblackText text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-DarkblackBorder"
                     : "bg-gray-100 dark:bg-DarkblackText/50 text-gray-400 dark:text-gray-600 cursor-not-allowed opacity-50"
-                }`}
-              >
-                {section.title}
-              </button>
+              }`}
+            >
+              {section.title}
+            </button>
             );
           })}
           <button

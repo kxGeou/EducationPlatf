@@ -238,11 +238,14 @@ export default function CartPanel({ course, isDark, setActiveSection }) {
 
     try {
       // Prepare items for checkout
+      // Separate courses and ebooks
       // price_cents w bazie jest w złotych, więc mnożymy przez 100 aby przekonwertować na grosze dla Stripe
       const items = cartItems.map(item => ({
-        course_id: item.packageId,
+        course_id: item.isEbook ? null : item.packageId,
+        ebook_id: item.isEbook ? item.packageId : null,
         course_title: item.packageData.title || item.packageData.section_title,
         price_cents: Math.round(item.packageData.price_cents * 100), // Konwersja zł → grosze
+        is_ebook: item.isEbook || false,
       }));
 
       const res = await fetch(
@@ -372,13 +375,18 @@ export default function CartPanel({ course, isDark, setActiveSection }) {
                     <div className="flex-1 min-w-0">
                       <h3 className="font-semibold text-blackText dark:text-white mb-1.5 text-base">
                         {item.packageData.section_title || item.packageData.title}
+                        {item.isEbook && (
+                          <span className="ml-2 text-xs px-2 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded">
+                            E-book
+                          </span>
+                        )}
                       </h3>
                       <p className="text-sm font-medium text-primaryBlue dark:text-primaryGreen">
                         {item.packageData.price_cents.toFixed(2)} zł
                       </p>
                     </div>
                     <button
-                      onClick={() => removeItem(item.packageId)}
+                      onClick={() => removeItem(item.packageId, item.isEbook)}
                       className="ml-4 p-2.5 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-[10px] transition-all duration-200 hover:scale-105 active:scale-95"
                       title="Usuń z koszyka"
                     >

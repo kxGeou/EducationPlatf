@@ -76,37 +76,37 @@ export default function ReportsSection({
 
                   {/* Tytuł */}
                   <div className="flex justify-between items-start mb-2">
-                    <h3 className="text-lg sm:text-xl font-semibold text-blackText dark:text-white flex-1">
-                      {report.topic}
-                    </h3>
-                    <div className="dropdown relative ml-4">
-                      <button
-                        onClick={() =>
-                          setOpenDropdown(openDropdown === report.id ? null : report.id)
-                        }
+                  <h3 className="text-lg sm:text-xl font-semibold text-blackText dark:text-white flex-1">
+                    {report.topic}
+                  </h3>
+                  <div className="dropdown relative ml-4">
+                    <button
+                      onClick={() =>
+                        setOpenDropdown(openDropdown === report.id ? null : report.id)
+                      }
                         className={`flex items-center gap-2 px-3 py-2 rounded-md text-xs font-medium tracking-wide ${currentStatus?.color}`}
-                      >
-                        {report.status}
-                        <ChevronDown className="w-4 h-4" />
-                      </button>
-                      {openDropdown === report.id && (
-                        <div className="absolute top-full right-0 mt-2 w-40 bg-white dark:bg-DarkblackBorder rounded-lg shadow-xl border border-gray-100 dark:border-DarkblackText py-2 flex flex-col gap-2 z-[9999]">
-                          {statuses.map((s) => (
-                            <div
-                              key={s.label}
-                              onClick={() => {
-                                updateStatus(report.id, s.label);
-                                setOpenDropdown(null);
-                              }}
-                              className="px-4 py-2 cursor-pointer text-sm hover:bg-gray-100 dark:hover:bg-DarkblackText text-blackText dark:text-white"
-                            >
-                              {s.label}
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
+                    >
+                      {report.status}
+                      <ChevronDown className="w-4 h-4" />
+                    </button>
+                    {openDropdown === report.id && (
+                      <div className="absolute top-full right-0 mt-2 w-40 bg-white dark:bg-DarkblackBorder rounded-lg shadow-xl border border-gray-100 dark:border-DarkblackText py-2 flex flex-col gap-2 z-[9999]">
+                        {statuses.map((s) => (
+                          <div
+                            key={s.label}
+                            onClick={() => {
+                              updateStatus(report.id, s.label);
+                              setOpenDropdown(null);
+                            }}
+                            className="px-4 py-2 cursor-pointer text-sm hover:bg-gray-100 dark:hover:bg-DarkblackText text-blackText dark:text-white"
+                          >
+                            {s.label}
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
+                </div>
 
                   {/* Opis */}
                   <p className="text-gray-600 text-sm leading-relaxed dark:text-white/75">

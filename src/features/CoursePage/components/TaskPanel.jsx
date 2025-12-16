@@ -4,14 +4,15 @@ import TaskFilterPanel from './TaskFilterPanel';
 import supabase from '../../../util/supabaseClient';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 
-function TaskPanel({ courseId }) {
+function TaskPanel({ courseId, isEbook = false }) {
     const { 
         tasks, 
         completedTasks, 
         currentTask, 
         hasSelectedStatus,
         showCompletedTasks,
-        fetchTasksByCourseId, 
+        fetchTasksByCourseId,
+        fetchTasksByEbookId, 
         fetchCompletedTasks,
         submitTaskAnswer,
         getNextTask,
@@ -34,10 +35,15 @@ function TaskPanel({ courseId }) {
 
     useEffect(() => {
         if (courseId) {
-            fetchTasksByCourseId(courseId);
-            fetchCompletedTasks(courseId);
+            if (isEbook) {
+                fetchTasksByEbookId(courseId);
+                fetchCompletedTasks(courseId, true);
+            } else {
+                fetchTasksByCourseId(courseId);
+                fetchCompletedTasks(courseId, false);
+            }
         }
-    }, [courseId])
+    }, [courseId, isEbook])
 
     useEffect(() => {
         setShowFeedback(false);
@@ -82,7 +88,7 @@ function TaskPanel({ courseId }) {
         setShowFeedback(false);
         
         try {
-            const success = await submitTaskAnswer(taskId, selectedAnswer, courseId);
+            const success = await submitTaskAnswer(taskId, selectedAnswer, courseId, isEbook);
             
             if (success) {
                 const isAlreadyCompleted = completedTasks.includes(taskId.toString());

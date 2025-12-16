@@ -8,6 +8,7 @@ export const useAuthStore = create(
     (set, get) => ({
       user: null,
       purchasedCourses: [],
+      purchasedEbooks: [],
       userPoints: 0,
       maturaDate: null,
       loading: false,
@@ -27,7 +28,7 @@ export const useAuthStore = create(
         try {
           const { data, error } = await supabase
             .from("users")
-            .select("purchased_courses, points, matura_date, referral_discount_available, referred_by_user_id")
+            .select("purchased_courses, purchased_ebooks, points, matura_date, referral_discount_available, referred_by_user_id")
             .eq("id", userId)
             .single();
 
@@ -35,6 +36,7 @@ export const useAuthStore = create(
 
           set({ 
             purchasedCourses: data?.purchased_courses || [],
+            purchasedEbooks: data?.purchased_ebooks || [],
             userPoints: data?.points || 0,
             maturaDate: data?.matura_date || null,
             referralDiscountAvailable: data?.referral_discount_available || false,
@@ -44,6 +46,7 @@ export const useAuthStore = create(
         } catch (err) {
           set({ 
             purchasedCourses: [], 
+            purchasedEbooks: [],
             userPoints: 0, 
             maturaDate: null, 
             referralDiscountAvailable: false,
@@ -250,6 +253,7 @@ export const useAuthStore = create(
               set({
                 user: null,
                 purchasedCourses: [],
+                purchasedEbooks: [],
                 userProgress: {},
                 userFlashcards: {},
                 maturaDate: null,
@@ -284,6 +288,7 @@ export const useAuthStore = create(
               set({
                 user: null,
                 purchasedCourses: [],
+                purchasedEbooks: [],
                 userProgress: {},
                 userFlashcards: {},
                 maturaDate: null,
@@ -317,6 +322,7 @@ export const useAuthStore = create(
             set({
               user: null,
               purchasedCourses: [],
+              purchasedEbooks: [],
               userProgress: {},
               userFlashcards: {},
               maturaDate: null,
@@ -400,6 +406,7 @@ export const useAuthStore = create(
             set({
               user: null,
               purchasedCourses: [],
+              purchasedEbooks: [],
               userProgress: {},
               userFlashcards: {},
               maturaDate: null,
@@ -428,6 +435,28 @@ export const useAuthStore = create(
             toast.error("Nie udało się utworzyć użytkownika.");
             set({ loading: false });
             return false;
+          }
+
+          // Utwórz lub zaktualizuj rekord w tabeli users z emailem
+          try {
+            const { error: userError } = await supabase
+              .from('users')
+              .upsert({
+                id: data.user.id,
+                email: email,
+                full_name: full_name
+              }, {
+                onConflict: 'id'
+              });
+
+            if (userError) {
+              console.error('Error creating/updating user record:', userError);
+              // Nie przerywamy procesu rejestracji, jeśli to się nie powiedzie
+              // Rekord może być utworzony przez trigger w bazie danych
+            }
+          } catch (userErr) {
+            console.error('Error in user record creation:', userErr);
+            // Nie przerywamy procesu rejestracji
           }
 
           toast.success(
@@ -533,6 +562,7 @@ export const useAuthStore = create(
           set({
             user: null,
             purchasedCourses: [],
+            purchasedEbooks: [],
             userProgress: {},
             userFlashcards: {},
             userPoints: 0,
@@ -915,6 +945,7 @@ export const useAuthStore = create(
       partialize: (state) => ({
         user: state.user,
         purchasedCourses: state.purchasedCourses,
+        purchasedEbooks: state.purchasedEbooks,
       }),
     }
   )

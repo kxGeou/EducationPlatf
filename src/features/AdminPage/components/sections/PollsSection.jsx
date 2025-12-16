@@ -24,27 +24,27 @@ export default function PollsSection({ polls, setShowPollModal }) {
             const winningOptions = poll.options.filter(opt => opt.votes === maxVotes && opt.votes > 0);
             
             return (
-              <div
-                key={poll.id}
+            <div
+              key={poll.id}
                 className="bg-white/80 dark:bg-DarkblackBorder rounded-lg shadow-sm p-4 sm:p-6 border border-gray-200 dark:border-DarkblackText"
-              >
-                <h4 className="text-lg font-semibold mb-2 text-blackText dark:text-white">{poll.title}</h4>
+            >
+              <h4 className="text-lg font-semibold mb-2 text-blackText dark:text-white">{poll.title}</h4>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-5">{poll.description}</p>
-                <div className="space-y-2">
+              <div className="space-y-2">
                   {poll.options.map((opt) => {
                     const isWinning = winningOptions.some(win => win.id === opt.id);
                     return (
-                      <div
-                        key={opt.id}
+                  <div
+                    key={opt.id}
                         className={`flex justify-between px-3 py-2 rounded-md text-blackText dark:text-white ${
                           isWinning 
                             ? 'bg-gray-300 dark:bg-DarkblackText/80' 
                             : 'bg-gray-200 dark:bg-DarkblackText'
                         }`}
-                      >
-                        <span className="text-sm">{opt.option_text}</span>
-                        <span className="font-medium text-sm">{opt.votes} głosów</span>
-                      </div>
+                  >
+                    <span className="text-sm">{opt.option_text}</span>
+                    <span className="font-medium text-sm">{opt.votes} głosów</span>
+                  </div>
                     );
                   })}
                 </div>

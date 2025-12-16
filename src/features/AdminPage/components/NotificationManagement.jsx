@@ -188,8 +188,8 @@ export default function NotificationManagement({ isDark }) {
             >
               <div className="flex items-start justify-between mb-3">
                 <span className={`px-3 py-1.5 rounded-md text-xs font-medium ${getNotificationBgColor(notification.type)}`}>
-                  {notificationTypes.find(t => t.value === notification.type)?.label}
-                </span>
+                    {notificationTypes.find(t => t.value === notification.type)?.label}
+                  </span>
                 <div className="flex gap-1">
                   <button
                     onClick={() => handleEdit(notification)}
@@ -239,8 +239,8 @@ export default function NotificationManagement({ isDark }) {
                     <Calendar size={12} className="text-orange-600 dark:text-orange-400" />
                     <span className="text-orange-700 dark:text-orange-300 font-medium">
                       Wygasa: {formatDate(notification.expires_at)}
-                    </span>
-                  </div>
+                </span>
+              </div>
                 )}
                 <div className={`flex items-center gap-1 px-2.5 py-1 rounded-md ml-auto ${notification.is_active ? 'bg-green-100 dark:bg-green-900/20' : 'bg-red-100 dark:bg-red-900/20'}`}>
                   {notification.is_active ? (
@@ -273,7 +273,7 @@ export default function NotificationManagement({ isDark }) {
             <div className="p-4 sm:p-6">
               <div className="flex justify-between items-center mb-4 sm:mb-6">
                 <h3 className="text-lg font-semibold text-blackText dark:text-white">
-                  {editingNotification ? 'Edytuj powiadomienie' : 'Utwórz nowe powiadomienie'}
+                    {editingNotification ? 'Edytuj powiadomienie' : 'Utwórz nowe powiadomienie'}
                 </h3>
                 <button
                   onClick={() => {
@@ -317,7 +317,7 @@ export default function NotificationManagement({ isDark }) {
                     </button>
                     {showTypeDropdown && (
                       <div className="absolute top-full left-0 mt-2 w-full bg-white dark:bg-DarkblackBorder dark:border-DarkblackText rounded-md border border-gray-200 z-[9999] animate-slideUp">
-                        {notificationTypes.map((type) => (
+                    {notificationTypes.map((type) => (
                           <div
                             key={type.value}
                             onClick={() => {
@@ -326,9 +326,9 @@ export default function NotificationManagement({ isDark }) {
                             }}
                             className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-DarkblackText cursor-pointer text-sm text-blackText dark:text-white transition-colors"
                           >
-                            {type.label}
+                        {type.label}
                           </div>
-                        ))}
+                    ))}
                       </div>
                     )}
                   </div>

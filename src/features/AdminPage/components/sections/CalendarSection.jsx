@@ -1,12 +1,16 @@
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useCalendarStore } from '../../../../store/calendarStore';
-import { Calendar, Clock, Users, User, Plus, Edit, Trash2, CheckCircle, XCircle, Eye, X, Mail, Hash, MessageSquare, Check, X as XIcon, Archive, Tag, Filter, ChevronDown } from 'lucide-react';
+import { useGroupStore } from '../../../../store/groupStore';
+import { useNotificationStore } from '../../../../store/notificationStore';
+import { Calendar, Clock, Users, User, Plus, Edit, Trash2, CheckCircle, XCircle, Eye, X, Mail, Hash, MessageSquare, Check, X as XIcon, Archive, Tag, Filter, ChevronDown, ExternalLink } from 'lucide-react';
 import CustomCalendar from '../../../CalendarPage/components/CustomCalendar';
 import { formatTimeRange, formatDate } from '../../../../utils/timePreferencesUtils';
+import { useToast } from '../../../../context/ToastContext';
 import supabase from '../../../../util/supabaseClient';
 
 export default function CalendarSection({ timeAgo }) {
+  const toast = useToast();
   const {
     availability,
     bookings,
@@ -29,6 +33,16 @@ export default function CalendarSection({ timeAgo }) {
     deleteLabel
   } = useCalendarStore();
 
+  const {
+    createGroup,
+    assignUsersToGroup,
+    fetchGroups
+  } = useGroupStore();
+
+  const {
+    createNotification
+  } = useNotificationStore();
+
   const [showAddModal, setShowAddModal] = useState(false);
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState(null);
@@ -40,7 +54,8 @@ export default function CalendarSection({ timeAgo }) {
     endTime: '10:00',
     classType: 'individual',
     maxParticipants: 1,
-    isWebinar: false
+    isWebinar: false,
+    meetingLink: ''
   });
   const [formErrors, setFormErrors] = useState({});
   const [activeTab, setActiveTab] = useState('bookings'); // 'bookings', 'upcoming', 'archived', or 'preferences'
@@ -53,6 +68,17 @@ export default function CalendarSection({ timeAgo }) {
   const [showOverlapDetailsModal, setShowOverlapDetailsModal] = useState(false);
   const [selectedOverlap, setSelectedOverlap] = useState(null);
   const [overlapUsers, setOverlapUsers] = useState([]);
+  const [showCreateGroupModal, setShowCreateGroupModal] = useState(false);
+  const [selectedUsersForGroup, setSelectedUsersForGroup] = useState([]);
+  const [groupFormData, setGroupFormData] = useState({
+    name: '',
+    discord_link: '',
+    class_type: 'group',
+    description: '',
+    date: '',
+    start_time: '',
+    end_time: ''
+  });
   const [preferenceFilters, setPreferenceFilters] = useState({
     classType: null, // 'individual' or 'group' or null
     meetingType: null, // 'webinar' or 'regular' or null
@@ -128,7 +154,8 @@ export default function CalendarSection({ timeAgo }) {
       endTime: '10:00',
       classType: 'individual',
       maxParticipants: 1,
-      isWebinar: false
+      isWebinar: false,
+      meetingLink: ''
     });
     setFormErrors({});
     setEditingSlot(null);
@@ -147,7 +174,8 @@ export default function CalendarSection({ timeAgo }) {
       endTime: slot.end_time.substring(0, 5),
       classType: slot.class_type,
       maxParticipants: slot.max_participants,
-      isWebinar: slot.is_webinar || false
+      isWebinar: slot.is_webinar || false,
+      meetingLink: slot.meeting_link || ''
     });
     setFormErrors({});
     setShowAddModal(true);
@@ -255,14 +283,23 @@ export default function CalendarSection({ timeAgo }) {
         : (parseInt(formData.maxParticipants) || 2);
 
       if (editingSlot) {
-        await updateAvailability(editingSlot.id, {
+        const updateData = {
           date: formData.date.trim(),
           start_time: `${formData.startTime.trim()}:00`,
           end_time: `${formData.endTime.trim()}:00`,
           class_type: formData.classType.trim(),
           max_participants: maxParticipants,
           is_webinar: formData.isWebinar || false
-        });
+        };
+        
+        // Add meeting_link if provided
+        if (formData.meetingLink && formData.meetingLink.trim()) {
+          updateData.meeting_link = formData.meetingLink.trim();
+        } else {
+          updateData.meeting_link = null;
+        }
+        
+        await updateAvailability(editingSlot.id, updateData);
       } else {
         await createAvailability(
           formData.date.trim(),
@@ -270,7 +307,8 @@ export default function CalendarSection({ timeAgo }) {
           `${formData.endTime.trim()}:00`,
           formData.classType.trim(),
           maxParticipants,
-          formData.isWebinar || false
+          formData.isWebinar || false,
+          formData.meetingLink && formData.meetingLink.trim() ? formData.meetingLink.trim() : null
         );
       }
 
@@ -502,7 +540,7 @@ export default function CalendarSection({ timeAgo }) {
   };
 
   // Handle preference click - find users with overlapping hours
-  const handlePreferenceClick = (preference) => {
+  const handlePreferenceClick = async (preference) => {
     if (!preference) return;
 
     setSelectedOverlap({
@@ -511,12 +549,10 @@ export default function CalendarSection({ timeAgo }) {
       end_time: preference.end_time
     });
     
-    // Find all preferences that overlap with this one
+    // Find all preferences that overlap with this one (including the clicked one)
     const overlappingPrefs = (preferences || []).filter((pref) => {
       // Same date
       if (pref.date !== preference.date) return false;
-      // Different user
-      if (pref.user_id === preference.user_id) return false;
       // Times overlap
       const prefStart = pref.start_time;
       const prefEnd = pref.end_time;
@@ -526,18 +562,45 @@ export default function CalendarSection({ timeAgo }) {
       return prefStart < selectedEnd && prefEnd > selectedStart;
     });
 
-    // Get unique users with their preferences
+    // Get unique user IDs
+    const userIds = [...new Set(overlappingPrefs.map(pref => pref.user_id))];
+    
+    // Fetch user data from Supabase to ensure we have complete information
     const usersMap = new Map();
+    try {
+      const { data: usersData, error } = await supabase
+        .from('users')
+        .select('id, email, full_name')
+        .in('id', userIds);
+      
+      if (!error && usersData && usersData.length > 0) {
+        // Initialize users map with fetched user data
+        usersData.forEach(user => {
+          usersMap.set(String(user.id), {
+            id: user.id,
+            email: user.email || '',
+            full_name: user.full_name || '',
+            preferences: []
+          });
+        });
+      }
+    } catch (err) {
+      console.error('Error fetching user data:', err);
+    }
+
+    // Now add preferences to users
     overlappingPrefs.forEach((pref) => {
-      if (!usersMap.has(pref.user_id)) {
-        usersMap.set(pref.user_id, {
-          id: pref.users?.id || pref.user_id,
+      const prefUserId = String(pref.user_id);
+      if (!usersMap.has(prefUserId)) {
+        // Fallback if user data wasn't fetched
+        usersMap.set(prefUserId, {
+          id: pref.user_id,
           email: pref.users?.email || '',
           full_name: pref.users?.full_name || '',
           preferences: []
         });
       }
-      usersMap.get(pref.user_id).preferences.push({
+      usersMap.get(prefUserId).preferences.push({
         start_time: pref.start_time,
         end_time: pref.end_time,
         label: pref.preference_labels,
@@ -598,94 +661,135 @@ export default function CalendarSection({ timeAgo }) {
     setShowOverlapDetailsModal(true);
     setOverlapUsers([]); // Clear previous users
 
-    // Get user data directly from preferences (frontend filtering)
     // Convert all IDs to strings for reliable comparison
     const userIds = overlap.user_ids.map(id => String(id));
     const usersMap = new Map();
 
-    // Collect all unique users from preferences with their time preferences
-    preferences.forEach(pref => {
-      const prefUserId = String(pref.user_id);
+    // Always fetch user data from Supabase to ensure we have complete information
+    try {
+      const { data: usersData, error } = await supabase
+        .from('users')
+        .select('id, email, full_name')
+        .in('id', userIds);
       
-      // Check if this user is in the overlap
-      if (userIds.includes(prefUserId)) {
-        // Check if this preference overlaps with the selected overlap time range
-        const prefStart = pref.start_time;
-        const prefEnd = pref.end_time;
-        const overlapStart = overlap.start_time;
-        const overlapEnd = overlap.end_time;
-        const sameDate = pref.date === overlap.date;
-        const timesOverlap = prefStart < overlapEnd && prefEnd > overlapStart;
-        
-        if (sameDate && timesOverlap) {
-          if (!usersMap.has(prefUserId)) {
-            // Try to get user data from pref.users (should be populated by fetchAllPreferences)
-            const userData = pref.users || {};
-            usersMap.set(prefUserId, {
-              id: userData.id || prefUserId,
-              email: userData.email || '',
-              full_name: userData.full_name || '',
-              preferences: []
-            });
-          }
-          
-          // Add this preference time range
-          usersMap.get(prefUserId).preferences.push({
-            start_time: pref.start_time,
-            end_time: pref.end_time,
-            label: pref.preference_labels,
-            type: pref.preference_labels?.type || 'unknown',
-            topic: pref.preference_labels?.topic || ''
+      if (!error && usersData && usersData.length > 0) {
+        // Initialize users map with fetched user data
+        usersData.forEach(user => {
+          usersMap.set(String(user.id), {
+            id: user.id,
+            email: user.email || '',
+            full_name: user.full_name || '',
+            preferences: []
           });
-        }
-      }
-    });
+        });
 
-    // If we still don't have user data, try to fetch it from Supabase
-    const usersArray = Array.from(usersMap.values());
-    
-    // If we have user_ids but no user data, fetch user details
-    if (usersArray.length === 0 && userIds.length > 0) {
-      try {
-        const { data: usersData, error } = await supabase
-          .from('users')
-          .select('id, email, full_name')
-          .in('id', userIds);
-        
-        if (!error && usersData) {
-          // Now match users with their preferences
-          usersData.forEach(user => {
-            const userPrefs = preferences.filter(p => 
-              String(p.user_id) === String(user.id) &&
-              p.date === overlap.date &&
-              p.start_time < overlap.end_time &&
-              p.end_time > overlap.start_time
-            );
+        // Now match users with their preferences from the overlap
+        preferences.forEach(pref => {
+          const prefUserId = String(pref.user_id);
+          
+          // Check if this user is in the overlap
+          if (userIds.includes(prefUserId) && usersMap.has(prefUserId)) {
+            // Check if this preference overlaps with the selected overlap time range
+            const prefStart = pref.start_time;
+            const prefEnd = pref.end_time;
+            const overlapStart = overlap.start_time;
+            const overlapEnd = overlap.end_time;
+            const sameDate = pref.date === overlap.date;
+            const timesOverlap = prefStart < overlapEnd && prefEnd > overlapStart;
             
-            if (userPrefs.length > 0) {
-              usersMap.set(String(user.id), {
-                id: user.id,
-                email: user.email || '',
-                full_name: user.full_name || '',
-                preferences: userPrefs.map(pref => ({
-                  start_time: pref.start_time,
-                  end_time: pref.end_time,
-                  label: pref.preference_labels,
-                  type: pref.preference_labels?.type || 'unknown',
-                  topic: pref.preference_labels?.topic || ''
-                }))
+            if (sameDate && timesOverlap) {
+              // Add this preference time range
+              usersMap.get(prefUserId).preferences.push({
+                start_time: pref.start_time,
+                end_time: pref.end_time,
+                label: pref.preference_labels,
+                type: pref.preference_labels?.type || 'unknown',
+                topic: pref.preference_labels?.topic || ''
               });
             }
-          });
-        }
-      } catch (err) {
-        console.error('Error fetching user data:', err);
+          }
+        });
+      } else {
+        console.error('Error fetching users or no users found:', error);
       }
+    } catch (err) {
+      console.error('Error fetching user data:', err);
     }
 
     // Convert map to array
     const finalUsersArray = Array.from(usersMap.values());
     setOverlapUsers(finalUsersArray);
+  };
+
+  const handleOpenCreateGroupModal = () => {
+    if (!selectedOverlap) return;
+    
+    // Determine class_type from preferences
+    const firstUser = overlapUsers[0];
+    const firstPreference = firstUser?.preferences?.[0];
+    const classType = firstPreference?.type === 'individual' ? 'individual' : 'group';
+    
+    setGroupFormData({
+      name: `Grupa ${formatDate(selectedOverlap.date)} ${selectedOverlap.start_time.substring(0, 5)}`,
+      discord_link: '',
+      class_type: classType
+    });
+    setSelectedUsersForGroup(overlapUsers.map(u => u.id));
+    setShowCreateGroupModal(true);
+  };
+
+  const handleCreateGroup = async () => {
+    if (!groupFormData.name || !groupFormData.discord_link || !groupFormData.date || !groupFormData.start_time || !groupFormData.end_time) {
+      toast.error('Wypełnij wszystkie wymagane pola');
+      return;
+    }
+
+    try {
+      // Create group (skip toast - we'll show one at the end)
+      const group = await createGroup({
+        name: groupFormData.name,
+        discord_link: groupFormData.discord_link,
+        class_type: groupFormData.class_type,
+        description: groupFormData.description || null,
+        date: groupFormData.date,
+        start_time: groupFormData.start_time + ':00', // Add seconds
+        end_time: groupFormData.end_time + ':00' // Add seconds
+      }, true); // skipToast = true
+
+      // Assign users to group (skip toast - we'll show one at the end)
+      if (selectedUsersForGroup.length > 0) {
+        await assignUsersToGroup(group.id, selectedUsersForGroup, true); // skipToast = true
+
+        // Create notifications for assigned users (skip toast for each)
+        for (const userId of selectedUsersForGroup) {
+          try {
+            await createNotification({
+              title: 'Zostałeś przypisany do grupy',
+              message: `Zostałeś przypisany do grupy "${group.name}" na ${formatDate(group.date)} o ${group.start_time.substring(0, 5)}`,
+              type: 'announcement',
+              is_active: true,
+              user_id: userId
+            }, true); // skipToast = true
+          } catch (err) {
+            console.error('Error creating notification:', err);
+          }
+        }
+      }
+
+      setShowCreateGroupModal(false);
+      setShowOverlapDetailsModal(false);
+      setGroupFormData({ name: '', discord_link: '', class_type: 'group', description: '', date: '', start_time: '', end_time: '' });
+      setSelectedUsersForGroup([]);
+      
+      // Show single success toast
+      if (selectedUsersForGroup.length > 0) {
+        toast.success(`Grupa "${group.name}" została utworzona i ${selectedUsersForGroup.length} użytkowników zostało przypisanych`);
+      } else {
+        toast.success(`Grupa "${group.name}" została utworzona`);
+      }
+    } catch (err) {
+      console.error('Error creating group:', err);
+    }
   };
 
   return (
@@ -697,16 +801,27 @@ export default function CalendarSection({ timeAgo }) {
             <div className="p-6">
               <div className="flex justify-between items-center mb-6">
                 <h3 className="text-xl font-bold">Część wspólna godzin</h3>
-                <button
-                  onClick={() => {
-                    setShowOverlapDetailsModal(false);
-                    setSelectedOverlap(null);
-                    setOverlapUsers([]);
-                  }}
-                  className="p-1 hover:bg-gray-100 dark:hover:bg-DarkblackBorder/50 rounded"
-                >
-                  <X size={24} />
-                </button>
+                <div className="flex items-center gap-2">
+                  {overlapUsers.length > 0 && (
+                    <button
+                      onClick={handleOpenCreateGroupModal}
+                      className="px-4 py-2 bg-primaryBlue dark:bg-primaryGreen text-white rounded-md hover:opacity-90 transition flex items-center gap-2"
+                    >
+                      <Hash size={18} />
+                      Utwórz grupę Discord
+                    </button>
+                  )}
+                  <button
+                    onClick={() => {
+                      setShowOverlapDetailsModal(false);
+                      setSelectedOverlap(null);
+                      setOverlapUsers([]);
+                    }}
+                    className="p-1 hover:bg-gray-100 dark:hover:bg-DarkblackBorder/50 rounded"
+                  >
+                    <X size={24} />
+                  </button>
+                </div>
               </div>
               
               <div className="space-y-4 mb-6">
@@ -741,55 +856,47 @@ export default function CalendarSection({ timeAgo }) {
                       return (
                         <div
                           key={user.id || idx}
-                          className="p-4 border border-gray-200 dark:border-DarkblackBorder rounded shadow-sm bg-white dark:bg-DarkblackText"
+                          className="p-5 border-2 border-gray-200 dark:border-DarkblackBorder rounded-lg shadow-md bg-gradient-to-br from-white to-gray-50 dark:from-DarkblackText dark:to-DarkblackBorder hover:shadow-lg transition-shadow"
                         >
-                          <div className="flex items-start gap-4 mb-3">
-                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
+                          <div className="flex items-start gap-4 mb-4">
+                            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-600 flex items-center justify-center text-white font-bold text-xl flex-shrink-0 shadow-lg">
                               {initials}
                             </div>
                             <div className="flex-1 min-w-0">
-                              <div className="font-semibold text-lg text-gray-900 dark:text-white mb-1">
+                              <div className="font-bold text-xl text-gray-900 dark:text-white mb-2">
                                 {user.full_name || 'Brak nazwy użytkownika'}
                               </div>
                               {user.email && (
                                 <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                                  <Mail className="w-4 h-4" />
-                                  <span>{user.email}</span>
+                                  <Mail className="w-4 h-4 flex-shrink-0" />
+                                  <span className="truncate">{user.email}</span>
                                 </div>
                               )}
                             </div>
                           </div>
                           
                           {user.preferences && user.preferences.length > 0 && (
-                            <div className="mt-4 pt-4 border-t border-gray-200 dark:border-DarkblackText">
-                              <div className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            <div className="mt-4 pt-4 border-t-2 border-gray-200 dark:border-DarkblackBorder">
+                              <div className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
+                                <Clock className="w-4 h-4" />
                                 Godziny preferencji:
                               </div>
                               <div className="space-y-2">
                                 {user.preferences.map((pref, prefIdx) => (
                                   <div
                                     key={prefIdx}
-                                    className="p-3 bg-gray-50 dark:bg-DarkblackBorder rounded"
+                                    className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-DarkblackBorder rounded-md border border-gray-200 dark:border-DarkblackText"
                                   >
-                                    <div className="flex items-center gap-2 mb-2">
-                                      <Clock className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                                    <div className="flex items-center gap-2 flex-1">
+                                      <Clock className="w-4 h-4 text-gray-500 dark:text-gray-400 flex-shrink-0" />
                                       <span className="text-sm font-medium text-gray-900 dark:text-white">
                                         {pref.start_time.substring(0, 5)} - {pref.end_time.substring(0, 5)}
                                       </span>
                                     </div>
                                     {pref.label && (
-                                      <div className="flex flex-wrap gap-2">
-                                        <span
-                                          className="px-2 py-1 rounded text-xs font-medium"
-                                          style={{
-                                            backgroundColor: pref.label.color ? `${pref.label.color}20` : '#f3f4f6',
-                                            color: pref.label.color || '#374151',
-                                            border: `1px solid ${pref.label.color || '#d1d5db'}`
-                                          }}
-                                        >
-                                          {pref.type === 'individual' ? 'Indywidualne' : pref.type === 'group' ? 'Grupowe' : 'Nieznany'} - {pref.topic || pref.label.name || 'Brak tematu'}
-                                        </span>
-                                      </div>
+                                      <span className="px-3 py-1 text-xs font-medium rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+                                        {pref.label.name || `${pref.type} - ${pref.topic}`}
+                                      </span>
                                     )}
                                   </div>
                                 ))}
@@ -1094,39 +1201,48 @@ export default function CalendarSection({ timeAgo }) {
                           >
                             {slot.is_active ? 'Aktywny' : 'Nieaktywny'}
                           </span>
-                        </div>
+            </div>
                         <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
                           <div className="flex items-center gap-1">
                             <Clock className="w-4 h-4" />
                             <span>
                               {slot.start_time.substring(0, 5)} - {slot.end_time.substring(0, 5)}
                             </span>
-                          </div>
+              </div>
                           <div className="flex items-center gap-1">
                             {slot.class_type === 'individual' ? (
                               <User className="w-4 h-4" />
-                            ) : (
+            ) : (
                               <Users className="w-4 h-4" />
-                            )}
+            )}
                             <span>{slot.class_type === 'individual' ? 'Indywidualne' : 'Grupowe'}</span>
-                          </div>
+          </div>
                           <div className="flex items-center gap-1">
                             <Users className="w-4 h-4" />
                             <span>
                               {bookingCount}/{slot.max_participants} {isFull && '(Pełne)'}
                             </span>
-                          </div>
+                    </div>
                         </div>
                       </div>
                       <div className="flex flex-wrap items-center gap-2">
+                      {slot.meeting_link && (
                         <button
+                          onClick={() => window.open(slot.meeting_link, '_blank', 'noopener,noreferrer')}
+                          className="p-2 bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 rounded-md hover:bg-purple-100 dark:hover:bg-purple-900/30 transition"
+                          title="Otwórz link do spotkania"
+                        >
+                          <ExternalLink className="w-5 h-5" />
+                        </button>
+                      )}
+                      <button
                           onClick={() => handleViewBookings(slot)}
                           className="p-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-md hover:bg-blue-100 dark:hover:bg-blue-900/30 transition"
                           title="Zobacz rezerwacje"
-                        >
+                      >
                           <Eye className="w-5 h-5" />
-                        </button>
-                        <button
+                      </button>
+                      <button
                           onClick={() => openEditModal(slot)}
                           className="p-2 bg-yellow-50 dark:bg-yellow-900/20 text-yellow-600 dark:text-yellow-400 rounded-md hover:bg-yellow-100 dark:hover:bg-yellow-900/30 transition"
                           title="Edytuj"
@@ -1148,12 +1264,12 @@ export default function CalendarSection({ timeAgo }) {
                           onClick={() => handleDeleteSlot(slot.id)}
                           className="p-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-md hover:bg-red-100 dark:hover:bg-red-900/30 transition"
                           title="Usuń"
-                        >
+                      >
                           <Trash2 className="w-5 h-5" />
-                        </button>
-                      </div>
+                      </button>
                     </div>
                   </div>
+              </div>
                 );
               };
 
@@ -1163,129 +1279,138 @@ export default function CalendarSection({ timeAgo }) {
                     <p className="text-gray-600 dark:text-gray-400 text-center py-8">Brak nadchodzących terminów</p>
                   ) : (
                     activeSlots.map(renderSlot)
-                  )}
-                </div>
+              )}
+            </div>
               );
             })()}
         </div>
       ) : activeTab === 'archived' ? (
         <div className="space-y-6">
           {/* Archived Terms Only */}
-          {(() => {
-              const now = new Date();
-              now.setHours(0, 0, 0, 0);
-              
-              const archivedSlots = availability.filter((slot) => {
-                const slotDateTime = new Date(`${slot.date}T${slot.end_time}`);
-                return slotDateTime < now;
-              });
+            {(() => {
+        const now = new Date();
+        now.setHours(0, 0, 0, 0);
 
-              const renderSlot = (slot) => {
-                const bookingCount = bookings.filter(
-                  (b) => b.availability_id === slot.id && ['pending', 'confirmed'].includes(b.status)
-                ).length;
-                const isFull = bookingCount >= slot.max_participants;
+        const archivedSlots = availability.filter((slot) => {
+          const slotDateTime = new Date(`${slot.date}T${slot.end_time}`);
+          return slotDateTime < now;
+        });
 
-                return (
-                  <div
-                    key={slot.id}
+        const renderSlot = (slot) => {
+          const bookingCount = bookings.filter(
+            (b) => b.availability_id === slot.id && ['pending', 'confirmed'].includes(b.status)
+          ).length;
+          const isFull = bookingCount >= slot.max_participants;
+
+          return (
+            <div
+              key={slot.id}
                     className={`p-4 rounded-lg border opacity-75 ${
-                      slot.is_active
-                        ? 'bg-white dark:bg-DarkblackText border-gray-200 dark:border-DarkblackBorder'
-                        : 'bg-gray-100 dark:bg-DarkblackBorder border-gray-300 dark:border-DarkblackText opacity-60'
+                slot.is_active
+                  ? 'bg-white dark:bg-DarkblackText border-gray-200 dark:border-DarkblackBorder'
+                  : 'bg-gray-100 dark:bg-DarkblackBorder border-gray-300 dark:border-DarkblackText opacity-60'
                     }`}
-                  >
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <p className="font-semibold text-gray-900 dark:text-white">
-                            {new Date(slot.date).toLocaleDateString('pl-PL', {
-                              weekday: 'long',
-                              year: 'numeric',
-                              month: 'long',
-                              day: 'numeric'
-                            })}
-                          </p>
-                          <span
-                            className={`px-2 py-1 rounded text-xs ${
-                              slot.is_active
-                                ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300'
-                                : 'bg-gray-100 text-gray-700 dark:bg-gray-900 dark:text-gray-300'
-                            }`}
-                          >
-                            {slot.is_active ? 'Aktywny' : 'Nieaktywny'}
-                          </span>
-                        </div>
-                        <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
-                          <div className="flex items-center gap-1">
-                            <Clock className="w-4 h-4" />
-                            <span>
-                              {slot.start_time.substring(0, 5)} - {slot.end_time.substring(0, 5)}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            {slot.class_type === 'individual' ? (
-                              <User className="w-4 h-4" />
-                            ) : (
-                              <Users className="w-4 h-4" />
-                            )}
-                            <span>{slot.class_type === 'individual' ? 'Indywidualne' : 'Grupowe'}</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Users className="w-4 h-4" />
-                            <span>
-                              {bookingCount}/{slot.max_participants} {isFull && '(Pełne)'}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex flex-wrap items-center gap-2">
-                        <button
-                          onClick={() => handleViewBookings(slot)}
-                          className="p-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-md hover:bg-blue-100 dark:hover:bg-blue-900/30 transition"
-                          title="Zobacz rezerwacje"
-                        >
-                          <Eye className="w-5 h-5" />
-                        </button>
-                        <button
-                          onClick={() => openEditModal(slot)}
-                          className="p-2 bg-yellow-50 dark:bg-yellow-900/20 text-yellow-600 dark:text-yellow-400 rounded-md hover:bg-yellow-100 dark:hover:bg-yellow-900/30 transition"
-                          title="Edytuj"
-                        >
-                          <Edit className="w-5 h-5" />
-                        </button>
-                        <button
-                          onClick={() => handleToggleActive(slot)}
-                          className={`p-2 rounded-md transition ${
-                            slot.is_active
-                              ? 'bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 hover:bg-orange-100 dark:hover:bg-orange-900/30'
-                              : 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-900/30'
-                          }`}
-                          title={slot.is_active ? 'Dezaktywuj' : 'Aktywuj'}
-                        >
-                          {slot.is_active ? <XCircle className="w-5 h-5" /> : <CheckCircle className="w-5 h-5" />}
-                        </button>
-                        <button
-                          onClick={() => handleDeleteSlot(slot.id)}
-                          className="p-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-md hover:bg-red-100 dark:hover:bg-red-900/30 transition"
-                          title="Usuń"
-                        >
-                          <Trash2 className="w-5 h-5" />
-                        </button>
-                      </div>
+            >
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div className="flex-1">
+                  <div className="flex items-center gap-3 mb-2">
+                    <p className="font-semibold text-gray-900 dark:text-white">
+                      {new Date(slot.date).toLocaleDateString('pl-PL', {
+                        weekday: 'long',
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      })}
+                    </p>
+                    <span
+                      className={`px-2 py-1 rounded text-xs ${
+                        slot.is_active
+                          ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300'
+                          : 'bg-gray-100 text-gray-700 dark:bg-gray-900 dark:text-gray-300'
+                      }`}
+                    >
+                      {slot.is_active ? 'Aktywny' : 'Nieaktywny'}
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
+                    <div className="flex items-center gap-1">
+                      <Clock className="w-4 h-4" />
+                      <span>
+                        {slot.start_time.substring(0, 5)} - {slot.end_time.substring(0, 5)}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      {slot.class_type === 'individual' ? (
+                        <User className="w-4 h-4" />
+                      ) : (
+                        <Users className="w-4 h-4" />
+                      )}
+                      <span>{slot.class_type === 'individual' ? 'Indywidualne' : 'Grupowe'}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Users className="w-4 h-4" />
+                      <span>
+                        {bookingCount}/{slot.max_participants} {isFull && '(Pełne)'}
+                      </span>
                     </div>
                   </div>
-                );
-              };
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  {slot.meeting_link && (
+                    <button
+                      onClick={() => window.open(slot.meeting_link, '_blank', 'noopener,noreferrer')}
+                      className="p-2 bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 rounded-md hover:bg-purple-100 dark:hover:bg-purple-900/30 transition"
+                      title="Otwórz link do spotkania"
+                    >
+                      <ExternalLink className="w-5 h-5" />
+                    </button>
+                  )}
+                  <button
+                    onClick={() => handleViewBookings(slot)}
+                          className="p-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-md hover:bg-blue-100 dark:hover:bg-blue-900/30 transition"
+                    title="Zobacz rezerwacje"
+                  >
+                    <Eye className="w-5 h-5" />
+                  </button>
+                  <button
+                    onClick={() => openEditModal(slot)}
+                          className="p-2 bg-yellow-50 dark:bg-yellow-900/20 text-yellow-600 dark:text-yellow-400 rounded-md hover:bg-yellow-100 dark:hover:bg-yellow-900/30 transition"
+                    title="Edytuj"
+                  >
+                    <Edit className="w-5 h-5" />
+                  </button>
+                  <button
+                    onClick={() => handleToggleActive(slot)}
+                          className={`p-2 rounded-md transition ${
+                      slot.is_active
+                              ? 'bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 hover:bg-orange-100 dark:hover:bg-orange-900/30'
+                              : 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-900/30'
+                    }`}
+                    title={slot.is_active ? 'Dezaktywuj' : 'Aktywuj'}
+                  >
+                    {slot.is_active ? <XCircle className="w-5 h-5" /> : <CheckCircle className="w-5 h-5" />}
+                  </button>
+                  <button
+                    onClick={() => handleDeleteSlot(slot.id)}
+                          className="p-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-md hover:bg-red-100 dark:hover:bg-red-900/30 transition"
+                    title="Usuń"
+                  >
+                    <Trash2 className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          );
+        };
 
-              return (
-                <div className="space-y-3">
+        return (
+              <div className="space-y-3">
                   {archivedSlots.length === 0 ? (
                     <p className="text-gray-600 dark:text-gray-400 text-center py-8">Brak archiwalnych terminów</p>
-                  ) : (
+                ) : (
                     archivedSlots.map(renderSlot)
-                  )}
-                </div>
+                )}
+              </div>
               );
             })()}
         </div>
@@ -1390,7 +1515,7 @@ export default function CalendarSection({ timeAgo }) {
                   </button>
                 </div>
               )}
-            </div>
+              </div>
 
             {/* Clear Filters Button */}
             <button
@@ -1534,7 +1659,7 @@ export default function CalendarSection({ timeAgo }) {
                 </button>
                 {openStartTimeDropdown && (
                   <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-DarkblackBorder border border-gray-200 dark:border-DarkblackBorder rounded-md shadow-sm z-10 max-h-[200px] overflow-y-auto animate-slideUp">
-                    {timeOptions.map((time) => (
+                  {timeOptions.map((time) => (
                       <button
                         key={time}
                         type="button"
@@ -1544,9 +1669,9 @@ export default function CalendarSection({ timeAgo }) {
                         }}
                         className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-DarkblackText transition"
                       >
-                        {time}
+                      {time}
                       </button>
-                    ))}
+                  ))}
                   </div>
                 )}
                 {formErrors.startTime && <p className="text-red-500 text-xs mt-1">{formErrors.startTime}</p>}
@@ -1573,7 +1698,7 @@ export default function CalendarSection({ timeAgo }) {
                 </button>
                 {openEndTimeDropdown && (
                   <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-DarkblackBorder border border-gray-200 dark:border-DarkblackBorder rounded-md shadow-sm z-10 max-h-[200px] overflow-y-auto animate-slideUp">
-                    {getEndTimeOptions().map((time) => (
+                  {getEndTimeOptions().map((time) => (
                       <button
                         key={time}
                         type="button"
@@ -1583,9 +1708,9 @@ export default function CalendarSection({ timeAgo }) {
                         }}
                         className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-DarkblackText transition"
                       >
-                        {time}
+                      {time}
                       </button>
-                    ))}
+                  ))}
                   </div>
                 )}
                 {formErrors.endTime && <p className="text-red-500 text-xs mt-1">{formErrors.endTime}</p>}
@@ -1675,6 +1800,27 @@ export default function CalendarSection({ timeAgo }) {
                 <label htmlFor="isWebinar" className="text-sm font-medium text-gray-700 dark:text-gray-300">
                   To jest webinar (będzie widoczny w powiadomieniach)
                 </label>
+              </div>
+
+              {/* Meeting Link */}
+              <div>
+                <label htmlFor="meetingLink" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Link do spotkania (np. Discord, Zoom)
+                </label>
+                <input
+                  type="url"
+                  id="meetingLink"
+                  value={formData.meetingLink}
+                  onChange={(e) => handleFormChange('meetingLink', e.target.value)}
+                  placeholder="https://discord.gg/..."
+                  className={`w-full px-4 py-2 border border-gray-200 dark:border-DarkblackBorder rounded-md focus:outline-none focus:ring-2 focus:ring-primaryBlue dark:bg-DarkblackText dark:text-white ${
+                    formErrors.meetingLink ? 'border-red-500' : ''
+                  }`}
+                />
+                {formErrors.meetingLink && (
+                  <p className="text-red-500 text-xs mt-1">{formErrors.meetingLink}</p>
+                )}
+                <p className="text-gray-500 text-xs mt-1">Opcjonalne - po kliknięciu w termin użytkownik zostanie przekierowany do tego linku</p>
               </div>
 
               {/* Submit Button */}
@@ -1904,6 +2050,169 @@ export default function CalendarSection({ timeAgo }) {
                     );
                   })
                 )}
+              </div>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* Create Group Modal */}
+      {showCreateGroupModal && selectedOverlap && createPortal(
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999] p-4" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}>
+          <div className="bg-white dark:bg-DarkblackBorder rounded shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-xl font-bold">Utwórz grupę Discord</h3>
+                  <button
+                    onClick={() => {
+                      setShowCreateGroupModal(false);
+                      setGroupFormData({ name: '', discord_link: '', class_type: 'group', description: '', date: '', start_time: '', end_time: '' });
+                      setSelectedUsersForGroup([]);
+                    }}
+                    className="p-1 hover:bg-gray-100 dark:hover:bg-DarkblackBorder/50 rounded"
+                  >
+                    <X size={24} />
+                  </button>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Nazwa grupy *
+                  </label>
+                  <input
+                    type="text"
+                    value={groupFormData.name}
+                    onChange={(e) => setGroupFormData({ ...groupFormData, name: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-200 dark:border-DarkblackBorder rounded-md focus:outline-none focus:ring-2 focus:ring-primaryBlue dark:bg-DarkblackText dark:text-white"
+                    placeholder="Nazwa grupy"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Link Discord *
+                  </label>
+                  <input
+                    type="url"
+                    value={groupFormData.discord_link}
+                    onChange={(e) => setGroupFormData({ ...groupFormData, discord_link: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-200 dark:border-DarkblackBorder rounded-md focus:outline-none focus:ring-2 focus:ring-primaryBlue dark:bg-DarkblackText dark:text-white"
+                    placeholder="https://discord.gg/..."
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Typ zajęć
+                  </label>
+                  <select
+                    value={groupFormData.class_type}
+                    onChange={(e) => setGroupFormData({ ...groupFormData, class_type: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-200 dark:border-DarkblackBorder rounded-md focus:outline-none focus:ring-2 focus:ring-primaryBlue dark:bg-DarkblackText dark:text-white"
+                  >
+                    <option value="group">Grupowe</option>
+                    <option value="individual">Indywidualne</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Opis (opcjonalnie)
+                  </label>
+                  <textarea
+                    value={groupFormData.description}
+                    onChange={(e) => setGroupFormData({ ...groupFormData, description: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-200 dark:border-DarkblackBorder rounded-md focus:outline-none focus:ring-2 focus:ring-primaryBlue dark:bg-DarkblackText dark:text-white"
+                    placeholder="Dodatkowe informacje o grupie..."
+                    rows={3}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Data *
+                  </label>
+                  <input
+                    type="date"
+                    value={groupFormData.date}
+                    onChange={(e) => setGroupFormData({ ...groupFormData, date: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-200 dark:border-DarkblackBorder rounded-md focus:outline-none focus:ring-2 focus:ring-primaryBlue dark:bg-DarkblackText dark:text-white"
+                    required
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Godzina rozpoczęcia *
+                    </label>
+                    <input
+                      type="time"
+                      value={groupFormData.start_time}
+                      onChange={(e) => setGroupFormData({ ...groupFormData, start_time: e.target.value })}
+                      className="w-full px-4 py-2 border border-gray-200 dark:border-DarkblackBorder rounded-md focus:outline-none focus:ring-2 focus:ring-primaryBlue dark:bg-DarkblackText dark:text-white"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Godzina zakończenia *
+                    </label>
+                    <input
+                      type="time"
+                      value={groupFormData.end_time}
+                      onChange={(e) => setGroupFormData({ ...groupFormData, end_time: e.target.value })}
+                      className="w-full px-4 py-2 border border-gray-200 dark:border-DarkblackBorder rounded-md focus:outline-none focus:ring-2 focus:ring-primaryBlue dark:bg-DarkblackText dark:text-white"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Użytkownicy do przypisania ({selectedUsersForGroup.length})
+                  </label>
+                  <div className="max-h-48 overflow-y-auto border border-gray-200 dark:border-DarkblackBorder rounded-md p-3 space-y-2">
+                    {overlapUsers.map((user) => (
+                      <label key={user.id} className="flex items-center gap-2 p-2 hover:bg-gray-50 dark:hover:bg-DarkblackText rounded cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={selectedUsersForGroup.includes(user.id)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setSelectedUsersForGroup([...selectedUsersForGroup, user.id]);
+                            } else {
+                              setSelectedUsersForGroup(selectedUsersForGroup.filter(id => id !== user.id));
+                            }
+                          }}
+                          className="w-4 h-4 text-primaryBlue dark:text-primaryGreen"
+                        />
+                        <span className="text-sm">{user.full_name || user.email || 'Brak nazwy'}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="flex justify-end gap-3 pt-4">
+                  <button
+                    onClick={() => {
+                      setShowCreateGroupModal(false);
+                      setGroupFormData({ name: '', discord_link: '', class_type: 'group', description: '', date: '', start_time: '', end_time: '' });
+                      setSelectedUsersForGroup([]);
+                    }}
+                    className="px-6 py-2 border border-gray-200 dark:border-DarkblackBorder rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-DarkblackText transition"
+                  >
+                    Anuluj
+                  </button>
+                  <button
+                    onClick={handleCreateGroup}
+                    className="px-6 py-2 bg-primaryBlue dark:bg-primaryGreen text-white rounded-md hover:opacity-90 transition"
+                  >
+                    Utwórz grupę
+                  </button>
+                </div>
               </div>
             </div>
           </div>

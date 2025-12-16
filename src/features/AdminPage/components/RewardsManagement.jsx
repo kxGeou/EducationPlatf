@@ -228,12 +228,12 @@ export default function RewardsManagement({ isDark }) {
           Zarządzanie nagrodami ({filteredAndSortedRewards.length})
         </h2>
         <div className="flex flex-wrap gap-2 items-center">
-          <button
-            onClick={() => {
-              resetForm();
-              setEditingReward(null);
-              setShowCreateModal(true);
-            }}
+        <button
+          onClick={() => {
+            resetForm();
+            setEditingReward(null);
+            setShowCreateModal(true);
+          }}
             className="px-4 py-2.5 bg-primaryBlue dark:bg-primaryGreen text-white rounded-md shadow-sm hover:opacity-90 transition-opacity duration-200 text-sm"
           >
             Utwórz nagrodę
@@ -311,7 +311,7 @@ export default function RewardsManagement({ isDark }) {
             {pointsSort === 'asc' && <ArrowUp size={16} />}
             {pointsSort === 'desc' && <ArrowDown size={16} />}
             <span>{pointsSort === 'default' ? 'Sortuj punkty' : pointsSort === 'asc' ? 'Rosnące' : 'Malejące'}</span>
-          </button>
+        </button>
         </div>
       </div>
 
@@ -338,31 +338,31 @@ export default function RewardsManagement({ isDark }) {
                   <span className={`px-3 py-1.5 rounded-md text-xs font-medium ${getTypeColor(reward.type)}`}>
                     {reward.type === 'project' ? 'Projekt' : 'Film YT'}
                   </span>
-                  <div className="flex gap-1">
-                    <button
-                      onClick={() => handleEdit(reward)}
+                <div className="flex gap-1">
+                  <button
+                    onClick={() => handleEdit(reward)}
                       className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-md transition-colors"
-                      title="Edytuj"
-                    >
+                    title="Edytuj"
+                  >
                       <Edit3 size={16} className="text-blue-600 dark:text-blue-400" />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(reward.id)}
+                  </button>
+                  <button
+                    onClick={() => handleDelete(reward.id)}
                       className="p-2 bg-red-50 dark:bg-red-900/20 rounded-md transition-colors"
-                      title="Usuń"
-                    >
-                      <Trash2 size={16} className="text-red-600 dark:text-red-400" />
-                    </button>
-                  </div>
+                    title="Usuń"
+                  >
+                    <Trash2 size={16} className="text-red-600 dark:text-red-400" />
+                  </button>
                 </div>
+              </div>
 
                 <h3 className="text-lg font-semibold mb-1.5 text-blackText dark:text-white line-clamp-2">
-                  {reward.title}
-                </h3>
-                
+                {reward.title}
+              </h3>
+              
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">
-                  {reward.description}
-                </p>
+                {reward.description}
+              </p>
 
                 <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-blue-50 dark:bg-blue-900/20 rounded-md mb-3">
                   <a 
@@ -406,7 +406,7 @@ export default function RewardsManagement({ isDark }) {
             <div className="p-4 sm:p-6">
               <div className="flex justify-between items-center mb-4 sm:mb-6">
                 <h3 className="text-lg font-semibold text-blackText dark:text-white">
-                  {editingReward ? 'Edytuj nagrodę' : 'Utwórz nową nagrodę'}
+                    {editingReward ? 'Edytuj nagrodę' : 'Utwórz nową nagrodę'}
                 </h3>
                 <button
                   onClick={() => {

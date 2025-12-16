@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ShoppingBasket, Check, ShoppingBag, Award, TrendingUp } from 'lucide-react';
+import { ShoppingBasket, Check, ShoppingBag, Award, TrendingUp, BookOpen } from 'lucide-react';
 import { useToast } from '../../../context/ToastContext';
 import { useAuthStore } from '../../../store/authStore';
 import { useCartStore } from '../../../store/cartStore';
@@ -7,11 +7,14 @@ import supabase from '../../../util/supabaseClient';
 
 export default function ShopPanel({ course, isDark, setActivePage }) {
   const toast = useToast();
-  const { user, purchasedCourses, fetchUserData, canPurchaseCourses, maturaDate } = useAuthStore();
+  const { user, purchasedCourses, purchasedEbooks, fetchUserData, canPurchaseCourses, maturaDate } = useAuthStore();
   const { addItem, isInCart } = useCartStore();
   const [coursePackages, setCoursePackages] = useState([]);
+  const [ebooks, setEbooks] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [ebooksLoading, setEbooksLoading] = useState(true);
   const [packageDetails, setPackageDetails] = useState({});
+  const [activeTab, setActiveTab] = useState('sections'); // 'sections' or 'ebooks'
 
   const getRandomGradient = (index) => {
     const gradients = [
@@ -29,6 +32,7 @@ export default function ShopPanel({ course, isDark, setActivePage }) {
 
   useEffect(() => {
     fetchCoursePackages();
+    fetchEbooks();
   }, [course?.id]);
 
   const fetchCoursePackages = async () => {
@@ -107,6 +111,24 @@ export default function ShopPanel({ course, isDark, setActivePage }) {
     }
   };
 
+  const fetchEbooks = async () => {
+    try {
+      setEbooksLoading(true);
+      const { data, error } = await supabase
+        .from('ebooks')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setEbooks(data || []);
+    } catch (error) {
+      console.error('Error fetching ebooks:', error);
+      toast.error('Nie udało się pobrać e-booków');
+    } finally {
+      setEbooksLoading(false);
+    }
+  };
+
   const handleAddToCart = (packageId) => {
     if (!user) {
       toast.error("Musisz być zalogowany, żeby dodać produkt do koszyka.");
@@ -125,7 +147,28 @@ export default function ShopPanel({ course, isDark, setActivePage }) {
       return;
     }
 
-    addItem(packageId, packageData, coursePackages);
+    addItem(packageId, packageData, coursePackages, false);
+  };
+
+  const handleAddEbookToCart = (ebookId) => {
+    if (!user) {
+      toast.error("Musisz być zalogowany, żeby dodać produkt do koszyka.");
+      return;
+    }
+
+    // Check if user has set matura date
+    if (!canPurchaseCourses()) {
+      toast.error("Musisz ustawić datę matury w profilu, aby móc kupować e-booki.");
+      return;
+    }
+
+    const ebookData = ebooks.find(ebook => ebook.id === ebookId);
+    if (!ebookData) {
+      toast.error("Nie udało się pobrać informacji o e-booku.");
+      return;
+    }
+
+    addItem(ebookId, { ...ebookData, name: ebookData.title }, [], true);
   };
 
   if (loading) {
@@ -152,12 +195,41 @@ export default function ShopPanel({ course, isDark, setActivePage }) {
 
   return (
     <div className="flex flex-col gap-8 w-full md:min-h-[96vh] p-3">
-      <span className="flex gap-2 text-lg items-center font-semibold border-l-4 px-3 border-primaryBlue dark:border-primaryGreen text-primaryBlue dark:text-primaryGreen mb-6">
-        Sklep
-      </span>
+      <div className="flex items-center justify-between mb-2">
+        <span className="flex gap-2 text-lg items-center font-semibold border-l-4 px-3 border-primaryBlue dark:border-primaryGreen text-primaryBlue dark:text-primaryGreen">
+          Sklep
+        </span>
+        
+        {/* Tabs Navigation */}
+        <div className="flex gap-2 bg-gray-100 dark:bg-DarkblackText rounded-lg p-1">
+          <button
+            onClick={() => setActiveTab('sections')}
+            className={`px-4 py-2 rounded-md font-medium text-sm transition-all ${
+              activeTab === 'sections'
+                ? 'bg-primaryBlue dark:bg-primaryGreen text-white shadow-md'
+                : 'text-gray-600 dark:text-gray-400 hover:text-primaryBlue dark:hover:text-primaryGreen'
+            }`}
+          >
+            Sekcje
+          </button>
+          <button
+            onClick={() => setActiveTab('ebooks')}
+            className={`px-4 py-2 rounded-md font-medium text-sm transition-all ${
+              activeTab === 'ebooks'
+                ? 'bg-primaryBlue dark:bg-primaryGreen text-white shadow-md'
+                : 'text-gray-600 dark:text-gray-400 hover:text-primaryBlue dark:hover:text-primaryGreen'
+            }`}
+          >
+            E-booki
+          </button>
+        </div>
+      </div>
 
-      {/* Procent zakupionych sekcji */}
-      {coursePackages.length > 0 && (
+      {/* Sekcje kursu */}
+      {activeTab === 'sections' && (
+        <>
+          {/* Procent zakupionych sekcji */}
+          {coursePackages.length > 0 && (
         <div className="relative bg-white dark:bg-DarkblackText rounded-lg shadow-md p-4 border border-primaryBlue/10 dark:border-primaryGreen/10 overflow-hidden">
           <div className="relative flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             {/* Lewa strona - ikona i tekst */}
@@ -332,13 +404,113 @@ export default function ShopPanel({ course, isDark, setActivePage }) {
         })}
       </div>
 
-      {coursePackages.length === 0 && (
-        <div className="flex flex-col items-center justify-center h-64 text-gray-500 dark:text-gray-400">
-          <ShoppingBasket size={48} className="mb-4 opacity-50" />
-          <p className="text-lg font-medium mb-2">Brak dostępnych pakietów</p>
-          <p className="text-sm text-center">
-            Obecnie nie ma dostępnych pakietów kursów dla tego kursu.
-          </p>
+          {coursePackages.length === 0 && (
+            <div className="flex flex-col items-center justify-center h-64 text-gray-500 dark:text-gray-400">
+              <ShoppingBasket size={48} className="mb-4 opacity-50" />
+              <p className="text-lg font-medium mb-2">Brak dostępnych pakietów</p>
+              <p className="text-sm text-center">
+                Obecnie nie ma dostępnych pakietów kursów dla tego kursu.
+              </p>
+            </div>
+          )}
+        </>
+      )}
+
+      {/* E-books Section */}
+      {activeTab === 'ebooks' && (
+        <div>
+          {ebooksLoading ? (
+            <div className="flex items-center justify-center h-32">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primaryBlue dark:border-primaryGreen"></div>
+            </div>
+          ) : ebooks.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-32 text-gray-500 dark:text-gray-400">
+              <BookOpen size={48} className="mb-4 opacity-50" />
+              <p className="text-sm text-center">
+                Obecnie nie ma dostępnych e-booków.
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {ebooks.map((ebook) => {
+                const isPurchased = purchasedEbooks.includes(ebook.id);
+                const inCart = isInCart(ebook.id, true);
+                // price_cents w bazie jest w złotych (tak jak dla kursów)
+                const priceInZloty = ebook.price_cents.toFixed(2);
+                const hasMaturaDate = canPurchaseCourses();
+
+                return (
+                  <div
+                    key={ebook.id}
+                    className={`relative bg-white dark:bg-DarkblackText rounded-lg shadow-lg overflow-hidden transition-all duration-200 ${
+                      isPurchased 
+                        ? 'bg-green-50/30 dark:bg-green-900/10' 
+                        : 'bg-gray-50/50 dark:bg-gray-800/50 shadow-gray-200 dark:shadow-gray-700'
+                    }`}
+                  >
+                    {/* Cover Image */}
+                    {ebook.image_url && (
+                      <div className="relative h-48 bg-gradient-to-br from-blue-400 to-purple-500 overflow-hidden">
+                        <img 
+                          src={ebook.image_url} 
+                          alt={ebook.title}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    )}
+
+                    {/* Content */}
+                    <div className="p-4">
+                      <h3 className="font-semibold text-blackText dark:text-white mb-2 text-base line-clamp-2">
+                        {ebook.title}
+                      </h3>
+                      {ebook.description && (
+                        <p className="text-gray-600 dark:text-gray-300 mb-3 text-sm line-clamp-3">
+                          {ebook.description}
+                        </p>
+                      )}
+                      
+                      <div className="mb-3">
+                        <span className="text-xs text-gray-500 dark:text-gray-400">Cena:</span>
+                        <div className="text-lg font-bold text-gray-900 dark:text-white">
+                          {priceInZloty} zł
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Button */}
+                    <div className="p-4 pt-0">
+                      {isPurchased ? (
+                        <div className="w-full py-2.5 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-lg text-center font-semibold text-sm shadow-sm border border-green-200 dark:border-green-700">
+                          ✓ Zakupione
+                        </div>
+                      ) : inCart ? (
+                        <div className="w-full py-2.5 bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-lg text-center font-semibold text-sm shadow-sm border border-green-200 dark:border-green-700 flex items-center justify-center gap-2">
+                          <Check size={16} />
+                          W koszyku
+                        </div>
+                      ) : hasMaturaDate ? (
+                        <button
+                          onClick={() => handleAddEbookToCart(ebook.id)}
+                          className="w-full py-2.5 bg-primaryBlue dark:bg-primaryGreen text-white rounded-lg font-semibold text-sm shadow-lg transition-all duration-200 flex items-center justify-center gap-2 hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
+                        >
+                          <ShoppingBasket size={16} />
+                          Dodaj do koszyka
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => setActivePage("profile")}
+                          className="w-full py-2.5 bg-orange-200 dark:bg-orange-800 text-orange-800 dark:text-orange-200 rounded-lg text-center font-semibold text-sm hover:bg-orange-300 dark:hover:bg-orange-700 transition-colors cursor-pointer"
+                        >
+                          Ustaw datę matury w profilu
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       )}
     </div>

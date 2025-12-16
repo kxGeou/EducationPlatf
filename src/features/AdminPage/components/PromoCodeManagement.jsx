@@ -244,7 +244,7 @@ export default function PromoCodeManagement({ isDark }) {
                     )}
                     <span className="text-sm font-medium text-green-700 dark:text-green-400">
                       {code.discount_type === 'percentage' ? 'Procentowy' : 'Kwotowy'}
-                    </span>
+                      </span>
                   </div>
                   <div className="flex gap-1">
                     <button
@@ -420,14 +420,14 @@ export default function PromoCodeManagement({ isDark }) {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Wartość zniżki * {formData.discount_type === 'percentage' ? '(%)' : '(w złotych, np. 50 = 50 zł)'}
                 </label>
-                  <input
-                    type="number"
-                    value={formData.discount_value}
-                    onChange={(e) => setFormData({ ...formData, discount_value: e.target.value })}
+                <input
+                  type="number"
+                  value={formData.discount_value}
+                  onChange={(e) => setFormData({ ...formData, discount_value: e.target.value })}
                     className="w-full px-4 py-2 border border-gray-200 dark:border-DarkblackBorder rounded-md bg-gray-50 dark:bg-DarkblackText text-blackText dark:text-white"
-                    min="1"
-                    required
-                  />
+                  min="1"
+                  required
+                />
               </div>
 
               <div className="grid grid-cols-2 gap-4">

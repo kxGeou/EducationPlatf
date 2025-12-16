@@ -5,6 +5,7 @@ import MyCourses from './features/MyCoursesPage/MyCourses.jsx'
 import AuthPage from './features/AuthPage/AuthPage.jsx'
 import CoursePage from './features/CoursePage/CoursePage.jsx'
 import CourseLandingPage from './features/CoursePage/CourseLandingPage.jsx'
+import EbookPage from './features/EbookPage/EbookPage.jsx'
 import Loading from './components/systemLayouts/Loading.jsx'
 import Error from './components/systemLayouts/Error.jsx'
 import WrongPage from './components/systemLayouts/WrongPage.jsx'
@@ -57,6 +58,7 @@ function AppContent({ isDark, setIsDark }) {
         <Route path='/regulations' element={<Regulations  isDark={isDark} setIsDark={setIsDark}/>} />
         <Route path='/course/:id' element={<CoursePage  isDark={isDark} setIsDark={setIsDark}/>} />
         <Route path='/kurs/:id' element={<CourseLandingPage isDark={isDark} setIsDark={setIsDark}/>} />
+        <Route path='/ebook/:id' element={<EbookPage isDark={isDark} setIsDark={setIsDark}/>} />
         <Route path='/loading' element={<Loading isDark={isDark}/>} />
         <Route path='/error' element={<Error isDark={isDark} />} />
         <Route path='/blog' element={<BlogMainPage isDark={isDark} setIsDark={setIsDark} />} />

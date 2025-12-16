@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCalendarStore } from '../../store/calendarStore';
+import { useGroupStore } from '../../store/groupStore';
 import { useAuthStore } from '../../store/authStore';
 import { useToast } from '../../context/ToastContext';
 import PageLayout from '../../components/systemLayouts/PageLayout';
-import { Calendar, Clock, Users, User, X, LogIn, Archive } from 'lucide-react';
+import { Calendar, Clock, Users, User, X, LogIn, Archive, ExternalLink, Hash } from 'lucide-react';
 import CustomCalendar from './components/CustomCalendar';
 import './CalendarPage.css';
 
@@ -42,12 +43,19 @@ export default function CalendarPage({ isDark, setIsDark }) {
   const [preferenceLabelId, setPreferenceLabelId] = useState('');
   const [preferenceType, setPreferenceType] = useState('individual');
   const [preferenceTopic, setPreferenceTopic] = useState('');
-  const [isRecurring, setIsRecurring] = useState(false);
   const [nextWebinar, setNextWebinar] = useState(null);
   const [showEditPreferenceModal, setShowEditPreferenceModal] = useState(false);
   const [editingPreference, setEditingPreference] = useState(null);
   const [calendarDate, setCalendarDate] = useState(null);
-  const [activeTab, setActiveTab] = useState('bookings'); // 'bookings' or 'preferences'
+  const [activeTab, setActiveTab] = useState('bookings'); // 'bookings', 'preferences', or 'groups'
+  
+  const {
+    userGroups,
+    loading: groupsLoading,
+    newGroupsCount,
+    fetchUserGroups,
+    markGroupsAsViewed
+  } = useGroupStore();
 
   useEffect(() => {
     // Fetch availability for the next 7 days (available for everyone)
@@ -67,8 +75,10 @@ export default function CalendarPage({ isDark, setIsDark }) {
     // Fetch user bookings and preferences only if user is logged in
     if (user) {
       fetchUserBookings(user.id);
-      // Fetch user's own preferences for display
-      fetchUserPreferences(user.id, startDate, endDateStr);
+      // Fetch user's own preferences for display (without date limit to show all preferences)
+      fetchUserPreferences(user.id, null, null);
+      // Fetch user's groups
+      fetchUserGroups(user.id);
     }
   }, [user]);
 
@@ -168,14 +178,6 @@ export default function CalendarPage({ isDark, setIsDark }) {
       return;
     }
 
-    // Check if selection is in the past
-    const now = new Date();
-    if (selectInfo.start < now) {
-      toast.error('Nie można dodać preferencji w przeszłości');
-      selectInfo.view.calendar.unselect();
-      return;
-    }
-
     const start = selectInfo.start;
     const end = selectInfo.end;
     const date = start.toISOString().split('T')[0];
@@ -223,72 +225,69 @@ export default function CalendarPage({ isDark, setIsDark }) {
         }
       }
 
-      if (isRecurring) {
-        // Create recurring preference for all future occurrences of this weekday
-        const selectedDate = new Date(selectedTimeRange.date + 'T00:00:00');
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        
-        // Generate dates for the next 12 weeks (3 months)
-        const dates = [];
-        
-        // Start from the selected date (even if it's in the past, we'll create it)
-        for (let week = 0; week < 12; week++) {
-          const date = new Date(selectedDate);
-          date.setDate(selectedDate.getDate() + (week * 7));
-          dates.push(date.toISOString().split('T')[0]);
-        }
+      // Always create recurring preferences for 2 months (8-9 weeks) ahead
+      // Parse the date string (YYYY-MM-DD) in local timezone to avoid timezone issues
+      const [year, month, day] = selectedTimeRange.date.split('-').map(Number);
+      const selectedDate = new Date(year, month - 1, day, 0, 0, 0, 0); // month is 0-indexed
+      
+      // Generate dates for the next 2 months (8-9 weeks, depending on the day)
+      const dates = [];
+      const twoMonthsFromNow = new Date(selectedDate);
+      twoMonthsFromNow.setMonth(twoMonthsFromNow.getMonth() + 2);
+      
+      // Start from the selected date and create preferences for every occurrence of this weekday
+      let currentDate = new Date(selectedDate);
+      while (currentDate <= twoMonthsFromNow) {
+        // Format date as YYYY-MM-DD in local timezone
+        const year = currentDate.getFullYear();
+        const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+        const day = String(currentDate.getDate()).padStart(2, '0');
+        dates.push(`${year}-${month}-${day}`);
+        // Move to next week (same weekday)
+        currentDate.setDate(currentDate.getDate() + 7);
+      }
 
-        // Create preferences for all dates (skip toast for each individual preference)
-        let createdCount = 0;
-        let errorCount = 0;
-        const errors = [];
-        
-        for (const date of dates) {
-          try {
-            await createPreference({
-              userId: user.id,
-              labelId: labelId,
-              date: date,
-              startTime: selectedTimeRange.startTime + ':00',
-              endTime: selectedTimeRange.endTime + ':00',
-              description: preferenceDescription || null,
-              skipToast: true // Skip individual toasts
-            });
-            createdCount++;
-          } catch (err) {
-            errorCount++;
-            errors.push(err.message || 'Nieznany błąd');
-            console.error('Error creating recurring preference for date', date, ':', err);
-          }
+      // Create preferences for all dates (skip toast for each individual preference)
+      let createdCount = 0;
+      let errorCount = 0;
+      const errors = [];
+      
+      for (const date of dates) {
+        try {
+          await createPreference({
+            userId: user.id,
+            labelId: labelId,
+            date: date,
+            startTime: selectedTimeRange.startTime + ':00',
+            endTime: selectedTimeRange.endTime + ':00',
+            description: preferenceDescription || null,
+            skipToast: true // Skip individual toasts
+          });
+          createdCount++;
+        } catch (err) {
+          errorCount++;
+          errors.push(err.message || 'Nieznany błąd');
+          console.error('Error creating recurring preference for date', date, ':', err);
         }
-        
-        // Show single summary toast
-        if (createdCount > 0) {
-          const dayName = new Date(selectedTimeRange.date).toLocaleDateString('pl-PL', { weekday: 'long' });
-          if (errorCount > 0) {
-            toast.success(`Utworzono ${createdCount} preferencji cyklicznych na wszystkie ${dayName} (${errorCount} błędów)`);
-          } else {
-            toast.success(`Utworzono ${createdCount} preferencji cyklicznych na wszystkie ${dayName}`);
-          }
-        } else {
-          const errorMsg = errors.length > 0 ? errors.slice(0, 3).join(', ') : 'Nieznany błąd';
-          toast.error(`Nie udało się utworzyć preferencji cyklicznych. Błędy: ${errorMsg}`);
-        }
-      } else {
-        // Create single preference
-        await createPreference({
-          userId: user.id,
-          labelId: labelId,
-          date: selectedTimeRange.date,
-          startTime: selectedTimeRange.startTime + ':00',
-          endTime: selectedTimeRange.endTime + ':00',
-          description: preferenceDescription || null
-        });
       }
       
-      // Refresh preferences and labels
-      await fetchUserPreferences(user.id);
+      // Show single summary toast
+      if (createdCount > 0) {
+        const dayName = new Date(selectedTimeRange.date).toLocaleDateString('pl-PL', { weekday: 'long' });
+        if (errorCount > 0) {
+          toast.success(`Utworzono ${createdCount} preferencji cyklicznych na wszystkie ${dayName} przez 2 miesiące (${errorCount} błędów)`);
+        } else {
+          toast.success(`Utworzono ${createdCount} preferencji cyklicznych na wszystkie ${dayName} przez 2 miesiące`);
+        }
+        // Refresh preferences after creating multiple to ensure all are loaded from database
+        // This ensures consistency and that all preferences are visible
+        await fetchUserPreferences(user.id, null, null);
+      } else {
+        const errorMsg = errors.length > 0 ? errors.slice(0, 3).join(', ') : 'Nieznany błąd';
+        toast.error(`Nie udało się utworzyć preferencji cyklicznych. Błędy: ${errorMsg}`);
+      }
+      
+      // Refresh labels (preferences are already updated in store by createPreference)
       await fetchLabels();
       
       // Reset form
@@ -298,7 +297,6 @@ export default function CalendarPage({ isDark, setIsDark }) {
       setPreferenceLabelId('');
       setPreferenceType('individual');
       setPreferenceTopic('');
-      setIsRecurring(false);
     } catch (err) {
       // Error handled in store
     }
@@ -311,7 +309,7 @@ export default function CalendarPage({ isDark, setIsDark }) {
 
     try {
       await deletePreference(preferenceId);
-      await fetchUserPreferences(user.id);
+      await fetchUserPreferences(user.id, null, null);
       setShowEditPreferenceModal(false);
       setEditingPreference(null);
     } catch (err) {
@@ -364,7 +362,7 @@ export default function CalendarPage({ isDark, setIsDark }) {
       setPreferenceLabelId('');
       setPreferenceType('individual');
       setPreferenceTopic('');
-      await fetchUserPreferences(user.id);
+      await fetchUserPreferences(user.id, null, null);
       await fetchLabels();
       toast.success('Preferencja została zaktualizowana');
     } catch (err) {
@@ -442,43 +440,91 @@ export default function CalendarPage({ isDark, setIsDark }) {
           : slot.class_type === 'individual'
           ? '#3b82f6'
           : '#8b5cf6',
-        extendedProps: {
-          type: 'availability',
-          slot,
-          bookingCount,
-          isFull,
-          userHasBooking
-        }
+      extendedProps: {
+        type: 'availability',
+        slot,
+        bookingCount,
+        isFull,
+        userHasBooking,
+        meetingLink: slot.meeting_link
+      }
       };
     });
 
   // Prepare calendar events from user preferences
-  const preferenceEvents = (preferences || []).map((pref) => {
-    const start = `${pref.date}T${pref.start_time}`;
-    const end = `${pref.date}T${pref.end_time}`;
-    const labelName = pref.preference_labels?.name || 'Preferencja';
+  const preferenceEvents = React.useMemo(() => {
+    if (!user || !preferences || preferences.length === 0) {
+      return [];
+    }
 
-    return {
-      id: `preference-${pref.id}`,
-      title: labelName,
-      start,
-      end,
-      backgroundColor: '#fbbf24', // yellow/amber for preferences
-      borderColor: '#f59e0b',
-      display: 'block',
-      extendedProps: {
-        type: 'preference',
-        preference: pref
-      }
-    };
-  });
+    const currentUserId = String(user.id);
+    
+    return preferences
+      .filter(pref => {
+        // Only show preferences for the current user if logged in
+        if (!pref.user_id) {
+          return false;
+        }
+        // Compare user IDs as strings to handle UUID comparison
+        const prefUserId = String(pref.user_id);
+        return prefUserId === currentUserId;
+      })
+      .map((pref) => {
+        // Ensure date and time are properly formatted
+        if (!pref.date || !pref.start_time || !pref.end_time) {
+          console.warn('Preference missing required fields:', pref);
+          return null;
+        }
+        
+        // Ensure time format is HH:mm (remove seconds if present)
+        const startTime = pref.start_time.substring(0, 5); // Get HH:mm from HH:mm:ss
+        const endTime = pref.end_time.substring(0, 5); // Get HH:mm from HH:mm:ss
+        
+        const start = `${pref.date}T${startTime}`;
+        const end = `${pref.date}T${endTime}`;
+        const labelName = pref.preference_labels?.name || 'Preferencja';
+
+        return {
+          id: `preference-${pref.id}`,
+          title: labelName,
+          start,
+          end,
+          backgroundColor: '#fbbf24', // yellow/amber for preferences
+          borderColor: '#f59e0b',
+          display: 'block',
+          extendedProps: {
+            type: 'preference',
+            preference: pref
+          }
+        };
+      })
+      .filter(Boolean); // Remove any null entries
+  }, [preferences, user]);
 
   // Combine events based on active tab
   // For bookings tab: only show availability (concrete classes/bookings)
   // For preferences tab: only show user preferences
+  // For groups tab: show both availability and preferences
   const calendarEvents = activeTab === 'bookings' 
     ? [...availabilityEvents] 
-    : [...preferenceEvents];
+    : activeTab === 'preferences'
+    ? [...preferenceEvents]
+    : activeTab === 'groups'
+    ? [...availabilityEvents, ...preferenceEvents]
+    : [...availabilityEvents];
+
+  // Debug logging
+  React.useEffect(() => {
+    if (activeTab === 'preferences') {
+      console.log('Preferences tab active:', {
+        preferencesCount: preferences?.length || 0,
+        preferenceEventsCount: preferenceEvents?.length || 0,
+        calendarEventsCount: calendarEvents?.length || 0,
+        preferenceEvents: preferenceEvents,
+        user: user?.id
+      });
+    }
+  }, [activeTab, preferences, preferenceEvents, calendarEvents, user]);
 
   // Handle event click
   const handleEventClick = (event) => {
@@ -496,7 +542,15 @@ export default function CalendarPage({ isDark, setIsDark }) {
     // Handle availability slot click
     if (eventType === 'availability') {
       const slot = event.extendedProps?.slot;
+      const meetingLink = event.extendedProps?.meetingLink;
+      
       if (slot) {
+        // If there's a meeting link, open it directly
+        if (meetingLink) {
+          window.open(meetingLink, '_blank', 'noopener,noreferrer');
+          return;
+        }
+        
         const userHasBooking = event.extendedProps?.userHasBooking;
         const isFull = event.extendedProps?.isFull;
 
@@ -561,15 +615,17 @@ export default function CalendarPage({ isDark, setIsDark }) {
         {/* Next Webinar Block */}
         {nextWebinar && (
           <div 
-            className="mb-6 p-6 bg-gradient-to-r from-primaryBlue to-secondaryBlue dark:from-primaryGreen dark:to-secondaryGreen rounded-xl shadow-lg cursor-pointer hover:opacity-90 transition-opacity"
-            onClick={() => {
-              // Navigate to webinar date in calendar
-              const webinarDate = new Date(nextWebinar.date);
-              setCalendarDate(webinarDate);
-            }}
+            className="mb-6 p-6 bg-gradient-to-r from-primaryBlue to-secondaryBlue dark:from-primaryGreen dark:to-secondaryGreen rounded-xl shadow-lg hover:opacity-90 transition-opacity"
           >
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
+              <div 
+                className="flex items-center gap-4 flex-1 cursor-pointer"
+                onClick={() => {
+                  // Navigate to webinar date in calendar
+                  const webinarDate = new Date(nextWebinar.date);
+                  setCalendarDate(webinarDate);
+                }}
+              >
                 <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
                   <Calendar className="w-6 h-6 text-white" />
                 </div>
@@ -590,6 +646,18 @@ export default function CalendarPage({ isDark, setIsDark }) {
                   </p>
                 </div>
               </div>
+              {nextWebinar.meeting_link && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    window.open(nextWebinar.meeting_link, '_blank', 'noopener,noreferrer');
+                  }}
+                  className="ml-4 px-4 py-2 bg-white/20 hover:bg-white/30 text-white rounded-lg font-medium flex items-center gap-2 transition-colors backdrop-blur-sm border border-white/30"
+                >
+                  <ExternalLink size={18} />
+                  Przejdź do spotkania
+                </button>
+              )}
             </div>
           </div>
         )}
@@ -617,20 +685,44 @@ export default function CalendarPage({ isDark, setIsDark }) {
             >
               Preferencje
             </button>
+            {user && (
+              <button
+                onClick={() => {
+                  setActiveTab('groups');
+                  // Mark groups as viewed when clicking on the tab
+                  if (newGroupsCount > 0 && user?.id) {
+                    markGroupsAsViewed(user.id);
+                  }
+                }}
+                className={`relative px-4 py-2 font-medium transition ${
+                  activeTab === 'groups'
+                    ? 'border-b-2 border-primaryBlue dark:border-primaryGreen text-primaryBlue dark:text-primaryGreen'
+                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+                }`}
+              >
+                Twoja Grupa
+                {newGroupsCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] rounded-full h-5 w-5 flex items-center justify-center font-bold shadow-lg z-10 border-2 border-white dark:border-DarkblackText animate-pulse">
+                    {newGroupsCount > 9 ? '9+' : newGroupsCount}
+                  </span>
+                )}
+              </button>
+            )}
           </div>
         </div>
 
 
-        {/* Calendar */}
-        <div className="mb-6">
-          {loading && (
-            <div className="flex justify-center items-center py-12 bg-white dark:bg-DarkblackBorder rounded-xl shadow-lg">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primaryBlue dark:border-primaryGreen"></div>
-            </div>
-          )}
+        {/* Calendar - hide when groups tab is active */}
+        {activeTab !== 'groups' && (
+          <div className="mb-6">
+            {loading && (
+              <div className="flex justify-center items-center py-12 bg-white dark:bg-DarkblackBorder rounded-xl shadow-lg">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primaryBlue dark:border-primaryGreen"></div>
+              </div>
+            )}
 
-          {!loading && (
-            <CustomCalendar
+            {!loading && (
+              <CustomCalendar
               events={calendarEvents}
               initialDate={calendarDate}
               onEventClick={handleEventClick}
@@ -649,13 +741,6 @@ export default function CalendarPage({ isDark, setIsDark }) {
               selectable={user && activeTab === 'preferences' ? true : false}
               onSelect={(selectInfo) => {
                 if (user && activeTab === 'preferences') {
-                  // Check if selection is in the past
-                  const now = new Date();
-                  if (selectInfo.start < now) {
-                    toast.error('Nie można dodać preferencji w przeszłości');
-                    return;
-                  }
-                  
                   const date = selectInfo.start.toISOString().split('T')[0];
                   const startHours = selectInfo.start.getHours().toString().padStart(2, '0');
                   const startMinutes = selectInfo.start.getMinutes().toString().padStart(2, '0');
@@ -673,7 +758,8 @@ export default function CalendarPage({ isDark, setIsDark }) {
               }}
             />
           )}
-        </div>
+          </div>
+        )}
 
         {/* Terms Panels - Below calendar, only show if user is logged in */}
         {user && activeTab === 'bookings' && (() => {
@@ -817,6 +903,199 @@ export default function CalendarPage({ isDark, setIsDark }) {
             </div>
           </div>
         )}
+
+        {/* Groups Panel */}
+        {user && activeTab === 'groups' && (
+          <div className="space-y-4">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+              Twoja Grupa
+            </h2>
+            
+            {groupsLoading ? (
+              <div className="flex justify-center items-center py-12 bg-white dark:bg-DarkblackBorder rounded-xl shadow-lg">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primaryBlue dark:border-primaryGreen"></div>
+              </div>
+            ) : userGroups && userGroups.length > 0 ? (
+              <div className="space-y-4">
+                {(() => {
+                  const filteredGroups = userGroups.filter(group => {
+                    if (!group || !group.date || !group.end_time) {
+                      console.log('Group filtered out - missing data:', group);
+                      return false;
+                    }
+                    // Show only active groups (date in future or today)
+                    try {
+                      const groupDate = new Date(`${group.date}T${group.end_time}`);
+                      const now = new Date();
+                      const isActive = groupDate >= now;
+                      console.log('Group filter check:', {
+                        groupName: group.name,
+                        groupDate: groupDate.toISOString(),
+                        now: now.toISOString(),
+                        isActive
+                      });
+                      return isActive;
+                    } catch (e) {
+                      console.error('Error filtering group:', e, group);
+                      return false;
+                    }
+                  });
+                  
+                  console.log('Filtered groups count:', filteredGroups.length, 'from', userGroups.length);
+                  
+                  if (filteredGroups.length === 0 && userGroups.length > 0) {
+                    // Show all groups if filtering removed all (for debugging)
+                    console.warn('All groups were filtered out, showing all groups anyway');
+                    return userGroups.map((group) => (
+                    <div
+                      key={group.id}
+                      className="bg-white dark:bg-DarkblackBorder rounded-lg shadow-sm border border-gray-200 dark:border-DarkblackText p-6"
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-3">
+                            <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center">
+                              <Hash className="w-5 h-5 text-white" />
+                            </div>
+                            <div>
+                              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                                {group.name}
+                              </h3>
+                              <p className="text-sm text-gray-600 dark:text-gray-400">
+                                {group.class_type === 'individual' ? 'Zajęcia indywidualne' : 'Zajęcia grupowe'}
+                              </p>
+                            </div>
+                          </div>
+                          
+                          <div className="space-y-2 mb-4">
+                            <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                              <Calendar className="w-4 h-4" />
+                              <span>
+                                {new Date(group.date).toLocaleDateString('pl-PL', {
+                                  weekday: 'long',
+                                  year: 'numeric',
+                                  month: 'long',
+                                  day: 'numeric'
+                                })}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                              <Clock className="w-4 h-4" />
+                              <span>
+                                {group.start_time.substring(0, 5)} - {group.end_time.substring(0, 5)}
+                              </span>
+                            </div>
+                            {group.description && (
+                              <div className="mt-3 pt-3 border-t border-gray-200 dark:border-DarkblackText">
+                                <p className="text-sm text-gray-700 dark:text-gray-300">
+                                  {group.description}
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        
+                        {group.discord_link && (
+                          <button
+                            onClick={() => {
+                              let link = group.discord_link;
+                              // Add protocol if missing
+                              if (!link.startsWith('http://') && !link.startsWith('https://')) {
+                                link = 'https://' + link;
+                              }
+                              window.open(link, '_blank', 'noopener,noreferrer');
+                            }}
+                            className="ml-4 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white rounded-lg font-medium flex items-center gap-2 transition-colors"
+                          >
+                            <ExternalLink size={18} />
+                            Przejdź do Discord
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ));
+                  }
+                  
+                  return filteredGroups.map((group) => (
+                    <div
+                      key={group.id}
+                      className="bg-white dark:bg-DarkblackBorder rounded-lg shadow-sm border border-gray-200 dark:border-DarkblackText p-6"
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-3">
+                            <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center">
+                              <Hash className="w-5 h-5 text-white" />
+                            </div>
+                            <div>
+                              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                                {group.name}
+                              </h3>
+                              <p className="text-sm text-gray-600 dark:text-gray-400">
+                                {group.class_type === 'individual' ? 'Zajęcia indywidualne' : 'Zajęcia grupowe'}
+                              </p>
+                            </div>
+                          </div>
+                          
+                          <div className="space-y-2 mb-4">
+                            <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                              <Calendar className="w-4 h-4" />
+                              <span>
+                                {new Date(group.date).toLocaleDateString('pl-PL', {
+                                  weekday: 'long',
+                                  year: 'numeric',
+                                  month: 'long',
+                                  day: 'numeric'
+                                })}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                              <Clock className="w-4 h-4" />
+                              <span>
+                                {group.start_time.substring(0, 5)} - {group.end_time.substring(0, 5)}
+                              </span>
+                            </div>
+                            {group.description && (
+                              <div className="mt-3 pt-3 border-t border-gray-200 dark:border-DarkblackText">
+                                <p className="text-sm text-gray-700 dark:text-gray-300">
+                                  {group.description}
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        
+                        {group.discord_link && (
+                          <button
+                            onClick={() => {
+                              let link = group.discord_link;
+                              // Add protocol if missing
+                              if (!link.startsWith('http://') && !link.startsWith('https://')) {
+                                link = 'https://' + link;
+                              }
+                              window.open(link, '_blank', 'noopener,noreferrer');
+                            }}
+                            className="ml-4 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white rounded-lg font-medium flex items-center gap-2 transition-colors"
+                          >
+                            <ExternalLink size={18} />
+                            Przejdź do Discord
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ));
+                })()}
+              </div>
+            ) : (
+              <div className="bg-white dark:bg-DarkblackBorder rounded-lg shadow-sm border border-gray-200 dark:border-DarkblackText p-8 text-center">
+                <Hash className="w-12 h-12 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
+                <p className="text-gray-600 dark:text-gray-400">
+                  Nie jesteś jeszcze przypisany do żadnej grupy.
+                </p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Preference Modal */}
@@ -901,21 +1180,14 @@ export default function CalendarPage({ isDark, setIsDark }) {
                 </div>
 
                 <div className="flex items-start gap-3 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-                  <input
-                    type="checkbox"
-                    id="recurring"
-                    checked={isRecurring}
-                    onChange={(e) => setIsRecurring(e.target.checked)}
-                    className="mt-1 w-4 h-4 text-primaryBlue dark:text-primaryGreen border-gray-300 rounded focus:ring-primaryBlue dark:focus:ring-primaryGreen"
-                  />
                   <div className="flex-1">
-                    <label htmlFor="recurring" className="block text-sm font-medium text-gray-900 dark:text-white mb-1 cursor-pointer">
+                    <p className="text-sm font-medium text-gray-900 dark:text-white mb-1">
                       Preferencja cykliczna
-                    </label>
+                    </p>
                     <p className="text-xs text-gray-600 dark:text-gray-400">
-                      {isRecurring && selectedTimeRange
-                        ? `Preferencja zostanie utworzona na wszystkie ${new Date(selectedTimeRange.date).toLocaleDateString('pl-PL', { weekday: 'long' })} w ciągu najbliższych 12 tygodni. Jest to preferencja cykliczna potrzebna do utworzenia grupy.`
-                        : 'Zaznacz, aby utworzyć preferencję na wszystkie przyszłe wystąpienia tego dnia tygodnia (np. wszystkie poniedziałki).'
+                      {selectedTimeRange
+                        ? `Preferencja zostanie automatycznie utworzona na wszystkie ${new Date(selectedTimeRange.date).toLocaleDateString('pl-PL', { weekday: 'long' })} przez najbliższe 2 miesiące. Jest to preferencja cykliczna potrzebna do utworzenia grupy.`
+                        : 'Preferencja zostanie automatycznie utworzona na wszystkie przyszłe wystąpienia tego dnia tygodnia przez 2 miesiące (np. wszystkie poniedziałki).'
                       }
                     </p>
                   </div>
@@ -929,7 +1201,6 @@ export default function CalendarPage({ isDark, setIsDark }) {
                     setSelectedTimeRange(null);
                     setPreferenceDescription('');
                     setPreferenceLabelId('');
-                    setIsRecurring(false);
                   }}
                   className="px-4 py-2 border border-gray-200 dark:border-DarkblackText text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-DarkblackText transition"
                 >
