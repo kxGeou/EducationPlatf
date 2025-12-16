@@ -311,7 +311,7 @@ export const useCalendarStore = create((set, get) => ({
   },
 
   // Admin: Create availability slot
-  createAvailability: async (date, startTime, endTime, classType, maxParticipants = 1, isWebinar = false) => {
+  createAvailability: async (date, startTime, endTime, classType, maxParticipants = 1, isWebinar = false, meetingLink = null) => {
     set({ loading: true, error: null });
     try {
       // Validate max_participants based on class_type
@@ -322,17 +322,24 @@ export const useCalendarStore = create((set, get) => ({
         throw new Error('Zajęcia grupowe muszą mieć więcej niż 1 uczestnika');
       }
 
+      const insertData = {
+        date,
+        start_time: startTime,
+        end_time: endTime,
+        class_type: classType,
+        max_participants: maxParticipants,
+        is_active: true,
+        is_webinar: isWebinar || false
+      };
+
+      // Add meeting_link if provided
+      if (meetingLink && meetingLink.trim()) {
+        insertData.meeting_link = meetingLink.trim();
+      }
+
       const { data, error } = await supabase
         .from('class_availability')
-        .insert({
-          date,
-          start_time: startTime,
-          end_time: endTime,
-          class_type: classType,
-          max_participants: maxParticipants,
-          is_active: true,
-          is_webinar: isWebinar || false
-        })
+        .insert(insertData)
         .select()
         .single();
 
@@ -631,7 +638,8 @@ export const useCalendarStore = create((set, get) => ({
   createPreference: async ({ userId, labelId, date, startTime, endTime, description, skipToast = false }) => {
     // Only set loading if not already loading (to avoid conflicts with batch operations)
     const currentState = get();
-    if (!currentState.loading) {
+    const wasLoading = currentState.loading;
+    if (!wasLoading) {
       set({ loading: true, error: null });
     }
     
@@ -660,13 +668,37 @@ export const useCalendarStore = create((set, get) => ({
 
       if (error) throw error;
 
-      set((state) => ({
-        preferences: [...state.preferences, data].sort((a, b) => {
-          if (a.date !== b.date) return a.date.localeCompare(b.date);
-          return a.start_time.localeCompare(b.start_time);
-        }),
-        loading: false
-      }));
+      // Add preference to store, avoiding duplicates
+      set((state) => {
+        // Check if preference already exists (by id)
+        const exists = state.preferences.some(p => p.id === data.id);
+        if (exists) {
+          // Update existing preference
+          return {
+            preferences: state.preferences.map(p => p.id === data.id ? data : p).sort((a, b) => {
+              if (a.date !== b.date) return a.date.localeCompare(b.date);
+              return a.start_time.localeCompare(b.start_time);
+            })
+            // Don't change loading state if it was already loading (for batch operations)
+          };
+        } else {
+          // Add new preference
+          return {
+            preferences: [...state.preferences, data].sort((a, b) => {
+              if (a.date !== b.date) return a.date.localeCompare(b.date);
+              return a.start_time.localeCompare(b.start_time);
+            })
+            // Don't change loading state if it was already loading (for batch operations)
+          };
+        }
+      });
+      
+      // Only set loading to false if we started the loading state (not for batch operations)
+      if (!wasLoading) {
+        set({ loading: false });
+      }
+      
+      return data;
 
       if (!skipToast) {
         toast.success('Preferencja została dodana');
@@ -674,7 +706,7 @@ export const useCalendarStore = create((set, get) => ({
       return data;
     } catch (err) {
       console.error('Error creating preference:', err);
-      set({ error: err.message, loading: false });
+      set({ error: err.message, loading: wasLoading ? get().loading : false });
       if (!skipToast) {
         toast.error(err.message || 'Nie udało się dodać preferencji');
       }
