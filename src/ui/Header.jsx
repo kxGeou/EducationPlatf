@@ -3,7 +3,10 @@ import DesktopLogo from "../assets/logo_biale.svg";
 import useWindowWidth from "../hooks/useWindowWidth";
 import { useAuthStore } from "../store/authStore";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, User, X, Sun, Moon, ChevronDown, Calendar } from "lucide-react";
+// DEV: Calendar import - odkomentuj na development, zakomentuj na main
+import { Menu, User, X, Sun, Moon, ChevronDown } from "lucide-react";
+// import { Menu, User, X, Sun, Moon, ChevronDown, Calendar } from "lucide-react";
+// DEV: END Calendar import
 import React, { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 
@@ -65,8 +68,8 @@ function Header({ setIsDark, isDark }) {
                 {isDark ? <Sun size={18} /> : <Moon size={18} />}
               </li>
 
-              {/* Kursy Dropdown */}
-              <li
+              {/* DEV: Kursy Dropdown - odkomentuj na development, zakomentuj na main */}
+              {/* <li
                 className="relative group cursor-pointer"
                 onMouseEnter={() => setCourseDropdownOpen(true)}
                 onMouseLeave={() => setCourseDropdownOpen(false)}
@@ -113,7 +116,8 @@ function Header({ setIsDark, isDark }) {
                     </motion.ul>
                   )}
                 </AnimatePresence>
-              </li>
+              </li> */}
+              {/* DEV: END Kursy Dropdown */}
 
               {/* Navigation Links */}
               <li>
@@ -140,7 +144,8 @@ function Header({ setIsDark, isDark }) {
                   Kontakt
                 </Link>
               </li>
-              <li>
+              {/* DEV: Blog link - odkomentuj na development, zakomentuj na main */}
+              {/* <li>
                 <Link 
                   to="/blog" 
                   className={`px-2.5 py-1.5 rounded-lg transition-all duration-200 text-sm ${
@@ -151,8 +156,10 @@ function Header({ setIsDark, isDark }) {
                 >
                   Blog
                 </Link>
-              </li>
-              <li>
+              </li> */}
+              {/* DEV: END Blog link */}
+              {/* DEV: TestResources link - odkomentuj na development, zakomentuj na main */}
+              {/* <li>
                 <Link 
                   to="/zasoby" 
                   className={`px-2.5 py-1.5 rounded-lg transition-all duration-200 text-sm ${
@@ -163,10 +170,11 @@ function Header({ setIsDark, isDark }) {
                 >
                   Arkusze
                 </Link>
-              </li>
+              </li> */}
+              {/* DEV: END TestResources link */}
 
-              {/* Calendar Button */}
-              <li>
+              {/* DEV: Calendar Button - odkomentuj na development, zakomentuj na main */}
+              {/* <li>
                 <Link
                   to="/calendar"
                   className={`flex items-center gap-1.5 bg-gradient-to-r from-primaryBlue to-secondaryBlue px-3 py-1.5 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg hover:scale-105 text-sm ${
@@ -176,7 +184,8 @@ function Header({ setIsDark, isDark }) {
                   <Calendar size={16} aria-hidden="true" />
                   <span className="font-medium">Kalendarz</span>
                 </Link>
-              </li>
+              </li> */}
+              {/* DEV: END Calendar Button */}
 
               {/* User Button */}
               {userName ? (
@@ -245,8 +254,8 @@ function Header({ setIsDark, isDark }) {
           >
             <nav className="bg-slate-950/35 border border-slate-500/25 backdrop-blur-lg rounded-[12px] px-6 py-4 text-white shadow-lg">
               <ul className="flex flex-col gap-2 items-stretch text-white">
-                {/* Kursy Dropdown */}
-                <li>
+                {/* DEV: Kursy Dropdown (mobile) - odkomentuj na development, zakomentuj na main */}
+                {/* <li>
                   <button
                     className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-white/10 transition-colors duration-200"
                     onClick={() => setCourseDropdownOpen((prev) => !prev)}
@@ -291,7 +300,8 @@ function Header({ setIsDark, isDark }) {
                       </motion.ul>
                     )}
                   </AnimatePresence>
-                </li>
+                </li> */}
+                {/* DEV: END Kursy Dropdown (mobile) */}
 
                 {/* Navigation Links */}
                 <li>
@@ -320,7 +330,8 @@ function Header({ setIsDark, isDark }) {
                     Kontakt
                   </Link>
                 </li>
-                <li>
+                {/* DEV: Blog link (mobile) - odkomentuj na development, zakomentuj na main */}
+                {/* <li>
                   <Link 
                     to="/blog" 
                     className={`block px-3 py-2.5 rounded-lg transition-colors duration-200 ${
@@ -332,8 +343,10 @@ function Header({ setIsDark, isDark }) {
                   >
                     Blog
                   </Link>
-                </li>
-                <li>
+                </li> */}
+                {/* DEV: END Blog link (mobile) */}
+                {/* DEV: TestResources link (mobile) - odkomentuj na development, zakomentuj na main */}
+                {/* <li>
                   <Link 
                     to="/zasoby" 
                     className={`block px-3 py-2.5 rounded-lg transition-colors duration-200 ${
@@ -345,10 +358,11 @@ function Header({ setIsDark, isDark }) {
                   >
                     Arkusze
                   </Link>
-                </li>
+                </li> */}
+                {/* DEV: END TestResources link (mobile) */}
 
-                {/* Calendar Button */}
-                <li className="pt-1">
+                {/* DEV: Calendar Button (mobile) - odkomentuj na development, zakomentuj na main */}
+                {/* <li className="pt-1">
                   <Link
                     to="/calendar"
                     className="flex items-center justify-center gap-2 w-full bg-gradient-to-r from-primaryBlue to-secondaryBlue px-4 py-2.5 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg font-medium"
@@ -357,7 +371,8 @@ function Header({ setIsDark, isDark }) {
                     <Calendar size={18} aria-hidden="true" />
                     Kalendarz
                   </Link>
-                </li>
+                </li> */}
+                {/* DEV: END Calendar Button (mobile) */}
 
                 {/* User Button */}
                 {userName ? (

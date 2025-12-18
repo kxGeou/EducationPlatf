@@ -52,7 +52,8 @@ function CourseInfo({ course, videos }) {
           <span className="text-lg max-w-[500px] leading-[25px] text-blackText dark:text-white">{course.description}</span>
         </div>
 
-        <div className="grid md:grid-cols-3 grid-cols-1 grid-rows-3 gap-4 md:grid-rows-1  md:h-30 mt-4">
+        {/* DEV: Statystyki kursu (Liczba lekcji, Liczba działów, Czas kursu) - odkomentuj na development, zakomentuj na main */}
+        {/* <div className="grid md:grid-cols-3 grid-cols-1 grid-rows-3 gap-4 md:grid-rows-1  md:h-30 mt-4">
           <div className="flex flex-col px-2 gap-1 py-2 items-center border bg-white border-gray-100 justify-center dark:border-0 dark:bg-DarkblackText shadow-md rounded-[12px]">
             <p className="opacity-75">Liczba lekcji</p>
             <span className="font-semibold text-2xl">5</span>
@@ -65,7 +66,8 @@ function CourseInfo({ course, videos }) {
             <p className="opacity-75">Czas kursu</p>
             <span className="font-semibold text-2xl">40h</span>
           </div>
-        </div>
+        </div> */}
+        {/* DEV: END Statystyki kursu */}
         </div>
       </div>
       </div>

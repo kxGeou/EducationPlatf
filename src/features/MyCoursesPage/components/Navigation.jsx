@@ -96,7 +96,8 @@ function Navigation({
                   <ShoppingCart size={20} />
                   Twoje kursy
                 </span>
-                <span
+                {/* DEV: Resources navigation - odkomentuj na development, zakomentuj na main */}
+                {/* <span
                   onClick={() => setActivePage("resources")}
                   className={`cursor-pointer flex items-center gap-2 transition-discrete duration-200 ${
                     activePage === "resources" &&
@@ -105,7 +106,8 @@ function Navigation({
                 >
                   <BookOpenText size={20} />
                   Zasoby
-                </span>
+                </span> */}
+                {/* DEV: END Resources navigation */}
                 <span
                   onClick={() => setActivePage("reports")}
                   className={`cursor-pointer flex items-center gap-2 transition-discrete duration-200 ${
@@ -116,7 +118,8 @@ function Navigation({
                   <MessageSquareWarningIcon size={20} />
                   Zgłoszenia
                 </span>
-                <span
+                {/* DEV: Blogs navigation - odkomentuj na development, zakomentuj na main */}
+                {/* <span
                   onClick={() => setActivePage("blogs")}
                   className={`cursor-pointer flex items-center gap-2 transition-discrete duration-200 ${
                     activePage === "blogs" &&
@@ -125,7 +128,8 @@ function Navigation({
                 >
                   <BookText size={20} />
                   Blogi
-                </span>
+                </span> */}
+                {/* DEV: END Blogs navigation */}
                 <span
                   onClick={() => setActivePage("forms")}
                   className={`relative cursor-pointer flex items-center gap-2 transition-discrete duration-200 ${
@@ -152,7 +156,8 @@ function Navigation({
                   <PenBoxIcon size={20} />
                   Pomysły
                 </span>
-                <span
+                {/* DEV: Ranking navigation - odkomentuj na development, zakomentuj na main */}
+                {/* <span
                   onClick={() => setActivePage("leaderboard")}
                   className={`cursor-pointer flex items-center gap-2 transition-discrete duration-200 ${
                     activePage === "leaderboard" &&
@@ -161,8 +166,10 @@ function Navigation({
                 >
                   <Trophy size={20} />
                   Ranking
-                </span>
-                <span
+                </span> */}
+                {/* DEV: END Ranking navigation */}
+                {/* DEV: Nagrody navigation - odkomentuj na development, zakomentuj na main */}
+                {/* <span
                   onClick={() => setActivePage("rewards")}
                   className={`cursor-pointer flex items-center gap-2 transition-discrete duration-200 ${
                     activePage === "rewards" &&
@@ -171,7 +178,8 @@ function Navigation({
                 >
                   <Gift size={20} />
                   Nagrody
-                </span>
+                </span> */}
+                {/* DEV: END Nagrody navigation */}
                 <span
                   onClick={() => setActivePage("referral")}
                   className={`cursor-pointer flex items-center gap-2 transition-discrete duration-200 ${
@@ -269,7 +277,8 @@ function Navigation({
                 >
                   <ShoppingCart size={22} />
                 </span>
-                <span
+                {/* DEV: Resources navigation (mobile collapsed) - odkomentuj na development, zakomentuj na main */}
+                {/* <span
                   onClick={() => setActivePage("resources")}
                   className={`cursor-pointer ${
                     activePage === "resources" &&
@@ -277,7 +286,8 @@ function Navigation({
                   }`}
                 >
                   <BookOpenText size={22} />
-                </span>
+                </span> */}
+                {/* DEV: END Resources navigation (mobile collapsed) */}
                 <span
                   onClick={() => setActivePage("reports")}
                   className={`cursor-pointer ${
@@ -287,7 +297,8 @@ function Navigation({
                 >
                   <MessageSquareWarningIcon size={22} />
                 </span>
-                <span
+                {/* DEV: Blogs navigation (mobile collapsed) - odkomentuj na development, zakomentuj na main */}
+                {/* <span
                   onClick={() => setActivePage("blogs")}
                   className={`cursor-pointer ${
                     activePage === "blogs" &&
@@ -295,7 +306,8 @@ function Navigation({
                   }`}
                 >
                   <BookText size={22} />
-                </span>
+                </span> */}
+                {/* DEV: END Blogs navigation (mobile collapsed) */}
                 <span
                   onClick={() => setActivePage("forms")}
                   className={`relative cursor-pointer ${
@@ -320,7 +332,8 @@ function Navigation({
                 >
                   <PenBoxIcon size={22} />
                 </span>
-                <span
+                {/* DEV: Ranking navigation (mobile collapsed) - odkomentuj na development, zakomentuj na main */}
+                {/* <span
                   onClick={() => setActivePage("leaderboard")}
                   className={`cursor-pointer ${
                     activePage === "leaderboard" &&
@@ -328,8 +341,10 @@ function Navigation({
                   }`}
                 >
                   <Trophy size={22} />
-                </span>
-                <span
+                </span> */}
+                {/* DEV: END Ranking navigation (mobile collapsed) */}
+                {/* DEV: Nagrody navigation (mobile collapsed) - odkomentuj na development, zakomentuj na main */}
+                {/* <span
                   onClick={() => setActivePage("rewards")}
                   className={`cursor-pointer ${
                     activePage === "rewards" &&
@@ -337,7 +352,8 @@ function Navigation({
                   }`}
                 >
                   <Gift size={22} />
-                </span>
+                </span> */}
+                {/* DEV: END Nagrody navigation (mobile collapsed) */}
                 <span
                   onClick={() => setActivePage("referral")}
                   className={`cursor-pointer ${
@@ -463,7 +479,8 @@ function Navigation({
             >
               <ShoppingCart size={20} /> Twoje kursy
             </span>
-            <span
+            {/* DEV: Resources navigation (mobile menu) - odkomentuj na development, zakomentuj na main */}
+            {/* <span
               onClick={() => {
                 setActivePage("resources");
                 setMobileOpen(false);
@@ -474,7 +491,8 @@ function Navigation({
               }`}
             >
               <BookOpenText size={20} /> Zasoby
-            </span>
+            </span> */}
+            {/* DEV: END Resources navigation (mobile menu) */}
             <span
               onClick={() => {
                 setActivePage("reports");
@@ -485,9 +503,10 @@ function Navigation({
                 "text-secondaryBlue dark:text-primaryGreen"
               }`}
             >
-              <MessageSquareWarningIcon size={20} /> Zgłoszenia
+                  <MessageSquareWarningIcon size={20} /> Zgłoszenia
             </span>
-            <span
+            {/* DEV: Blogs navigation (mobile menu) - odkomentuj na development, zakomentuj na main */}
+            {/* <span
               onClick={() => {
                 setActivePage("blogs");
                 setMobileOpen(false);
@@ -498,7 +517,8 @@ function Navigation({
               }`}
             >
               <BookText size={20} /> Blogi
-            </span>
+            </span> */}
+            {/* DEV: END Blogs navigation (mobile menu) */}
             <span
               onClick={() => {
                 setActivePage("forms");
@@ -529,7 +549,8 @@ function Navigation({
             >
               <PenBoxIcon size={20} /> Pomysły
             </span>
-            <span
+            {/* DEV: Ranking navigation (mobile menu) - odkomentuj na development, zakomentuj na main */}
+            {/* <span
               onClick={() => {
                 setActivePage("leaderboard");
                 setMobileOpen(false);
@@ -540,8 +561,10 @@ function Navigation({
               }`}
             >
               <Trophy size={20} /> Ranking
-            </span>
-            <span
+            </span> */}
+            {/* DEV: END Ranking navigation (mobile menu) */}
+            {/* DEV: Nagrody navigation (mobile menu) - odkomentuj na development, zakomentuj na main */}
+            {/* <span
               onClick={() => {
                 setActivePage("rewards");
                 setMobileOpen(false);
@@ -552,7 +575,8 @@ function Navigation({
               }`}
             >
               <Gift size={20} /> Nagrody
-            </span>
+            </span> */}
+            {/* DEV: END Nagrody navigation (mobile menu) */}
             <span
               onClick={() => {
                 setActivePage("referral");

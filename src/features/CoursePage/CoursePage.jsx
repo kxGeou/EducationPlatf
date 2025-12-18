@@ -1,45 +1,70 @@
 import Error from '../../components/systemLayouts/Error';
 import Loading from '../../components/systemLayouts/Loading';
-import ChartPanel from "./components/ChartPanel";
+// DEV: ChartPanel import - odkomentuj na development, zakomentuj na main
+// import ChartPanel from "./components/ChartPanel";
+// DEV: END ChartPanel import
 import CourseInfo from "./components/CourseInfo";
 import CourseSidebar from "./components/CourseSidebar";
-import FlashcardPanel from "./components/FlashCardPanel";
+// DEV: FlashcardPanel import - odkomentuj na development, zakomentuj na main
+// import FlashcardPanel from "./components/FlashCardPanel";
+// DEV: END FlashcardPanel import
 import TaskPanel from "./components/TaskPanel";
-import VideoPanel from "./components/VideoPanel";
+// DEV: VideoPanel import - odkomentuj na development, zakomentuj na main
+// import VideoPanel from "./components/VideoPanel";
 import ShopPanel from "./components/ShopPanel";
 import CartPanel from "./components/CartPanel";
 import UserData from "../MyCoursesPage/components/UserData";
+import EbookViewerPanel from "../EbookPage/components/EbookViewerPanel";
+import EbookInfoPanel from "../EbookPage/components/EbookInfoPanel";
+import EbookTasksPanel from "../EbookPage/components/EbookTasksPanel";
+import { useEbookStore } from '../../store/ebookStore';
+// DEV: END VideoPanel import
 import { useAuthStore } from '../../store/authStore';
 import { useSingleCourseStore } from '../../store/singleCourseStore';
 import Hls from "hls.js";
 import { useEffect, useState, useRef } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 
 export default function CoursePage({ isDark, setIsDark }) {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [userDataModal, setUserDataModal] = useState(false);
 
   const { user, loading: authLoading, initialized } = useAuthStore();
   const { fetchCourseById, course, videos, loading, error, accessDenied } =
     useSingleCourseStore();
+  const { fetchEbookById, currentEbook: ebook } = useEbookStore();
 
   const [currentVideo, setCurrentVideo] = useState(null);
-  const [activeSection, setActiveSection] = useState("video");
+  // DEV: activeSection - jeśli jest w URL params, użyj go, w przeciwnym razie domyślnie "info"
+  const sectionParam = searchParams.get('section');
+  const [activeSection, setActiveSection] = useState(sectionParam || "info");
+  // DEV: END activeSection
+  const [selectedEbookId, setSelectedEbookId] = useState(null);
   const [showSidebar, setShowSidebar] = useState(true);
 
-  // Automatyczne zamykanie sidebara gdy włączamy panel video
-  useEffect(() => {
-    if (activeSection === "video") {
-      setShowSidebar(false);
-    }
-  }, [activeSection]);
+  // DEV: Automatyczne zamykanie sidebara gdy włączamy panel video - odkomentuj na development, zakomentuj na main
+  // useEffect(() => {
+  //   if (activeSection === "video") {
+  //     setShowSidebar(false);
+  //   }
+  // }, [activeSection]);
+  // DEV: END Automatyczne zamykanie sidebara
 
   useEffect(() => {
     if (initialized) {
       fetchCourseById(id);
     }
   }, [initialized, id]);
+
+  // DEV: Fetch ebook when selected
+  useEffect(() => {
+    if (selectedEbookId && initialized) {
+      fetchEbookById(selectedEbookId);
+    }
+  }, [selectedEbookId, initialized]);
+  // DEV: END Fetch ebook
 
   const HlsPlayer = ({ src, title }) => {
     const videoRef = useRef(null);
@@ -94,14 +119,16 @@ export default function CoursePage({ isDark, setIsDark }) {
           userDataModal={userDataModal}
           showSidebar={showSidebar}
           setShowSidebar={setShowSidebar}
+          setSelectedEbookId={setSelectedEbookId}
         />
 
-        <main className={`flex flex-col w-full items-start min-h-[98vh] rounded-[12px] p-2 ${activeSection === "video" ? "bg-white dark:bg-DarkblackText" : "bg-gray-100 dark:bg-DarkblackBorder"}`}>
+        <main className={`flex flex-col w-full items-start min-h-[98vh] rounded-[12px] p-2 ${activeSection === "ebook" ? "bg-white dark:bg-DarkblackText" : "bg-gray-100 dark:bg-DarkblackBorder"}`}>
 
           {activeSection === "info" && (
             <CourseInfo course={course} videos={videos} />
           )}
-          {activeSection === "video" && (
+          {/* DEV: VideoPanel - odkomentuj na development, zakomentuj na main */}
+          {/* {activeSection === "video" && (
             <VideoPanel
               videos={videos}
               currentVideo={currentVideo}
@@ -111,15 +138,30 @@ export default function CoursePage({ isDark, setIsDark }) {
               setActiveSection={setActiveSection}
               setShowSidebar={setShowSidebar}
             />
-          )}
+          )} */}
+          {/* DEV: END VideoPanel */}
 
           {activeSection === "shop" && (
             <ShopPanel
               course={course}
               isDark={isDark}
               setActivePage={() => window.location.href = '/user_page?section=profile'}
+              setSelectedEbookId={setSelectedEbookId}
+              setActiveSection={setActiveSection}
             />
           )}
+
+          {/* DEV: Ebook sections - odkomentuj na development, zakomentuj na main */}
+          {activeSection === "ebook-info" && ebook && (
+            <EbookInfoPanel ebook={ebook} />
+          )}
+          {activeSection === "ebook" && ebook && (
+            <EbookViewerPanel ebook={ebook} />
+          )}
+          {activeSection === "ebook-tasks" && selectedEbookId && (
+            <EbookTasksPanel ebookId={selectedEbookId} />
+          )}
+          {/* DEV: END Ebook sections */}
 
           {activeSection === "cart" && (
             <CartPanel
@@ -129,16 +171,20 @@ export default function CoursePage({ isDark, setIsDark }) {
             />
           )}
 
-          {activeSection === "flashcards" && (
+          {/* DEV: FlashcardPanel - odkomentuj na development, zakomentuj na main */}
+          {/* {activeSection === "flashcards" && (
             <FlashcardPanel courseId={course.id} />
-          )}
+          )} */}
+          {/* DEV: END FlashcardPanel */}
 
           {activeSection === "tasks" && (
             <TaskPanel courseId={course.id} />
           )}
-          {activeSection === "chart" && (
+          {/* DEV: ChartPanel - odkomentuj na development, zakomentuj na main */}
+          {/* {activeSection === "chart" && (
             <ChartPanel course={course} user={user} videos={videos} />
-          )}
+          )} */}
+          {/* DEV: END ChartPanel */}
           {activeSection === "profile" && (
             <UserData />
           )}

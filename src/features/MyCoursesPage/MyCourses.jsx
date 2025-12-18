@@ -16,9 +16,12 @@ export default function MyCourses({ isDark, setIsDark }) {
 
   useEffect(() => {
     const section = searchParams.get('section');
-    if (section && ['courses', 'resources', 'reports', 'blogs', 'forms', 'ideas', 'leaderboard', 'rewards', 'referral', 'profile'].includes(section)) {
+    // DEV: 'resources', 'blogs', 'leaderboard', 'rewards' - odkomentuj na development, zakomentuj na main
+    // if (section && ['courses', 'resources', 'reports', 'blogs', 'forms', 'ideas', 'leaderboard', 'rewards', 'referral', 'profile'].includes(section)) {
+    if (section && ['courses', 'reports', 'forms', 'ideas', 'referral', 'profile'].includes(section)) {
       setActivePage(section);
     }
+    // DEV: END 'resources', 'blogs', 'leaderboard', 'rewards'
   }, [searchParams]);
 
   return (

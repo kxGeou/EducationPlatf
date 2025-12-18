@@ -110,12 +110,14 @@ export default function StripeHero() {
             Na blogu PasjonaciIT dzielimy się poradami, analizami zadań egzaminacyjnych, wskazówkami do matury i egzaminów zawodowych oraz konkretnymi trikami z Pythona, Excela i Accessa.
             Jeśli chcesz być o krok przed innymi - to miejsce dla Ciebie.
           </p>
-          <button
+          {/* DEV: Blog button - odkomentuj na development, zakomentuj na main */}
+          {/* <button
             className="bg-primaryGreen text-black hover:-translate-y-1 transition-discrete duration-300 cursor-pointer font-semibold px-4 py-2 rounded-md"
             onClick={() => navigate("/blog")}
           >
             Zobacz blogi »
-          </button>
+          </button> */}
+          {/* DEV: END Blog button */}
         </div>
 
         <div

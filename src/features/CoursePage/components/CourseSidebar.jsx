@@ -20,13 +20,15 @@ import {
   ShoppingCart,
   BookOpen,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCartStore } from '../../../store/cartStore';
 import { useAuthStore } from '../../../store/authStore';
+import supabase from '../../../util/supabaseClient';
 
 export default function CourseSidebar({
   user,
+  course,
   isDark,
   setIsDark,
   activeSection,
@@ -35,10 +37,12 @@ export default function CourseSidebar({
   setUserDataModal,
   showSidebar: externalShowSidebar,
   setShowSidebar: externalSetShowSidebar,
+  setSelectedEbookId,
 }) {
   const navigate = useNavigate();
   const [internalShowSidebar, setInternalShowSidebar] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [firstEbookId, setFirstEbookId] = useState(null);
   const cartItemCount = useCartStore((state) => state.getItemCount());
   const { purchasedEbooks } = useAuthStore();
   
@@ -46,27 +50,88 @@ export default function CourseSidebar({
   const showSidebar = externalShowSidebar !== undefined ? externalShowSidebar : internalShowSidebar;
   const setShowSidebar = externalSetShowSidebar || setInternalShowSidebar;
 
-  // Build menu items - add E-book above Wideo if user has purchased ebooks
+  // DEV: Fetch first purchased ebook for course - odkomentuj na development, zakomentuj na main
+  useEffect(() => {
+    async function fetchFirstEbook() {
+      if (!course?.id) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('ebooks')
+          .select('id')
+          .eq('course_id', course.id)
+          .in('id', purchasedEbooks || [])
+          .limit(1)
+          .single();
+        
+        if (!error && data?.id) {
+          setFirstEbookId(data.id);
+        } else {
+          setFirstEbookId(null);
+        }
+      } catch (err) {
+        // Jeśli nie ma ebooków, ustaw null
+        setFirstEbookId(null);
+      }
+    }
+    
+    fetchFirstEbook();
+  }, [course?.id, purchasedEbooks]);
+  // DEV: END Fetch first ebook
+
+  // Build menu items
   const baseMenuItems = [
     { icon: <SearchCode size={20} />, label: "Informacje", key: "info" },
   ];
 
-  // Add E-book menu item if user has purchased ebooks
-  const ebookMenuItem = purchasedEbooks && purchasedEbooks.length > 0 ? [
+  // DEV: E-book menu item - zawsze widoczny, odkomentuj na development, zakomentuj na main
+  // const ebookMenuItem = purchasedEbooks && purchasedEbooks.length > 0 ? [
+  //   { 
+  //     icon: <BookOpen size={20} />, 
+  //     label: "E-book", 
+  //     key: "ebook", 
+  //     action: () => navigate(`/ebook/${purchasedEbooks[0]}`) // Navigate to first purchased ebook
+  //   }
+  // ] : [];
+  const handleEbookClick = () => {
+    if (firstEbookId && setSelectedEbookId && setActiveSection) {
+      setSelectedEbookId(firstEbookId);
+      setActiveSection('ebook');
+    }
+  };
+  
+  // DEV: E-book menu item - tylko jeśli użytkownik ma zakupiony ebook
+  const hasPurchasedEbook = firstEbookId && purchasedEbooks.includes(firstEbookId);
+  
+  const ebookMenuItem = hasPurchasedEbook ? [
     { 
       icon: <BookOpen size={20} />, 
       label: "E-book", 
-      key: "ebook", 
-      action: () => navigate(`/ebook/${purchasedEbooks[0]}`) // Navigate to first purchased ebook
+      key: "ebook",
+      action: handleEbookClick
     }
-  ] : [];
+  ] : [
+    { 
+      icon: <BookOpen size={20} />, 
+      label: "E-book", 
+      key: "ebook",
+      disabled: true // Oznacz jako zablokowany
+    }
+  ];
+  // DEV: END E-book menu item
 
   const restMenuItems = [
-    { icon: <Clapperboard size={20} />, label: "Wideo", key: "video" },
+    // DEV: Wideo menu item - odkomentuj na development, zakomentuj na main
+    // { icon: <Clapperboard size={20} />, label: "Wideo", key: "video" },
+    // DEV: END Wideo menu item
     { icon: <ShoppingBag size={20} />, label: "Sklep", key: "shop" },
     { icon: <ShoppingCart size={20} />, label: "Koszyk", key: "cart", badge: cartItemCount },
-    { icon: <NotepadText size={20} />, label: "Fiszki", key: "flashcards" },
-    { icon: <ChartColumnBig size={20} />, label: "Postęp", key: "chart" },
+    // DEV: Fiszki menu item - odkomentuj na development, zakomentuj na main
+    // { icon: <NotepadText size={20} />, label: "Fiszki", key: "flashcards" },
+    // DEV: END Fiszki menu item
+    // DEV: Postęp menu item - odkomentuj na development, zakomentuj na main
+    // { icon: <ChartColumnBig size={20} />, label: "Postęp", key: "chart" },
+    // DEV: END Postęp menu item
     { icon: <ListTodo size={20} />, label: "Zadania", key: "tasks" },
     { icon: <Undo2 size={20} />, label: "Powrót", key: "back", highlight: true, action: () => navigate("/user_page") },
   ];
@@ -123,10 +188,12 @@ export default function CourseSidebar({
                 highlight={item.highlight}
                 badge={item.badge}
                 onClick={() => {
+                  if (item.disabled) return;
                   setMobileMenuOpen(false);
                   if (item.action) item.action();
                   else setActiveSection(item.key);
                 }}
+                disabled={item.disabled}
               />
             ))}
           </div>
@@ -197,7 +264,9 @@ export default function CourseSidebar({
                   expanded={showSidebar}
                   highlight={item.highlight}
                   badge={item.badge}
+                  disabled={item.disabled}
                   onClick={() => {
+                    if (item.disabled) return;
                     if (item.action) item.action();
                     else setActiveSection(item.key);
                   }}
@@ -231,11 +300,16 @@ export default function CourseSidebar({
   );
 }
 
-function SidebarButton({ icon, label, expanded, active, onClick, highlight, badge }) {
+function SidebarButton({ icon, label, expanded, active, onClick, highlight, badge, disabled }) {
   return (
     <button
-      onClick={onClick}
-      className={`flex items-center relative transition-all duration-300 cursor-pointer
+      onClick={disabled ? undefined : onClick}
+      disabled={disabled}
+      className={`flex items-center relative transition-all duration-300 ${
+        disabled 
+          ? 'cursor-not-allowed opacity-50 grayscale' 
+          : 'cursor-pointer'
+      }
         ${expanded ? "justify-start gap-1 py-1" : "justify-center"}
         ${active ? ` dark:text-primaryGreen text-primaryBlue ${expanded && " border-l-6 pl-3"}` : ""}
         ${highlight ? "" : ""}`}

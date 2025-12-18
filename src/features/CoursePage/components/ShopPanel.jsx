@@ -3,10 +3,13 @@ import { ShoppingBasket, Check, ShoppingBag, Award, TrendingUp, BookOpen } from 
 import { useToast } from '../../../context/ToastContext';
 import { useAuthStore } from '../../../store/authStore';
 import { useCartStore } from '../../../store/cartStore';
+import { useSearchParams } from 'react-router-dom';
 import supabase from '../../../util/supabaseClient';
 
-export default function ShopPanel({ course, isDark, setActivePage }) {
+export default function ShopPanel({ course, isDark, setActivePage, setSelectedEbookId, setActiveSection }) {
+  // setSelectedEbookId i setActiveSection są opcjonalne - jeśli są przekazane, pozwalają otwierać ebooki bezpośrednio
   const toast = useToast();
+  const [searchParams] = useSearchParams();
   const { user, purchasedCourses, purchasedEbooks, fetchUserData, canPurchaseCourses, maturaDate } = useAuthStore();
   const { addItem, isInCart } = useCartStore();
   const [coursePackages, setCoursePackages] = useState([]);
@@ -14,7 +17,11 @@ export default function ShopPanel({ course, isDark, setActivePage }) {
   const [loading, setLoading] = useState(true);
   const [ebooksLoading, setEbooksLoading] = useState(true);
   const [packageDetails, setPackageDetails] = useState({});
-  const [activeTab, setActiveTab] = useState('sections'); // 'sections' or 'ebooks'
+  // DEV: activeTab - zakomentuj na main, tylko ebooki, odkomentuj na development
+  // const tabParam = searchParams.get('tab');
+  // const [activeTab, setActiveTab] = useState(tabParam === 'ebooks' ? 'ebooks' : 'sections'); // 'sections' or 'ebooks'
+  const [activeTab] = useState('ebooks'); // Zawsze ebooki na main
+  // DEV: END activeTab
 
   const getRandomGradient = (index) => {
     const gradients = [
@@ -31,7 +38,10 @@ export default function ShopPanel({ course, isDark, setActivePage }) {
   };
 
   useEffect(() => {
-    fetchCoursePackages();
+    // DEV: fetchCoursePackages - odkomentuj na development, zakomentuj na main
+    // fetchCoursePackages();
+    // setLoading(false); // Wyłącz loading dla sekcji (nie używamy na main)
+    setLoading(false); // Na main nie używamy sekcji, więc loading zawsze false
     fetchEbooks();
   }, [course?.id]);
 
@@ -114,13 +124,28 @@ export default function ShopPanel({ course, isDark, setActivePage }) {
   const fetchEbooks = async () => {
     try {
       setEbooksLoading(true);
-      const { data, error } = await supabase
+      // DEV: Fetch all ebooks - odkomentuj na development, zakomentuj na main
+      // const { data, error } = await supabase
+      //   .from('ebooks')
+      //   .select('*')
+      //   .order('created_at', { ascending: false });
+
+      // DEV: Fetch ebooks by course_id - tylko ebooki dla danego kursu na main
+      let query = supabase
         .from('ebooks')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .select('*');
+      
+      if (course?.id) {
+        query = query.eq('course_id', course.id);
+      }
+      
+      const { data, error } = await query.order('created_at', { ascending: false });
+      // DEV: END Fetch ebooks by course_id
 
       if (error) throw error;
+      // DEV: Filtrowanie - pokaż wszystkie ebooki w sklepie (żeby można było kupić)
       setEbooks(data || []);
+      // DEV: END Filtrowanie
     } catch (error) {
       console.error('Error fetching ebooks:', error);
       toast.error('Nie udało się pobrać e-booków');
@@ -200,8 +225,8 @@ export default function ShopPanel({ course, isDark, setActivePage }) {
           Sklep
         </span>
         
-        {/* Tabs Navigation */}
-        <div className="flex gap-2 bg-gray-100 dark:bg-DarkblackText rounded-lg p-1">
+        {/* DEV: Tabs Navigation - odkomentuj na development, zakomentuj na main */}
+        {/* <div className="flex gap-2 bg-gray-100 dark:bg-DarkblackText rounded-lg p-1">
           <button
             onClick={() => setActiveTab('sections')}
             className={`px-4 py-2 rounded-md font-medium text-sm transition-all ${
@@ -222,11 +247,12 @@ export default function ShopPanel({ course, isDark, setActivePage }) {
           >
             E-booki
           </button>
-        </div>
+        </div> */}
+        {/* DEV: END Tabs Navigation */}
       </div>
 
-      {/* Sekcje kursu */}
-      {activeTab === 'sections' && (
+      {/* DEV: Sekcje kursu - odkomentuj na development, zakomentuj na main */}
+      {false && activeTab === 'sections' && (
         <>
           {/* Procent zakupionych sekcji */}
           {coursePackages.length > 0 && (
@@ -415,8 +441,9 @@ export default function ShopPanel({ course, isDark, setActivePage }) {
           )}
         </>
       )}
+      {/* DEV: END Sekcje kursu */}
 
-      {/* E-books Section */}
+      {/* E-books Section - zawsze widoczny */}
       {activeTab === 'ebooks' && (
         <div>
           {ebooksLoading ? (
@@ -481,9 +508,17 @@ export default function ShopPanel({ course, isDark, setActivePage }) {
                     {/* Button */}
                     <div className="p-4 pt-0">
                       {isPurchased ? (
-                        <div className="w-full py-2.5 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-lg text-center font-semibold text-sm shadow-sm border border-green-200 dark:border-green-700">
-                          ✓ Zakupione
-                        </div>
+                        <button
+                          onClick={() => {
+                            if (setSelectedEbookId && setActiveSection) {
+                              setSelectedEbookId(ebook.id);
+                              setActiveSection('ebook');
+                            }
+                          }}
+                          className="w-full py-2.5 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-lg text-center font-semibold text-sm shadow-sm border border-green-200 dark:border-green-700 hover:bg-green-200 dark:hover:bg-green-800 transition-colors cursor-pointer"
+                        >
+                          ✓ Zakupione - Otwórz ebook
+                        </button>
                       ) : inCart ? (
                         <div className="w-full py-2.5 bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-lg text-center font-semibold text-sm shadow-sm border border-green-200 dark:border-green-700 flex items-center justify-center gap-2">
                           <Check size={16} />

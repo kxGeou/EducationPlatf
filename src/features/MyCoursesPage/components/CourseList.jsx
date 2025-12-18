@@ -9,8 +9,10 @@ import { useNavigate } from "react-router-dom";
 import BlogPanel from "./BlogPanel";
 import FormUserPage from "./FormUserPage";
 import IdeaPanel from "./IdeaPanel";
-import Leaderboard from "./Leaderboard";
-import Rewards from "./Rewards";
+// DEV: Leaderboard and Rewards imports - odkomentuj na development, zakomentuj na main
+// import Leaderboard from "./Leaderboard";
+// import Rewards from "./Rewards";
+// DEV: END Leaderboard and Rewards imports
 import UserData from "./UserData";
 import Dashboard from "./Dashboard";
 import ReferralPanel from "./ReferralPanel";
@@ -246,8 +248,8 @@ function CourseList({ activePage, setActivePage, setTutorialVisible, tutorialVis
                   </div>
                 ))}
 
-              {/* ZASOBY */}
-              {activePage === "resources" && (
+              {/* DEV: ZASOBY - odkomentuj na development, zakomentuj na main */}
+              {/* {activePage === "resources" && (
                 <div className="flex flex-col items-start w-full mt-2">
                   <span className="flex gap-2 text-lg items-center font-semibold border-l-4 px-3 border-primaryBlue dark:border-primaryGreen text-primaryBlue dark:text-primaryGreen mt-18 md:mt-0 mb-12">
                     Zasoby do nauki
@@ -283,13 +285,15 @@ function CourseList({ activePage, setActivePage, setTutorialVisible, tutorialVis
                     ))}
                   </div>
                 </div>
-              )}
+              )} */}
+              {/* DEV: END ZASOBY */}
 
               {/* ZGŁOSZENIA */}
               {activePage === "reports" && <ReportPanel />}
 
-              {/* BLOGI */}
-              {activePage === "blogs" && <BlogPanel />}
+              {/* DEV: BLOGI - odkomentuj na development, zakomentuj na main */}
+              {/* {activePage === "blogs" && <BlogPanel />} */}
+              {/* DEV: END BLOGI */}
 
               {/* ANKIETY */}
               {activePage === "forms" && <FormUserPage></FormUserPage>}
@@ -297,11 +301,13 @@ function CourseList({ activePage, setActivePage, setTutorialVisible, tutorialVis
               {/* POMYSŁY  */}
               {activePage === "ideas" && <IdeaPanel></IdeaPanel>}
 
-              {/* RANKING */}
-              {activePage === "leaderboard" && <Leaderboard setActivePage={setActivePage} />}
+              {/* DEV: RANKING - odkomentuj na development, zakomentuj na main */}
+              {/* {activePage === "leaderboard" && <Leaderboard setActivePage={setActivePage} />} */}
+              {/* DEV: END RANKING */}
 
-              {/* NAGRODY */}
-              {activePage === "rewards" && <Rewards />}
+              {/* DEV: NAGRODY - odkomentuj na development, zakomentuj na main */}
+              {/* {activePage === "rewards" && <Rewards />} */}
+              {/* DEV: END NAGRODY */}
 
               {/* KOD POLECAJĄCY */}
               {activePage === "referral" && <ReferralPanel />}
