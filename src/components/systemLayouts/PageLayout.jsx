@@ -15,10 +15,10 @@ export default function PageLayout({
   maxWidth = "1100px"
 }) {
 
-  // Tworzymy gradient zależny od trybu
+  // Tworzymy gradient zależny od trybu (od prawego górnego rogu do lewego dolnego)
   const gradient = isDark
-    ? `linear-gradient(to bottom, ${fromDark} 0%, ${toDark} ${stopAt})`
-    : `linear-gradient(to bottom, ${from} 0%, ${to} ${stopAt})`;
+    ? `linear-gradient(to bottom left, ${fromDark} 0%, ${toDark} ${stopAt})`
+    : `linear-gradient(to bottom left, ${from} 0%, ${to} ${stopAt})`;
 
   return (
     <div

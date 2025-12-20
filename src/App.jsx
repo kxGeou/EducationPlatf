@@ -14,7 +14,7 @@ import WrongPage from './components/systemLayouts/WrongPage.jsx'
 // DEV: Blog and TestResources imports - odkomentuj na development, zakomentuj na main
 // import BlogMainPage from './features/BlogPage/BlogMainPage/BlogMainPage.jsx'
 // import BlogPage from './features/BlogPage/BlogPage/BlogPage.jsx'
-// import TestResources from './features/TestResourcesPage/TestResources.jsx'
+import TestResources from './features/TestResourcesPage/TestResources.jsx'
 // DEV: END Blog and TestResources imports
 import { useEffect, useState } from 'react'
 import { useAuthStore } from './store/authStore.js'; 
@@ -26,7 +26,7 @@ import AdminPage from './features/AdminPage/AdminPage.jsx'
 import Regulations from './features/AuthPage/Regulations.jsx'
 import ExamPage from './features/ExamPage/ExamPage.jsx'
 // DEV: Calendar import - odkomentuj na development, zakomentuj na main
-// import CalendarPage from './features/CalendarPage/CalendarPage.jsx'
+import CalendarPage from './features/CalendarPage/CalendarPage.jsx'
 // DEV: END Calendar import
 import { ToastProvider, useToast } from './context/ToastContext.jsx'
 import ToastContainer from './components/ui/ToastContainer.jsx'
@@ -74,12 +74,12 @@ function AppContent({ isDark, setIsDark }) {
         {/* <Route path='/blog/:id' element={<BlogPage isDark={isDark} setIsDark={setIsDark} />} /> */}
         {/* DEV: END Blog routes */}
         {/* DEV: TestResources route - odkomentuj na development, zakomentuj na main */}
-        {/* <Route path='/zasoby' element={<TestResources isDark={isDark} setIsDark={setIsDark}/>} /> */}
+        <Route path='/zasoby' element={<TestResources isDark={isDark} setIsDark={setIsDark}/>} />
         {/* DEV: END TestResources route */}
         <Route path='/admin' element={<AdminPage isDark={isDark} setIsDark={setIsDark}></AdminPage>}></Route>
         <Route path='/exam' element={<ExamPage isDark={isDark} setIsDark={setIsDark}></ExamPage>}></Route>
         {/* DEV: Calendar route - odkomentuj na development, zakomentuj na main */}
-        {/* <Route path='/calendar' element={<CalendarPage isDark={isDark} setIsDark={setIsDark}></CalendarPage>}></Route> */}
+        <Route path='/calendar' element={<CalendarPage isDark={isDark} setIsDark={setIsDark}></CalendarPage>}></Route>
         {/* DEV: END Calendar route */}
         <Route path='/*' element={<WrongPage isDark={isDark} setIsDark={setIsDark} />} />
       </Routes>

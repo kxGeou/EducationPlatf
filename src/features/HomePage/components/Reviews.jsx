@@ -1,10 +1,11 @@
 import { Star } from "lucide-react";
+import { useState } from "react";
 
 function Review({ user, description, rating }) {
   const maxStars = 5;
 
   return (
-    <div className="w-full h-full shadow-lg rounded-[12px] p-5 flex flex-col gap-3 dark:text-white dark:bg-DarkblackText bg-white transition overflow-hidden">
+    <div className="w-full h-full shadow-lg rounded-lg p-5 flex flex-col gap-3 dark:text-white dark:bg-DarkblackText bg-white transition overflow-hidden">
       <div className="flex gap-3 items-center">
         <span className="w-12 h-12 bg-darkBlue rounded-full dark:bg-primaryGreen shrink-0"></span>
         <div className="flex flex-col">
@@ -33,6 +34,8 @@ function Review({ user, description, rating }) {
 }
 
 export default function Reviews() {
+  const [displayedCount, setDisplayedCount] = useState(3);
+  
   const reviews = [
     {
       user: "Franek",
@@ -49,7 +52,44 @@ export default function Reviews() {
       rating: 5,
       description: "Mega się cieszę, że trafiłem na ten kurs. Wszystko, co potrzebne na egzamin, było w jednym miejscu. Szczerze polecam!",
     },
+    {
+      user: "Anna",
+      rating: 5,
+      description: "Kurs super przygotowany, wszystkie materiały są na miejscu. Uczyłem się systematycznie i matura poszła mi bardzo dobrze. Polecam każdemu!",
+    },
+    {
+      user: "Marek",
+      rating: 5,
+      description: "Najlepszy kurs online jaki miałem. Wszystko wytłumaczone w przystępny sposób, dużo praktycznych przykładów. Matura zdana z wynikiem 82%!",
+    },
+    {
+      user: "Kasia",
+      rating: 5,
+      description: "Zaczynałam od zera i teraz rozumiem informatyke. Lekcje są bardzo pomocne, a zadania świetnie przygotowane. Na pewno polecę znajomym!",
+    },
+    {
+      user: "Tomek",
+      rating: 5,
+      description: "Przygotowywałem się do egzaminu INF.02 i ten kurs był idealny. Wszystkie zagadnienia pokryte, duża ilość praktycznych zadań. Egzamin zdany!",
+    },
+    {
+      user: "Magda",
+      rating: 5,
+      description: "Bardzo polecam! Kurs jest bardzo dobrze zorganizowany, wszystko jasno wytłumaczone. Dzięki niemu zdałam maturę z informatyki na 88%.",
+    },
+    {
+      user: "Piotr",
+      rating: 5,
+      description: "Świetny kurs, który pomógł mi przygotować się do matury. Materiały są zawsze aktualne, a sposób prowadzenia lekcji bardzo przystępny. Polecam!",
+    },
   ];
+
+  const displayedReviews = reviews.slice(0, displayedCount);
+  const hasMore = displayedCount < reviews.length;
+
+  const handleLoadMore = () => {
+    setDisplayedCount(prev => Math.min(prev + 3, reviews.length));
+  };
 
   return (
     <section className="px-4 flex flex-col justify-start items-center mt-26 max-w-[1100px]">
@@ -60,7 +100,7 @@ export default function Reviews() {
         </h2>
       </div>
       <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
-        {reviews.map((r, index) => (
+        {displayedReviews.map((r, index) => (
           <li key={index} className="w-full h-full">
             <Review
               user={r.user}
@@ -71,9 +111,14 @@ export default function Reviews() {
         ))}
       </ul>
 
-      <button className="cursor-pointer w-full bg-darkBlue dark:text-blackText dark:bg-primaryGreen hover:-translate-y-1 text-white py-3 font-semibold rounded-[12px] mt-8 max-w-[50%] transition-all md:mt-12 duration-300 shadow-lg hover:shadow-xl">
-        Więcej opinii...
-      </button>
+      {hasMore && (
+        <button 
+          onClick={handleLoadMore}
+          className="cursor-pointer w-full bg-darkBlue dark:text-blackText dark:bg-primaryGreen hover:-translate-y-1 text-white py-3 font-semibold rounded-md mt-8 max-w-[50%] transition-all md:mt-12 duration-300 shadow-lg hover:shadow-xl"
+        >
+          Więcej opinii...
+        </button>
+      )}
     </section>
   );
 }

@@ -9,8 +9,12 @@ export const useCartStore = create(
       items: [], // Array of { packageId, packageData }
       appliedPromoCode: null, // { code, discount_amount_cents, discount_type, discount_value }
       referralDiscountApplied: false, // Whether 75% referral discount is being used
+      userId: null, // Store current user ID to detect user changes
 
       addItem: (packageId, packageData, coursePackages = [], isEbook = false) => {
+        // Check if user changed before adding item
+        get().checkUserChange();
+        
         const { items } = get();
         
         // Check if item already in cart
@@ -61,7 +65,27 @@ export const useCartStore = create(
       },
 
       clearCart: () => {
-        set({ items: [], appliedPromoCode: null, referralDiscountApplied: false });
+        set({ items: [], appliedPromoCode: null, referralDiscountApplied: false, userId: null });
+      },
+
+      // Check and update userId - clear cart if user changed
+      checkUserChange: () => {
+        const { userId: storedUserId } = get();
+        const { user } = useAuthStore.getState();
+        const currentUserId = user?.id || null;
+
+        if (storedUserId && currentUserId && storedUserId !== currentUserId) {
+          // User changed - clear cart
+          set({ items: [], appliedPromoCode: null, referralDiscountApplied: false, userId: currentUserId });
+          return true; // Cart was cleared
+        } else if (currentUserId) {
+          // Update userId if not set or same user
+          set({ userId: currentUserId });
+        } else if (!currentUserId && storedUserId) {
+          // User logged out - clear cart
+          set({ items: [], appliedPromoCode: null, referralDiscountApplied: false, userId: null });
+        }
+        return false; // Cart was not cleared
       },
 
       getItems: () => {
@@ -187,6 +211,7 @@ export const useCartStore = create(
         items: state.items,
         appliedPromoCode: state.appliedPromoCode,
         referralDiscountApplied: state.referralDiscountApplied,
+        userId: state.userId,
       }),
     }
   )

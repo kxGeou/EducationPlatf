@@ -430,14 +430,48 @@ export default function CalendarSection({ timeAgo }) {
     return true;
   });
 
-  const preferenceEvents = filteredPreferences.map((pref) => {
+  // Group preferences by user and time slot to show all selected options
+  const preferenceEventsMap = new Map();
+  
+  filteredPreferences.forEach((pref) => {
     const start = `${pref.date}T${pref.start_time}`;
     const end = `${pref.date}T${pref.end_time}`;
-    const labelName = pref.preference_labels?.name || 'Preferencja';
+    const startTime = pref.start_time.substring(0, 5);
+    const endTime = pref.end_time.substring(0, 5);
+    const slotKey = `${pref.user_id}-${pref.date}-${startTime}-${endTime}`;
+    
+    if (!preferenceEventsMap.has(slotKey)) {
+      preferenceEventsMap.set(slotKey, {
+        user_id: pref.user_id,
+        date: pref.date,
+        start_time: pref.start_time,
+        end_time: pref.end_time,
+        preferences: []
+      });
+    }
+    preferenceEventsMap.get(slotKey).preferences.push(pref);
+  });
+
+  const preferenceEvents = Array.from(preferenceEventsMap.values()).map((group) => {
+    const firstPref = group.preferences[0];
+    const start = `${group.date}T${group.start_time.substring(0, 5)}`;
+    const end = `${group.date}T${group.end_time.substring(0, 5)}`;
+    
+    // Collect all unique types and topics for this user's slot
+    const types = [...new Set(group.preferences.map(p => p.preference_labels?.type).filter(Boolean))];
+    const topics = [...new Set(group.preferences.map(p => p.preference_labels?.topic).filter(Boolean))];
+    
+    // Create title showing all options
+    const typeLabels = types.map(t => t === 'individual' ? 'Indywidualne' : 'Grupowe').join(', ');
+    const topicLabels = topics.join(', ');
+    const title = `${typeLabels}${topicLabels ? ` - ${topicLabels}` : ''}`;
+    
+    // Get user info from first preference
+    const userName = firstPref.users?.full_name || firstPref.users?.email || 'Użytkownik';
 
     return {
-      id: `preference-${pref.id}`,
-      title: labelName,
+      id: `preference-${group.user_id}-${group.date}-${group.start_time.substring(0, 5)}`,
+      title: `${userName}: ${title || 'Preferencja'}`,
       start,
       end,
       backgroundColor: '#fbbf24', // yellow/amber for preferences
@@ -445,7 +479,8 @@ export default function CalendarSection({ timeAgo }) {
       display: 'block',
       extendedProps: {
         type: 'preference',
-        preference: pref
+        preference: firstPref,
+        allPreferences: group.preferences
       }
     };
   });
@@ -516,10 +551,7 @@ export default function CalendarSection({ timeAgo }) {
     
     if (eventType === 'preference') {
       // Handle preference click - show users with overlapping hours
-      const preference = event.extendedProps?.preference;
-      if (preference) {
-        handlePreferenceClick(preference);
-      }
+      handlePreferenceClick(event);
       return;
     }
     
@@ -540,7 +572,10 @@ export default function CalendarSection({ timeAgo }) {
   };
 
   // Handle preference click - find users with overlapping hours
-  const handlePreferenceClick = async (preference) => {
+  const handlePreferenceClick = async (event) => {
+    const preference = event.extendedProps?.preference;
+    const allPreferences = event.extendedProps?.allPreferences || [preference];
+    
     if (!preference) return;
 
     setSelectedOverlap({
@@ -549,7 +584,7 @@ export default function CalendarSection({ timeAgo }) {
       end_time: preference.end_time
     });
     
-    // Find all preferences that overlap with this one (including the clicked one)
+    // Find all preferences that overlap with this time slot (including all user's preferences for this slot)
     const overlappingPrefs = (preferences || []).filter((pref) => {
       // Same date
       if (pref.date !== preference.date) return false;
@@ -881,25 +916,56 @@ export default function CalendarSection({ timeAgo }) {
                                 <Clock className="w-4 h-4" />
                                 Godziny preferencji:
                               </div>
-                              <div className="space-y-2">
-                                {user.preferences.map((pref, prefIdx) => (
-                                  <div
-                                    key={prefIdx}
-                                    className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-DarkblackBorder rounded-md border border-gray-200 dark:border-DarkblackText"
-                                  >
-                                    <div className="flex items-center gap-2 flex-1">
-                                      <Clock className="w-4 h-4 text-gray-500 dark:text-gray-400 flex-shrink-0" />
-                                      <span className="text-sm font-medium text-gray-900 dark:text-white">
-                                        {pref.start_time.substring(0, 5)} - {pref.end_time.substring(0, 5)}
-                                      </span>
-                                    </div>
-                                    {pref.label && (
-                                      <span className="px-3 py-1 text-xs font-medium rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
-                                        {pref.label.name || `${pref.type} - ${pref.topic}`}
-                                      </span>
-                                    )}
-                                  </div>
-                                ))}
+                              <div className="space-y-3">
+                                {(() => {
+                                  // Group preferences by time slot
+                                  const groupedByTime = new Map();
+                                  user.preferences.forEach((pref) => {
+                                    const timeKey = `${pref.start_time}-${pref.end_time}`;
+                                    if (!groupedByTime.has(timeKey)) {
+                                      groupedByTime.set(timeKey, []);
+                                    }
+                                    groupedByTime.get(timeKey).push(pref);
+                                  });
+
+                                  return Array.from(groupedByTime.entries()).map(([timeKey, prefs]) => {
+                                    const firstPref = prefs[0];
+                                    const types = [...new Set(prefs.map(p => p.type).filter(Boolean))];
+                                    const topics = [...new Set(prefs.map(p => p.topic).filter(Boolean))];
+
+                                    return (
+                                      <div
+                                        key={timeKey}
+                                        className="p-3 bg-gray-50 dark:bg-DarkblackBorder rounded-md border border-gray-200 dark:border-DarkblackText"
+                                      >
+                                        <div className="flex items-center gap-2 mb-2">
+                                          <Clock className="w-4 h-4 text-gray-500 dark:text-gray-400 flex-shrink-0" />
+                                          <span className="text-sm font-medium text-gray-900 dark:text-white">
+                                            {firstPref.start_time.substring(0, 5)} - {firstPref.end_time.substring(0, 5)}
+                                          </span>
+                                        </div>
+                                        <div className="flex flex-wrap gap-2 mt-2">
+                                          {types.map((type, typeIdx) => (
+                                            <span
+                                              key={`type-${typeIdx}`}
+                                              className="px-2 py-1 text-xs font-medium rounded-md bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 border border-blue-200 dark:border-blue-800"
+                                            >
+                                              {type === 'individual' ? 'Indywidualne' : 'Grupowe'}
+                                            </span>
+                                          ))}
+                                          {topics.map((topic, topicIdx) => (
+                                            <span
+                                              key={`topic-${topicIdx}`}
+                                              className="px-2 py-1 text-xs font-medium rounded-md bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 border border-purple-200 dark:border-purple-800"
+                                            >
+                                              {topic}
+                                            </span>
+                                          ))}
+                                        </div>
+                                      </div>
+                                    );
+                                  });
+                                })()}
                               </div>
                             </div>
                           )}
@@ -1928,6 +1994,16 @@ export default function CalendarSection({ timeAgo }) {
                       </div>
                     </div>
                   </div>
+                  <button
+                    onClick={() => {
+                      setShowBookingModal(false);
+                      openEditModal(selectedSlot);
+                    }}
+                    className="ml-4 p-2 bg-yellow-50 dark:bg-yellow-900/20 text-yellow-600 dark:text-yellow-400 rounded-md hover:bg-yellow-100 dark:hover:bg-yellow-900/30 transition"
+                    title="Edytuj termin"
+                  >
+                    <Edit className="w-5 h-5" />
+                  </button>
                 </div>
               </div>
 

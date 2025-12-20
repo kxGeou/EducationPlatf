@@ -32,6 +32,8 @@ function TaskPanel({ courseId, isEbook = false }) {
     const [showNextButton, setShowNextButton] = useState(false);
     const [correctAnswer, setCorrectAnswer] = useState(null);
     const [expandedAnswers, setExpandedAnswers] = useState({});
+    const [showCorrectAnswerImmediately, setShowCorrectAnswerImmediately] = useState(true); // Domyślnie pokazuj od razu
+    const [showCorrectAnswerButton, setShowCorrectAnswerButton] = useState(false); // Przycisk do pokazania poprawnej odpowiedzi
 
     useEffect(() => {
         if (courseId) {
@@ -54,6 +56,7 @@ function TaskPanel({ courseId, isEbook = false }) {
         setShowNextButton(false);
         setCorrectAnswer(null);
         setExpandedAnswers({});
+        setShowCorrectAnswerButton(false);
     }, [currentTask])
 
     useEffect(() => {
@@ -102,18 +105,36 @@ function TaskPanel({ courseId, isEbook = false }) {
                 }
                 
                 setShowFeedback(true);
-                setShowTranslationAnswers(true);
+                
+                // Fetch correct answer
+                const correctAns = await fetchCorrectAnswer(taskId);
+                setCorrectAnswer(correctAns);
+                
+                // Jeśli użytkownik chce widzieć od razu, pokaż tłumaczenia
+                if (showCorrectAnswerImmediately) {
+                    setShowTranslationAnswers(true);
+                } else {
+                    setShowTranslationAnswers(false);
+                    setShowCorrectAnswerButton(true);
+                }
                 
                 setTimer(5);
             } else {
                 setFeedbackType('incorrect');
                 setFeedbackMessage('Niepoprawna odpowiedź. Sprawdź tłumaczenia poniżej i spróbuj ponownie!');
                 setShowFeedback(true);
-                setShowTranslationAnswers(true);
                 
-                // Fetch correct answer for translation display
+                // Fetch correct answer
                 const correctAns = await fetchCorrectAnswer(taskId);
                 setCorrectAnswer(correctAns);
+                
+                // Jeśli użytkownik chce widzieć od razu, pokaż tłumaczenia
+                if (showCorrectAnswerImmediately) {
+                    setShowTranslationAnswers(true);
+                } else {
+                    setShowTranslationAnswers(false);
+                    setShowCorrectAnswerButton(true);
+                }
             }
         } catch (error) {
             setFeedbackType('error');
@@ -137,9 +158,15 @@ function TaskPanel({ courseId, isEbook = false }) {
         setShowFeedback(false);
         setShowTranslationAnswers(false);
         setShowNextButton(false);
+        setShowCorrectAnswerButton(false);
         setSelectedAnswer(null);
         setTimer(0);
         setExpandedAnswers({});
+    };
+
+    const handleShowCorrectAnswer = () => {
+        setShowTranslationAnswers(true);
+        setShowCorrectAnswerButton(false);
     };
 
     const toggleAnswerExpansion = (index) => {
@@ -222,15 +249,21 @@ function TaskPanel({ courseId, isEbook = false }) {
 
 
     return (
-        <div className='p-3 flex flex-col lg:flex-row gap-4 w-full'>
-            <div className="w-full lg:w-72 lg:flex-shrink-0 lg:order-1 order-2">
-                <TaskFilterPanel />
-            </div>
-
-            <div className="flex-1 flex flex-col lg:order-2 order-1">
-                <span className="flex gap-2 text-lg items-center font-semibold border-l-4 px-3 border-primaryBlue dark:border-primaryGreen text-primaryBlue dark:text-primaryGreen mb-6">
+        <div className='p-2 flex flex-col w-full'>
+            {/* Heading na górze */}
+            <div className="mt-1 mb-2 lg:mb-8">
+                <span className="flex gap-2 text-lg items-center font-semibold border-l-4 px-3 border-primaryBlue dark:border-primaryGreen text-primaryBlue dark:text-primaryGreen">
                     Zadania
                 </span>
+            </div>
+
+            {/* Layout z filtrami i treścią */}
+            <div className='flex flex-col lg:flex-row gap-8 w-full'>
+                <div className="w-full lg:w-72 lg:flex-shrink-0 lg:order-1 order-2">
+                    <TaskFilterPanel />
+                </div>
+
+                <div className="flex-1 flex flex-col lg:order-2 order-1">
 
                 {!hasSelectedStatus && (
                     <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-6 text-center">
@@ -302,6 +335,21 @@ function TaskPanel({ courseId, isEbook = false }) {
                     <p className="text-gray-700 dark:text-gray-300 mb-6">
                         {currentTask.task}
                     </p>
+
+                    {/* Checkbox do wyboru czy pokazywać poprawną odpowiedź od razu */}
+                    <div className="mb-4 p-3 bg-gray-50 dark:bg-DarkblackBorder rounded-lg border border-gray-200 dark:border-gray-700">
+                        <label className="flex items-center gap-2 cursor-pointer">
+                            <input
+                                type="checkbox"
+                                checked={showCorrectAnswerImmediately}
+                                onChange={(e) => setShowCorrectAnswerImmediately(e.target.checked)}
+                                className="w-4 h-4 text-primaryBlue dark:text-primaryGreen border-gray-300 rounded focus:ring-primaryBlue dark:focus:ring-primaryGreen"
+                            />
+                            <span className="text-sm text-gray-700 dark:text-gray-300">
+                                Pokaż poprawną odpowiedź od razu po sprawdzeniu
+                            </span>
+                        </label>
+                    </div>
 
                     <div className="space-y-3 mb-6">
                         {currentTask.answers.map((answer, index) => {
@@ -382,6 +430,16 @@ function TaskPanel({ courseId, isEbook = false }) {
                             );
                         })}
                     </div>
+
+                    {/* Przycisk do pokazania poprawnej odpowiedzi - jeśli użytkownik nie chce widzieć od razu */}
+                    {showCorrectAnswerButton && (
+                        <button
+                            onClick={handleShowCorrectAnswer}
+                            className="w-full py-3 px-6 mb-4 rounded-lg font-semibold bg-orange-500 dark:bg-orange-600 text-white hover:opacity-90 transition-all"
+                        >
+                            Sprawdź poprawną odpowiedź
+                        </button>
+                    )}
 
                     {!showFeedback ? (
                         <button
@@ -493,6 +551,7 @@ function TaskPanel({ courseId, isEbook = false }) {
                     )}
                 </div>
             )}
+                </div>
             </div>
         </div>
     )

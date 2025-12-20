@@ -203,20 +203,22 @@ function CourseList({ activePage, setActivePage, setTutorialVisible, tutorialVis
   if (error) return <Error />;
 
   return (
-    <div className="flex flex-col items-center w-full">
-      <div className="flex flex-col lg:flex-row w-full">
-        <div className="flex-1 order-1 lg:order-2">
-          <div className="flex flex-col items-center w-full bg-gray-50 shadow-md relative dark:bg-DarkblackBorder py-2 px-4 sm:px-6 min-h-screen md:min-h-[98vh] rounded-[12px]">
+    <div className="flex flex-col items-center w-full h-full">
+      <div className="flex flex-col lg:flex-row w-full h-full">
+        <div className="flex-1 order-1 lg:order-2 h-full">
+          <div className="flex flex-col items-center w-full h-full bg-gray-50 shadow-md relative dark:bg-DarkblackBorder py-2 px-4 sm:px-6 rounded-[12px] overflow-y-auto hide-scrollbar">
               
               {/* DASHBOARD */}
               {activePage === "dashboard" && (
-                <Dashboard />
+                <div className="w-full min-h-[96.2vh]">
+                  <Dashboard />
+                </div>
               )}
 
               {/* TWOJE KURSY */}
               {activePage === "courses" &&
                 (courses.length > 0 ? (
-                  <div className="w-full flex flex-col gap-2 text-blackText">
+                  <div className="w-full flex flex-col gap-2 text-blackText min-h-[96.2vh]">
                     <div className="w-full flex justify-between mt-2">
                       <span className="flex gap-2 text-lg items-center font-semibold border-l-4 px-3 border-primaryBlue dark:border-primaryGreen text-primaryBlue dark:text-primaryGreen mt-18 md:mt-0">
                         Wszystkie kursy
@@ -237,7 +239,7 @@ function CourseList({ activePage, setActivePage, setTutorialVisible, tutorialVis
                     </div>
                   </div>
                 ) : (
-                  <div className="w-full min-h-[95vh] flex flex-col items-center justify-center gap-4">
+                  <div className="w-full min-h-[96.2vh] flex flex-col items-center justify-center gap-4">
                     <ShoppingCart
                       size={40}
                       className="opacity-50 text-blackText dark:text-white"
@@ -249,8 +251,8 @@ function CourseList({ activePage, setActivePage, setTutorialVisible, tutorialVis
                 ))}
 
               {/* DEV: ZASOBY - odkomentuj na development, zakomentuj na main */}
-              {/* {activePage === "resources" && (
-                <div className="flex flex-col items-start w-full mt-2">
+              {activePage === "resources" && (
+                <div className="flex flex-col items-start w-full mt-2 min-h-[96.2vh] pb-8">
                   <span className="flex gap-2 text-lg items-center font-semibold border-l-4 px-3 border-primaryBlue dark:border-primaryGreen text-primaryBlue dark:text-primaryGreen mt-18 md:mt-0 mb-12">
                     Zasoby do nauki
                   </span>
@@ -285,21 +287,33 @@ function CourseList({ activePage, setActivePage, setTutorialVisible, tutorialVis
                     ))}
                   </div>
                 </div>
-              )} */}
+              )}
               {/* DEV: END ZASOBY */}
 
               {/* ZGŁOSZENIA */}
-              {activePage === "reports" && <ReportPanel />}
+              {activePage === "reports" && (
+                <div className="w-full min-h-[97.2vh]">
+                  <ReportPanel />
+                </div>
+              )}
 
               {/* DEV: BLOGI - odkomentuj na development, zakomentuj na main */}
               {/* {activePage === "blogs" && <BlogPanel />} */}
               {/* DEV: END BLOGI */}
 
               {/* ANKIETY */}
-              {activePage === "forms" && <FormUserPage></FormUserPage>}
+              {activePage === "forms" && (
+                <div className="w-full min-h-[97.2vh]">
+                  <FormUserPage></FormUserPage>
+                </div>
+              )}
 
               {/* POMYSŁY  */}
-              {activePage === "ideas" && <IdeaPanel></IdeaPanel>}
+              {activePage === "ideas" && (
+                <div className="w-full min-h-[97.2vh]">
+                  <IdeaPanel></IdeaPanel>
+                </div>
+              )}
 
               {/* DEV: RANKING - odkomentuj na development, zakomentuj na main */}
               {/* {activePage === "leaderboard" && <Leaderboard setActivePage={setActivePage} />} */}
@@ -310,10 +324,18 @@ function CourseList({ activePage, setActivePage, setTutorialVisible, tutorialVis
               {/* DEV: END NAGRODY */}
 
               {/* KOD POLECAJĄCY */}
-              {activePage === "referral" && <ReferralPanel />}
+              {activePage === "referral" && (
+                <div className="w-full min-h-[96.2vh]">
+                  <ReferralPanel />
+                </div>
+              )}
 
               {/* PROFIL */}
-              {activePage === "profile" && <UserData />}
+              {activePage === "profile" && (
+                <div className="w-full min-h-[96.2vh]">
+                  <UserData />
+                </div>
+              )}
             </div>
         </div>
       </div>

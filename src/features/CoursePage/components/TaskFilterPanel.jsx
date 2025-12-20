@@ -81,8 +81,8 @@ function TaskFilterPanel() {
     };
 
     return (
-        <div className="w-full lg:w-72 lg:h-[93vh] bg-white dark:bg-DarkblackText rounded-[16px] p-4 lg:p-6 shadow-lg flex flex-col">
-            <div className="flex items-center mb-4 lg:mb-6">
+        <div className="w-full lg:w-72 flex flex-col">
+            <div className="flex items-center mb-3 lg:mb-4">
                 <div className="w-6 h-6 lg:w-8 lg:h-8 bg-primaryBlue dark:bg-primaryGreen rounded-lg flex items-center justify-center mr-2 lg:mr-3">
                     <svg className="w-4 h-4 lg:w-5 lg:h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
@@ -94,13 +94,13 @@ function TaskFilterPanel() {
             </div>
 
             <div className="flex-1 flex flex-col">
-                <div className="mb-6 lg:mb-8">
-                    <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 lg:mb-4 flex items-center">
+                <div className="mb-4 lg:mb-5">
+                    <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 lg:mb-3 flex items-center">
                         <div className="w-2 h-2 bg-primaryBlue dark:bg-primaryGreen rounded-full mr-2"></div>
                         Status zadań
                     </h4>
                     
-                    <div className="space-y-3 lg:space-y-4">
+                    <div className="space-y-2 lg:space-y-2.5">
                         <CustomCheckbox
                             checked={localFilters.showAllTasks}
                             onChange={(e) => {
@@ -131,8 +131,8 @@ function TaskFilterPanel() {
                     </div>
                 </div>
 
-                <div className="mb-6 lg:mb-8 flex-1">
-                    <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 lg:mb-4 flex items-center">
+                <div className="mb-4 lg:mb-5 flex-1">
+                    <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 lg:mb-3 flex items-center">
                         <div className="w-2 h-2 bg-primaryBlue dark:bg-primaryGreen rounded-full mr-2"></div>
                         Tematy
                     </h4>
@@ -240,8 +240,8 @@ function TaskFilterPanel() {
             </div>
 
             <div className="mt-auto">
-                <div className="pt-4 lg:pt-6 border-t border-gray-200 dark:border-gray-600 mb-4 lg:mb-6">
-                    <div className="bg-primaryBlue/10 dark:bg-primaryGreen/10 rounded-lg p-3 lg:p-4">
+                <div className="pt-3 lg:pt-4 border-t border-gray-200 dark:border-gray-600 mb-3 lg:mb-4">
+                    <div className="bg-primaryBlue/10 dark:bg-primaryGreen/10 rounded-lg p-2 lg:p-3">
                         <div className="text-sm text-gray-600 dark:text-gray-400 text-center">
                             <p className="font-medium">Dostępne zadania</p>
                             <p className="text-xl lg:text-2xl font-bold text-primaryBlue dark:text-primaryGreen mt-1">
@@ -254,7 +254,7 @@ function TaskFilterPanel() {
                 <div className="space-y-2 lg:space-y-3">
                 <button
                     onClick={applyFilters}
-                    className="w-full px-4 py-3 bg-primaryBlue dark:bg-primaryGreen text-white rounded-lg hover:opacity-90 transition-opacity font-semibold shadow-md"
+                    className="w-full px-3 py-2 bg-primaryBlue dark:bg-primaryGreen text-white rounded-lg hover:opacity-90 transition-opacity font-semibold shadow-md text-sm"
                 >
                     <div className="flex items-center justify-center">
                         <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -272,7 +272,7 @@ function TaskFilterPanel() {
                             selectedTopics: [...availableTopics]
                         });
                     }}
-                    className="w-full px-4 py-2 text-sm bg-gray-200 dark:bg-DarkblackBorder dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors font-medium"
+                    className="w-full px-3 py-2 text-sm bg-gray-200 dark:bg-DarkblackBorder dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors font-medium"
                 >
                     <div className="flex items-center justify-center">
                         <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">

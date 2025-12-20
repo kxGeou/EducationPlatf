@@ -97,7 +97,7 @@ function Navigation({
                   Twoje kursy
                 </span>
                 {/* DEV: Resources navigation - odkomentuj na development, zakomentuj na main */}
-                {/* <span
+                <span
                   onClick={() => setActivePage("resources")}
                   className={`cursor-pointer flex items-center gap-2 transition-discrete duration-200 ${
                     activePage === "resources" &&
@@ -106,7 +106,7 @@ function Navigation({
                 >
                   <BookOpenText size={20} />
                   Zasoby
-                </span> */}
+                </span>
                 {/* DEV: END Resources navigation */}
                 <span
                   onClick={() => setActivePage("reports")}
@@ -278,7 +278,7 @@ function Navigation({
                   <ShoppingCart size={22} />
                 </span>
                 {/* DEV: Resources navigation (mobile collapsed) - odkomentuj na development, zakomentuj na main */}
-                {/* <span
+                <span
                   onClick={() => setActivePage("resources")}
                   className={`cursor-pointer ${
                     activePage === "resources" &&
@@ -286,7 +286,7 @@ function Navigation({
                   }`}
                 >
                   <BookOpenText size={22} />
-                </span> */}
+                </span>
                 {/* DEV: END Resources navigation (mobile collapsed) */}
                 <span
                   onClick={() => setActivePage("reports")}
@@ -480,7 +480,7 @@ function Navigation({
               <ShoppingCart size={20} /> Twoje kursy
             </span>
             {/* DEV: Resources navigation (mobile menu) - odkomentuj na development, zakomentuj na main */}
-            {/* <span
+            <span
               onClick={() => {
                 setActivePage("resources");
                 setMobileOpen(false);
@@ -491,7 +491,7 @@ function Navigation({
               }`}
             >
               <BookOpenText size={20} /> Zasoby
-            </span> */}
+            </span>
             {/* DEV: END Resources navigation (mobile menu) */}
             <span
               onClick={() => {

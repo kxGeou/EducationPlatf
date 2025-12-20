@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { ChevronDown } from "lucide-react";
 
 function useIsMobile() {
   const [isMobile, setIsMobile] = useState(false);
@@ -19,13 +20,13 @@ function LessonBlock({ Resources }) {
 
   return (
     <motion.div
-      className="w-full shadow-lg rounded-[12px] bg-white text-darkBlue dark:bg-DarkblackText bg:text-white"
+      className="w-full shadow-lg rounded-lg bg-white text-darkBlue dark:bg-DarkblackText bg:text-white"
       initial={{ opacity: 0, y: 0 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
     >
       <div
-        className="w-full h-3 rounded-t-[12px]"
+        className="w-full h-3 rounded-t-lg"
         style={{
           background: `linear-gradient(to right, ${Resources.colors[0]}, ${Resources.colors[1]})`,
         }}
@@ -78,7 +79,7 @@ function ReSection({ ReSection, Color, activeDropdown, setActiveDropdown }) {
               <button
                 key={index}
                 onClick={() => handleClick(s.pdfUrl)}
-                className="w-full p-2 rounded-[12px] cursor-pointer text-white shadow"
+                className="w-full p-2 rounded-md cursor-pointer text-white shadow"
                 style={{ background: Color }}
               >
                 {s.title}
@@ -103,7 +104,7 @@ function ReSection({ ReSection, Color, activeDropdown, setActiveDropdown }) {
               <button
                 key={index}
                 onClick={() => handleClick(s.pdfUrl)}
-                className="cursor-pointer transition-all duration-300 hover:scale-[1.05] text-white flex items-center justify-center px-8 py-3 rounded-[12px]"
+                className="cursor-pointer transition-all duration-300 hover:scale-[1.05] text-white flex items-center justify-center px-8 py-3 rounded-md"
                 style={{ background: Color }}
               >
                 {s.title}
@@ -118,22 +119,15 @@ function ReSection({ ReSection, Color, activeDropdown, setActiveDropdown }) {
 
 function DropdownButton({ title, options, color, dropdownKey, activeDropdown, setActiveDropdown }) {
   const isOpen = activeDropdown === dropdownKey;
-  const timeoutRef = React.useRef(null);
+  const dropdownRef = React.useRef(null);
 
-  const handleMouseEnter = () => {
-    // Clear any pending close timeout
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-      timeoutRef.current = null;
-    }
-    setActiveDropdown(dropdownKey);
-  };
-
-  const handleMouseLeave = () => {
-    // Add delay before closing to allow user to move to dropdown
-    timeoutRef.current = setTimeout(() => {
+  const handleToggle = () => {
+    // Toggle dropdown on click
+    if (isOpen) {
       setActiveDropdown(null);
-    }, 300); // 300ms delay
+    } else {
+      setActiveDropdown(dropdownKey);
+    }
   };
 
   const handleSelect = (pdfUrl) => {
@@ -141,43 +135,53 @@ function DropdownButton({ title, options, color, dropdownKey, activeDropdown, se
     setActiveDropdown(null);
   };
 
-  // Cleanup timeout on unmount
+  // Close dropdown when clicking outside
   React.useEffect(() => {
-    return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
+    const handleClickOutside = (event) => {
+      if (isOpen && dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setActiveDropdown(null);
       }
     };
-  }, []);
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+      };
+    }
+  }, [isOpen, setActiveDropdown]);
 
   return (
     <div 
+      ref={dropdownRef}
       className="relative"
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
     >
       <button
-        className="cursor-pointer w-full transition-all duration-300 hover:scale-[1.05] text-white flex items-center justify-center px-8 py-3 rounded-[12px]"
+        onClick={handleToggle}
+        className="cursor-pointer w-full transition-all duration-300 hover:scale-[1.05] text-white flex items-center justify-center gap-2 px-8 py-3 rounded-md"
         style={{ background: color }}
+        aria-expanded={isOpen}
+        aria-haspopup="true"
       >
         {title}
+        <ChevronDown 
+          size={18} 
+          className={`transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
+        />
       </button>
       {isOpen && (
         <motion.div
-          className="absolute z-20 mt-2 w-full rounded-[12px] shadow-lg"
+          className="absolute z-20 mt-2 w-full rounded-md shadow-lg"
           style={{ background: color }}
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
           transition={{ duration: 0.2 }}
-          onMouseEnter={handleMouseEnter}
-          onMouseLeave={handleMouseLeave}
         >
           {options.map((opt, idx) => (
             <button
               key={idx}
               onClick={() => handleSelect(opt.pdfUrl)}
-              className="block w-full p-4 text-left hover:bg-black/20 cursor-pointer rounded-[12px] text-sm text-white transition-colors"
+              className="block w-full p-4 text-left hover:bg-black/20 cursor-pointer rounded-md text-sm text-white transition-colors"
             >
               {opt.label}
             </button>

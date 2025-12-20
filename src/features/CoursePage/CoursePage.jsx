@@ -21,13 +21,15 @@ import { useEbookStore } from '../../store/ebookStore';
 // DEV: END VideoPanel import
 import { useAuthStore } from '../../store/authStore';
 import { useSingleCourseStore } from '../../store/singleCourseStore';
+import { useCartStore } from '../../store/cartStore';
 import Hls from "hls.js";
 import { useEffect, useState, useRef } from "react";
-import { useParams, useNavigate, useSearchParams } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams, useLocation } from "react-router-dom";
 
 export default function CoursePage({ isDark, setIsDark }) {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams] = useSearchParams();
   const [userDataModal, setUserDataModal] = useState(false);
 
@@ -35,6 +37,7 @@ export default function CoursePage({ isDark, setIsDark }) {
   const { fetchCourseById, course, videos, loading, error, accessDenied } =
     useSingleCourseStore();
   const { fetchEbookById, currentEbook: ebook } = useEbookStore();
+  const { clearCart } = useCartStore();
 
   const [currentVideo, setCurrentVideo] = useState(null);
   // DEV: activeSection - jeśli jest w URL params, użyj go, w przeciwnym razie domyślnie "info"
@@ -65,6 +68,14 @@ export default function CoursePage({ isDark, setIsDark }) {
     }
   }, [selectedEbookId, initialized]);
   // DEV: END Fetch ebook
+
+  // Clear cart when leaving /course route
+  useEffect(() => {
+    // Cleanup: clear cart when component unmounts (user navigates away from /course)
+    return () => {
+      clearCart();
+    };
+  }, [clearCart]);
 
   const HlsPlayer = ({ src, title }) => {
     const videoRef = useRef(null);
@@ -102,9 +113,9 @@ export default function CoursePage({ isDark, setIsDark }) {
   return (
     <div
       data-theme={isDark ? "dark" : "light"}
-      className=" flex justify-center bg-slate-300 dark:bg-blackText dark:text-white min-h-screen"
+      className=" flex justify-center bg-slate-300 dark:bg-blackText dark:text-white h-screen overflow-hidden"
     >
-      <div className="flex flex-col md:flex-row h-full gap-1 w-full max-w-[1900px] min-h-screen p-1">
+      <div className="flex flex-col md:flex-row h-full gap-1 w-full max-w-[1900px] p-1 overflow-hidden">
         <CourseSidebar
           user={user}
           course={course}
@@ -122,7 +133,7 @@ export default function CoursePage({ isDark, setIsDark }) {
           setSelectedEbookId={setSelectedEbookId}
         />
 
-        <main className={`flex flex-col w-full items-start min-h-[98vh] rounded-[12px] p-2 ${activeSection === "ebook" ? "bg-white dark:bg-DarkblackText" : "bg-gray-100 dark:bg-DarkblackBorder"}`}>
+        <main className={`flex flex-col w-full items-start h-full rounded-[12px] p-2 overflow-y-auto hide-scrollbar ${activeSection === "ebook" ? "bg-white dark:bg-DarkblackText" : "bg-gray-100 dark:bg-DarkblackBorder"}`}>
 
           {activeSection === "info" && (
             <CourseInfo course={course} videos={videos} />

@@ -304,6 +304,11 @@ export const useAuthStore = create(
               .eq('session_token', sessionToken);
 
             set({ user: session.user });
+            
+            // Check if user changed - clear cart if different user
+            const { useCartStore } = await import('./cartStore');
+            const cartStore = useCartStore.getState();
+            cartStore.checkUserChange();
             await get().fetchUserData(session.user.id);
             await get().fetchReferralData();
             await get().fetchUserProgress(session.user.id);
@@ -392,6 +397,11 @@ export const useAuthStore = create(
                 .eq('session_token', sessionToken);
 
               set({ user: session.user });
+              
+              // Check if user changed - clear cart if different user
+              const { useCartStore } = await import('./cartStore');
+              const cartStore = useCartStore.getState();
+              cartStore.checkUserChange();
               await get().fetchUserData(session.user.id);
               await get().fetchReferralData();
               await get().fetchUserProgress(session.user.id);
@@ -573,11 +583,17 @@ export const useAuthStore = create(
           // Usuń wszystkie dane z localStorage
           localStorage.removeItem('session_token');
           localStorage.removeItem('auth-storage');
+          localStorage.removeItem('cart-storage'); // Clear cart storage
           
           // Clear notifications store
           const { useNotificationStore } = await import('./notificationStore');
           const notificationStore = useNotificationStore.getState();
           notificationStore.set({ notifications: [], userNotifications: [], unreadCount: 0 });
+          
+          // Clear cart store
+          const { useCartStore } = await import('./cartStore');
+          const cartStore = useCartStore.getState();
+          cartStore.clearCart();
           
           toast.success("Wylogowano");
         } catch (error) {
