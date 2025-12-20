@@ -47,7 +47,7 @@ function CourseListHero() {
                 .getElementById(course.section.replace(/\s+/g, ''))
                 ?.scrollIntoView({ behavior: "smooth" })
             }
-            className="border border-gray-200 shadow-md p-6 bg-white dark:bg-DarkblackBorder dark:border-DarkblackBorder dark:text-white rounded-[12px] cursor-pointer transition-all duration-300 hover:-translate-y-1"
+            className="border border-gray-200 shadow-md p-6 bg-white dark:bg-DarkblackBorder dark:border-DarkblackBorder dark:text-white rounded-md cursor-pointer transition-all duration-300 hover:-translate-y-1"
           >
             <img src={course.icon} className="mb-2 w-10" alt={course.label} />
             <h3 className="font-semibold text-lg">{course.label}</h3>

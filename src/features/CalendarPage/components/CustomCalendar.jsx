@@ -444,16 +444,19 @@ export default function CustomCalendar({
                           // Special handling for overlap events (green with user count)
                           const isOverlap = event.extendedProps?.type === 'overlap';
                           const userCount = isOverlap ? event.extendedProps?.overlap?.user_count : null;
+                          const isWebinar = event.extendedProps?.isWebinar === true;
 
                           return (
                             <div
                               key={eventIdx}
                               data-event="true"
-                              className="rounded-sm px-2 py-1 text-xs font-medium text-white cursor-pointer overflow-hidden"
+                              className={`rounded-sm px-2 py-1 text-xs font-medium text-white cursor-pointer overflow-hidden transition-all ${
+                                isWebinar ? 'shadow-lg hover:shadow-xl animate-pulse' : ''
+                              }`}
                               style={{
                                 backgroundColor: event.backgroundColor || '#fbbf24',
                                 borderColor: event.borderColor || '#f59e0b',
-                                borderWidth: '1px',
+                                borderWidth: event.borderWidth || '1px',
                                 borderStyle: 'solid',
                                 height: `${heightPx}px`,
                                 minHeight: '24px',
@@ -461,10 +464,11 @@ export default function CustomCalendar({
                                 top: `${2 + offsetFromSlotStart}px`,
                                 left: '2px',
                                 right: '2px',
-                                zIndex: 10,
+                                zIndex: isWebinar ? 20 : 10,
                                 display: 'flex',
                                 alignItems: 'center',
-                                justifyContent: isOverlap ? 'center' : 'flex-start'
+                                justifyContent: isOverlap ? 'center' : 'flex-start',
+                                boxShadow: isWebinar ? '0 4px 12px rgba(249, 115, 22, 0.4)' : 'none'
                               }}
                               onClick={(e) => {
                                 e.stopPropagation();
@@ -547,18 +551,22 @@ export default function CustomCalendar({
                       {dayEvents.slice(0, 3).map((event, eventIdx) => {
                         const isOverlap = event.extendedProps?.type === 'overlap';
                         const userCount = isOverlap ? event.extendedProps?.overlap?.user_count : null;
+                        const isWebinar = event.extendedProps?.isWebinar === true;
                         const startTime = event.start ? new Date(event.start).toTimeString().substring(0, 5) : '';
                         
                         return (
                           <div
                             key={eventIdx}
                             data-event="true"
-                            className="text-xs px-2 py-1 rounded-sm cursor-pointer truncate text-white"
+                            className={`text-xs px-2 py-1 rounded-sm cursor-pointer truncate text-white ${
+                              isWebinar ? 'shadow-md font-bold' : ''
+                            }`}
                             style={{
                               backgroundColor: event.backgroundColor || '#fbbf24',
                               borderColor: event.borderColor || '#f59e0b',
-                              borderWidth: '1px',
-                              borderStyle: 'solid'
+                              borderWidth: event.borderWidth || '1px',
+                              borderStyle: 'solid',
+                              boxShadow: isWebinar ? '0 2px 8px rgba(249, 115, 22, 0.3)' : 'none'
                             }}
                             onClick={(e) => {
                               e.stopPropagation();

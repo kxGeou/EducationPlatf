@@ -17,8 +17,8 @@ export default function MyCourses({ isDark, setIsDark }) {
   useEffect(() => {
     const section = searchParams.get('section');
     // DEV: 'resources', 'blogs', 'leaderboard', 'rewards' - odkomentuj na development, zakomentuj na main
-    // if (section && ['courses', 'resources', 'reports', 'blogs', 'forms', 'ideas', 'leaderboard', 'rewards', 'referral', 'profile'].includes(section)) {
-    if (section && ['courses', 'reports', 'forms', 'ideas', 'referral', 'profile'].includes(section)) {
+    if (section && ['courses', 'resources', 'reports', 'blogs', 'forms', 'ideas', 'leaderboard', 'rewards', 'referral', 'profile'].includes(section)) {
+    // if (section && ['courses', 'reports', 'forms', 'ideas', 'referral', 'profile'].includes(section)) {
       setActivePage(section);
     }
     // DEV: END 'resources', 'blogs', 'leaderboard', 'rewards'
@@ -27,11 +27,11 @@ export default function MyCourses({ isDark, setIsDark }) {
   return (
     <div
       data-theme={isDark ? "dark" : "light"}
-      className="flex justify-center bg-slate-200 w-full dark:bg-blackText relative"
+      className="flex justify-center bg-slate-200 w-full dark:bg-blackText relative h-screen overflow-hidden"
     >
-      <div className="w-full max-w-[1920px] p-1">
-        <div className="w-full">
-          <div className="flex gap-1">
+      <div className="w-full max-w-[1920px] p-1 h-full overflow-hidden">
+        <div className="w-full h-full">
+          <div className="flex gap-1 h-full">
             <Navigation
               activePage={activePage}
               setActivePage={setActivePage}

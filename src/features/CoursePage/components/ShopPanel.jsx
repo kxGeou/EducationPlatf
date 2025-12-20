@@ -18,9 +18,9 @@ export default function ShopPanel({ course, isDark, setActivePage, setSelectedEb
   const [ebooksLoading, setEbooksLoading] = useState(true);
   const [packageDetails, setPackageDetails] = useState({});
   // DEV: activeTab - zakomentuj na main, tylko ebooki, odkomentuj na development
-  // const tabParam = searchParams.get('tab');
-  // const [activeTab, setActiveTab] = useState(tabParam === 'ebooks' ? 'ebooks' : 'sections'); // 'sections' or 'ebooks'
-  const [activeTab] = useState('ebooks'); // Zawsze ebooki na main
+  const tabParam = searchParams.get('tab');
+  const [activeTab, setActiveTab] = useState(tabParam === 'sections' ? 'sections' : 'ebooks'); // 'sections' or 'ebooks' - domyślnie ebooki
+  // const [activeTab] = useState('ebooks'); // Zawsze ebooki na main
   // DEV: END activeTab
 
   const getRandomGradient = (index) => {
@@ -39,9 +39,9 @@ export default function ShopPanel({ course, isDark, setActivePage, setSelectedEb
 
   useEffect(() => {
     // DEV: fetchCoursePackages - odkomentuj na development, zakomentuj na main
-    // fetchCoursePackages();
+    fetchCoursePackages();
     // setLoading(false); // Wyłącz loading dla sekcji (nie używamy na main)
-    setLoading(false); // Na main nie używamy sekcji, więc loading zawsze false
+    // setLoading(false); // Na main nie używamy sekcji, więc loading zawsze false
     fetchEbooks();
   }, [course?.id]);
 
@@ -155,6 +155,12 @@ export default function ShopPanel({ course, isDark, setActivePage, setSelectedEb
   };
 
   const handleAddToCart = (packageId) => {
+    // Sekcje kursu są zablokowane - funkcja będzie dostępna w przyszłości
+    toast.info("Kupowanie sekcji kursu będzie dostępne w przyszłości. Obecnie możesz kupować e-booki.");
+    return;
+    
+    // Kod poniżej pozostaje zakomentowany na przyszłość
+    /*
     if (!user) {
       toast.error("Musisz być zalogowany, żeby dodać produkt do koszyka.");
       return;
@@ -173,6 +179,7 @@ export default function ShopPanel({ course, isDark, setActivePage, setSelectedEb
     }
 
     addItem(packageId, packageData, coursePackages, false);
+    */
   };
 
   const handleAddEbookToCart = (ebookId) => {
@@ -219,14 +226,14 @@ export default function ShopPanel({ course, isDark, setActivePage, setSelectedEb
     : 0;
 
   return (
-    <div className="flex flex-col gap-8 w-full md:min-h-[96vh] p-3">
-      <div className="flex items-center justify-between mb-2">
+    <div className={`flex flex-col gap-8 w-full md:min-h-[96vh] p-3 relative ${activeTab === 'sections' ? 'overflow-hidden' : ''}`}>
+      <div className="flex items-center justify-between mb-2 relative z-40">
         <span className="flex gap-2 text-lg items-center font-semibold border-l-4 px-3 border-primaryBlue dark:border-primaryGreen text-primaryBlue dark:text-primaryGreen">
           Sklep
         </span>
         
         {/* DEV: Tabs Navigation - odkomentuj na development, zakomentuj na main */}
-        {/* <div className="flex gap-2 bg-gray-100 dark:bg-DarkblackText rounded-lg p-1">
+        <div className="flex gap-2 bg-gray-100 dark:bg-DarkblackText rounded-lg p-1">
           <button
             onClick={() => setActiveTab('sections')}
             className={`px-4 py-2 rounded-md font-medium text-sm transition-all ${
@@ -247,69 +254,71 @@ export default function ShopPanel({ course, isDark, setActivePage, setSelectedEb
           >
             E-booki
           </button>
-        </div> */}
+        </div>
         {/* DEV: END Tabs Navigation */}
       </div>
 
       {/* DEV: Sekcje kursu - odkomentuj na development, zakomentuj na main */}
-      {false && activeTab === 'sections' && (
+      {activeTab === 'sections' && (
         <>
-          {/* Procent zakupionych sekcji */}
-          {coursePackages.length > 0 && (
-        <div className="relative bg-white dark:bg-DarkblackText rounded-lg shadow-md p-4 border border-primaryBlue/10 dark:border-primaryGreen/10 overflow-hidden">
-          <div className="relative flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            {/* Lewa strona - ikona i tekst */}
-            <div className="flex items-center gap-3">
-              <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-primaryBlue dark:bg-primaryGreen flex items-center justify-center shadow-md">
-                <ShoppingBag size={18} className="text-white" />
+          {/* Zawartość sekcji - zablurowana */}
+          <div className="blur-sm pointer-events-none select-none">
+            {/* Procent zakupionych sekcji */}
+            {coursePackages.length > 0 && (
+          <div className="relative bg-white dark:bg-DarkblackText rounded-lg shadow-md p-4 border border-primaryBlue/10 dark:border-primaryGreen/10 overflow-hidden">
+            <div className="relative flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              {/* Lewa strona - ikona i tekst */}
+              <div className="flex items-center gap-3">
+                <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-primaryBlue dark:bg-primaryGreen flex items-center justify-center shadow-md">
+                  <ShoppingBag size={18} className="text-white" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold text-blackText dark:text-white">
+                    Zakupione sekcje
+                  </h3>
+                  <p className="text-xs text-primaryBlue/70 dark:text-primaryGreen/70">
+                    {purchasedSectionIds.length} z {allSectionIds.length} sekcji
+                  </p>
+                </div>
               </div>
-              <div>
-                <h3 className="text-sm font-semibold text-blackText dark:text-white">
-                  Zakupione sekcje
-                </h3>
-                <p className="text-xs text-primaryBlue/70 dark:text-primaryGreen/70">
-                  {purchasedSectionIds.length} z {allSectionIds.length} sekcji
-                </p>
-              </div>
-            </div>
 
-            {/* Prawa strona - procent i pasek */}
-            <div className="flex-1 sm:max-w-xs">
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-1.5">
-                  <TrendingUp size={14} className="text-primaryBlue dark:text-primaryGreen" />
-                  <span className="text-xs font-medium text-primaryBlue/80 dark:text-primaryGreen/80">
-                    Postęp
+              {/* Prawa strona - procent i pasek */}
+              <div className="flex-1 sm:max-w-xs">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-1.5">
+                    <TrendingUp size={14} className="text-primaryBlue dark:text-primaryGreen" />
+                    <span className="text-xs font-medium text-primaryBlue/80 dark:text-primaryGreen/80">
+                      Postęp
+                    </span>
+                  </div>
+                  <span className="text-2xl font-bold text-primaryBlue dark:text-primaryGreen">
+                    {purchasedSectionsPercentage}%
                   </span>
                 </div>
-                <span className="text-2xl font-bold text-primaryBlue dark:text-primaryGreen">
-                  {purchasedSectionsPercentage}%
-                </span>
-              </div>
-              
-              {/* Pasek postępu */}
-              <div className="relative w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 overflow-hidden shadow-inner">
-                <div
-                  className="absolute inset-y-0 left-0 rounded-full bg-primaryBlue dark:bg-primaryGreen transition-all duration-700 ease-out"
-                  style={{
-                    width: `${purchasedSectionsPercentage}%`,
-                  }}
-                ></div>
-              </div>
-              
-              {/* Dodatkowy wskaźnik wizualny */}
-              {purchasedSectionsPercentage === 100 && (
-                <div className="mt-1.5 flex items-center gap-1.5 text-xs text-green-600 dark:text-green-400">
-                  <Award size={12} className="animate-bounce" />
-                  <span className="font-medium">Wszystkie sekcje zakupione!</span>
+                
+                {/* Pasek postępu */}
+                <div className="relative w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 overflow-hidden shadow-inner">
+                  <div
+                    className="absolute inset-y-0 left-0 rounded-full bg-primaryBlue dark:bg-primaryGreen transition-all duration-700 ease-out"
+                    style={{
+                      width: `${purchasedSectionsPercentage}%`,
+                    }}
+                  ></div>
                 </div>
-              )}
+                
+                {/* Dodatkowy wskaźnik wizualny */}
+                {purchasedSectionsPercentage === 100 && (
+                  <div className="mt-1.5 flex items-center gap-1.5 text-xs text-green-600 dark:text-green-400">
+                    <Award size={12} className="animate-bounce" />
+                    <span className="font-medium">Wszystkie sekcje zakupione!</span>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {coursePackages.map((pkg, index) => {
           const isPurchased = purchasedCourses.includes(pkg.id);
           const inCart = isInCart(pkg.id);
@@ -439,7 +448,37 @@ export default function ShopPanel({ course, isDark, setActivePage, setSelectedEb
               </p>
             </div>
           )}
+          </div>
         </>
+      )}
+      
+      {/* Overlay z informacją o budowie - zajmuje cały prawy panel */}
+      {activeTab === 'sections' && (
+        <div className="absolute inset-0 top-0 left-0 right-0 bottom-0 z-30 flex flex-col items-center justify-center bg-gradient-to-br from-gray-900/30 via-gray-800/30 to-gray-900/30 dark:from-black/85 dark:via-gray-900/90 dark:to-black/85 backdrop-blur-lg rounded-lg">
+          <div className="text-center px-8 max-w-2xl">
+            <div className="mb-8">
+              <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-primaryBlue/25 to-primaryBlue/15 dark:from-primaryGreen/25 dark:to-primaryGreen/15 rounded-full flex items-center justify-center backdrop-blur-sm border-2 border-primaryBlue/40 dark:border-primaryGreen/40 shadow-2xl">
+                <ShoppingBasket size={42} className="text-primaryBlue dark:text-primaryGreen" />
+              </div>
+            </div>
+            <h3 className="text-4xl font-bold text-white mb-4 drop-shadow-xl">
+              W trakcie budowy
+            </h3>
+            <div className="space-y-4">
+              <p className="text-lg text-gray-100 dark:text-gray-200 leading-relaxed drop-shadow-lg">
+                Sekcja z sekcjami kursu jest aktualnie w trakcie rozwoju.
+              </p>
+              <p className="text-lg text-gray-100 dark:text-gray-200 leading-relaxed drop-shadow-lg">
+                Będzie dostępna w najbliższej przyszłości.
+              </p>
+              <div className="mt-8 pt-6 border-t border-white/30 dark:border-gray-600/40">
+                <p className="text-base text-gray-300 dark:text-gray-400">
+                  W międzyczasie możesz przeglądać i kupować e-booki w zakładce <span className="font-semibold text-white">"E-booki"</span>.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
       {/* DEV: END Sekcje kursu */}
 

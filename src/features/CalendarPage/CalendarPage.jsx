@@ -5,7 +5,7 @@ import { useGroupStore } from '../../store/groupStore';
 import { useAuthStore } from '../../store/authStore';
 import { useToast } from '../../context/ToastContext';
 import PageLayout from '../../components/systemLayouts/PageLayout';
-import { Calendar, Clock, Users, User, X, LogIn, Archive, ExternalLink, Hash } from 'lucide-react';
+import { Calendar, Clock, Users, User, X, LogIn, Archive, ExternalLink, Hash, Edit } from 'lucide-react';
 import CustomCalendar from './components/CustomCalendar';
 import './CalendarPage.css';
 
@@ -41,10 +41,14 @@ export default function CalendarPage({ isDark, setIsDark }) {
   const [bookingNotes, setBookingNotes] = useState('');
   const [preferenceDescription, setPreferenceDescription] = useState('');
   const [preferenceLabelId, setPreferenceLabelId] = useState('');
-  const [preferenceType, setPreferenceType] = useState('individual');
-  const [preferenceTopic, setPreferenceTopic] = useState('');
+  const [preferenceTypes, setPreferenceTypes] = useState([]); // Tablica wybranych typów (dla tworzenia)
+  const [preferenceTopics, setPreferenceTopics] = useState([]); // Tablica wybranych tematów (dla tworzenia)
+  const [preferenceType, setPreferenceType] = useState('individual'); // Pojedynczy typ (dla edycji)
+  const [preferenceTopic, setPreferenceTopic] = useState(''); // Pojedynczy temat (dla edycji)
   const [nextWebinar, setNextWebinar] = useState(null);
   const [showEditPreferenceModal, setShowEditPreferenceModal] = useState(false);
+  const [showPreferenceInfoModal, setShowPreferenceInfoModal] = useState(false);
+  const [viewingPreference, setViewingPreference] = useState(null);
   const [editingPreference, setEditingPreference] = useState(null);
   const [calendarDate, setCalendarDate] = useState(null);
   const [activeTab, setActiveTab] = useState('bookings'); // 'bookings', 'preferences', or 'groups'
@@ -196,32 +200,17 @@ export default function CalendarPage({ isDark, setIsDark }) {
   };
 
   const handleCreatePreference = async () => {
-    if (!selectedTimeRange || !user || !preferenceTopic) {
+    if (!selectedTimeRange || !user || preferenceTypes.length === 0 || preferenceTopics.length === 0) {
       toast.error('Wypełnij wszystkie wymagane pola');
       return;
     }
 
     try {
-      // First, find or create label with type and topic
-      let labelId = preferenceLabelId;
-      
-      if (!labelId) {
-        // Check if label with this type and topic exists
-        const existingLabel = labels.find(
-          l => l.type === preferenceType && l.topic === preferenceTopic
-        );
-        
-        if (existingLabel) {
-          labelId = existingLabel.id;
-        } else {
-          // Create new label
-          const newLabel = await createLabel({
-            name: `${preferenceType === 'individual' ? 'Indywidualne' : 'Grupowe'} - ${preferenceTopic}`,
-            type: preferenceType,
-            topic: preferenceTopic,
-            color: preferenceType === 'individual' ? '#3b82f6' : '#8b5cf6'
-          });
-          labelId = newLabel.id;
+      // Generate all combinations of selected types and topics
+      const combinations = [];
+      for (const type of preferenceTypes) {
+        for (const topic of preferenceTopics) {
+          combinations.push({ type, topic });
         }
       }
 
@@ -247,27 +236,58 @@ export default function CalendarPage({ isDark, setIsDark }) {
         currentDate.setDate(currentDate.getDate() + 7);
       }
 
-      // Create preferences for all dates (skip toast for each individual preference)
+      // Create preferences for all combinations and dates
       let createdCount = 0;
       let errorCount = 0;
       const errors = [];
       
-      for (const date of dates) {
-        try {
-          await createPreference({
-            userId: user.id,
-            labelId: labelId,
-            date: date,
-            startTime: selectedTimeRange.startTime + ':00',
-            endTime: selectedTimeRange.endTime + ':00',
-            description: preferenceDescription || null,
-            skipToast: true // Skip individual toasts
-          });
-          createdCount++;
-        } catch (err) {
-          errorCount++;
-          errors.push(err.message || 'Nieznany błąd');
-          console.error('Error creating recurring preference for date', date, ':', err);
+      for (const combination of combinations) {
+        // Find or create label for this combination
+        let labelId = null;
+        const existingLabel = labels.find(
+          l => l.type === combination.type && l.topic === combination.topic
+        );
+        
+        if (existingLabel) {
+          labelId = existingLabel.id;
+        } else {
+          // Create new label
+          try {
+            const newLabel = await createLabel({
+              name: `${combination.type === 'individual' ? 'Indywidualne' : 'Grupowe'} - ${combination.topic}`,
+              type: combination.type,
+              topic: combination.topic,
+              color: combination.type === 'individual' ? '#3b82f6' : '#8b5cf6'
+            });
+            labelId = newLabel.id;
+            // Refresh labels to include the new one
+            await fetchLabels();
+          } catch (err) {
+            console.error('Error creating label:', err);
+            errorCount++;
+            errors.push(`Błąd tworzenia etykiety: ${err.message || 'Nieznany błąd'}`);
+            continue;
+          }
+        }
+        
+        // Create preferences for all dates for this combination
+        for (const date of dates) {
+          try {
+            await createPreference({
+              userId: user.id,
+              labelId: labelId,
+              date: date,
+              startTime: selectedTimeRange.startTime + ':00',
+              endTime: selectedTimeRange.endTime + ':00',
+              description: preferenceDescription || null,
+              skipToast: true // Skip individual toasts
+            });
+            createdCount++;
+          } catch (err) {
+            errorCount++;
+            errors.push(err.message || 'Nieznany błąd');
+            console.error('Error creating recurring preference for date', date, ':', err);
+          }
         }
       }
       
@@ -295,8 +315,8 @@ export default function CalendarPage({ isDark, setIsDark }) {
       setSelectedTimeRange(null);
       setPreferenceDescription('');
       setPreferenceLabelId('');
-      setPreferenceType('individual');
-      setPreferenceTopic('');
+      setPreferenceTypes([]);
+      setPreferenceTopics([]);
     } catch (err) {
       // Error handled in store
     }
@@ -370,17 +390,37 @@ export default function CalendarPage({ isDark, setIsDark }) {
     }
   };
 
-  // Handle preference click - user can edit or delete their own preference
+  // Handle preference click - show info modal for user's own preference
   const handlePreferenceClick = (preference) => {
     if (!preference || !user) return;
     
     // Check if this is user's own preference
     if (preference.user_id !== user.id) {
-      toast.error('Możesz edytować tylko swoje preferencje');
+      toast.error('Możesz zobaczyć tylko swoje preferencje');
       return;
     }
 
-    // Show edit/delete modal
+    // Use allPreferences if already provided, otherwise find them
+    const allPreferences = preference.allPreferences || preferences.filter(pref => 
+      String(pref.user_id) === String(user.id) &&
+      pref.date === preference.date &&
+      pref.start_time === preference.start_time &&
+      pref.end_time === preference.end_time
+    );
+
+    // Show info modal with all preferences for this slot
+    setViewingPreference({
+      ...preference,
+      allPreferences: allPreferences
+    });
+    setShowPreferenceInfoModal(true);
+  };
+
+  // Handle edit button click - open edit modal
+  const handleEditPreferenceClick = (preference) => {
+    if (!preference) return;
+
+    setShowPreferenceInfoModal(false);
     setEditingPreference(preference);
     setPreferenceType(preference.preference_labels?.type || 'individual');
     setPreferenceTopic(preference.preference_labels?.topic || '');
@@ -420,38 +460,49 @@ export default function CalendarPage({ isDark, setIsDark }) {
       const userHasBooking = user && bookings.some(
         (b) => b.availability_id === slot.id && b.status !== 'cancelled' && b.user_id === user.id
       );
+      const isWebinar = slot.is_webinar === true;
 
       return {
         id: `availability-${slot.id}`,
-        title: `${slot.class_type === 'individual' ? 'Indywidualne' : 'Grupowe'} (${bookingCount}/${slot.max_participants})`,
+        title: isWebinar 
+          ? `Webinar (${bookingCount}/${slot.max_participants})`
+          : `${slot.class_type === 'individual' ? 'Indywidualne' : 'Grupowe'} (${bookingCount}/${slot.max_participants})`,
         start,
         end,
-        backgroundColor: userHasBooking
-          ? '#10b981' // green - user has booking
-          : isFull
-          ? '#ef4444' // red - full
-          : slot.class_type === 'individual'
-          ? '#3b82f6' // blue - individual available
-          : '#8b5cf6', // purple - group available
-        borderColor: userHasBooking
-          ? '#10b981'
-          : isFull
-          ? '#ef4444'
-          : slot.class_type === 'individual'
-          ? '#3b82f6'
-          : '#8b5cf6',
-      extendedProps: {
-        type: 'availability',
-        slot,
-        bookingCount,
-        isFull,
-        userHasBooking,
-        meetingLink: slot.meeting_link
-      }
+        backgroundColor: isWebinar
+          ? (userHasBooking
+              ? '#f59e0b' // orange/gold for webinar with booking
+              : '#f97316') // bright orange for webinar
+          : (userHasBooking
+              ? '#10b981' // green - user has booking
+              : isFull
+              ? '#ef4444' // red - full
+              : slot.class_type === 'individual'
+              ? '#3b82f6' // blue - individual available
+              : '#8b5cf6'), // purple - group available
+        borderColor: isWebinar
+          ? '#ea580c' // darker orange border for webinar
+          : (userHasBooking
+              ? '#10b981'
+              : isFull
+              ? '#ef4444'
+              : slot.class_type === 'individual'
+              ? '#3b82f6'
+              : '#8b5cf6'),
+        borderWidth: isWebinar ? '2px' : '1px',
+        extendedProps: {
+          type: 'availability',
+          slot,
+          bookingCount,
+          isFull,
+          userHasBooking,
+          meetingLink: slot.meeting_link,
+          isWebinar
+        }
       };
     });
 
-  // Prepare calendar events from user preferences
+  // Prepare calendar events from user preferences - group by time slot
   const preferenceEvents = React.useMemo(() => {
     if (!user || !preferences || preferences.length === 0) {
       return [];
@@ -459,46 +510,67 @@ export default function CalendarPage({ isDark, setIsDark }) {
 
     const currentUserId = String(user.id);
     
-    return preferences
-      .filter(pref => {
-        // Only show preferences for the current user if logged in
-        if (!pref.user_id) {
-          return false;
-        }
-        // Compare user IDs as strings to handle UUID comparison
-        const prefUserId = String(pref.user_id);
-        return prefUserId === currentUserId;
-      })
-      .map((pref) => {
-        // Ensure date and time are properly formatted
-        if (!pref.date || !pref.start_time || !pref.end_time) {
-          console.warn('Preference missing required fields:', pref);
-          return null;
-        }
-        
-        // Ensure time format is HH:mm (remove seconds if present)
-        const startTime = pref.start_time.substring(0, 5); // Get HH:mm from HH:mm:ss
-        const endTime = pref.end_time.substring(0, 5); // Get HH:mm from HH:mm:ss
-        
-        const start = `${pref.date}T${startTime}`;
-        const end = `${pref.date}T${endTime}`;
-        const labelName = pref.preference_labels?.name || 'Preferencja';
+    // Filter user preferences
+    const userPrefs = preferences.filter(pref => {
+      if (!pref.user_id) {
+        return false;
+      }
+      const prefUserId = String(pref.user_id);
+      return prefUserId === currentUserId;
+    });
 
-        return {
-          id: `preference-${pref.id}`,
-          title: labelName,
-          start,
-          end,
-          backgroundColor: '#fbbf24', // yellow/amber for preferences
-          borderColor: '#f59e0b',
-          display: 'block',
-          extendedProps: {
-            type: 'preference',
-            preference: pref
-          }
-        };
-      })
-      .filter(Boolean); // Remove any null entries
+    // Group preferences by date and time slot
+    const groupedPrefs = new Map();
+    
+    userPrefs.forEach((pref) => {
+      if (!pref.date || !pref.start_time || !pref.end_time) {
+        console.warn('Preference missing required fields:', pref);
+        return;
+      }
+      
+      const startTime = pref.start_time.substring(0, 5);
+      const endTime = pref.end_time.substring(0, 5);
+      const slotKey = `${pref.date}-${startTime}-${endTime}`;
+      
+      if (!groupedPrefs.has(slotKey)) {
+        groupedPrefs.set(slotKey, []);
+      }
+      groupedPrefs.get(slotKey).push(pref);
+    });
+
+    // Create events for each grouped slot
+    return Array.from(groupedPrefs.entries()).map(([slotKey, prefs]) => {
+      const firstPref = prefs[0];
+      const startTime = firstPref.start_time.substring(0, 5);
+      const endTime = firstPref.end_time.substring(0, 5);
+      
+      const start = `${firstPref.date}T${startTime}`;
+      const end = `${firstPref.date}T${endTime}`;
+      
+      // Collect all types and topics
+      const types = [...new Set(prefs.map(p => p.preference_labels?.type).filter(Boolean))];
+      const topics = [...new Set(prefs.map(p => p.preference_labels?.topic).filter(Boolean))];
+      
+      // Create title showing all options
+      const typeLabels = types.map(t => t === 'individual' ? 'Indywidualne' : 'Grupowe').join(', ');
+      const topicLabels = topics.join(', ');
+      const title = `${typeLabels}${topicLabels ? ` - ${topicLabels}` : ''}`;
+
+      return {
+        id: `preference-${slotKey}`,
+        title: title || 'Preferencja',
+        start,
+        end,
+        backgroundColor: '#fbbf24', // yellow/amber for preferences
+        borderColor: '#f59e0b',
+        display: 'block',
+        extendedProps: {
+          type: 'preference',
+          preference: firstPref, // Keep first preference for compatibility
+          allPreferences: prefs // Store all preferences for this slot
+        }
+      };
+    });
   }, [preferences, user]);
 
   // Combine events based on active tab
@@ -531,10 +603,12 @@ export default function CalendarPage({ isDark, setIsDark }) {
     const eventType = event.extendedProps?.type;
     
     if (eventType === 'preference') {
-      // Handle preference click - user can edit or delete
+      // Handle preference click - user can view their preferences
       const preference = event.extendedProps?.preference;
+      const allPreferences = event.extendedProps?.allPreferences || [preference];
       if (preference) {
-        handlePreferenceClick(preference);
+        // Use first preference but pass all preferences for this slot
+        handlePreferenceClick({ ...preference, allPreferences });
       }
       return;
     }
@@ -946,99 +1020,170 @@ export default function CalendarPage({ isDark, setIsDark }) {
                   if (filteredGroups.length === 0 && userGroups.length > 0) {
                     // Show all groups if filtering removed all (for debugging)
                     console.warn('All groups were filtered out, showing all groups anyway');
-                    return userGroups.map((group) => (
-                    <div
-                      key={group.id}
-                      className="bg-white dark:bg-DarkblackBorder rounded-lg shadow-sm border border-gray-200 dark:border-DarkblackText p-6"
-                    >
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-3 mb-3">
-                            <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center">
-                              <Hash className="w-5 h-5 text-white" />
+                    return userGroups.map((group) => {
+                      // Check if group date has passed
+                      const groupDateTime = new Date(`${group.date}T${group.end_time}`);
+                      const now = new Date();
+                      const isPast = groupDateTime < now;
+                      
+                      return (
+                      <div
+                        key={group.id}
+                        className={`rounded-lg shadow-sm border p-6 transition-all ${
+                          isPast
+                            ? 'bg-gray-200 dark:bg-gray-700 border-gray-300 dark:border-gray-600 opacity-70'
+                            : 'bg-white dark:bg-DarkblackBorder border-gray-200 dark:border-DarkblackText'
+                        }`}
+                      >
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-3 mb-3">
+                              <div className={`w-10 h-10 rounded-md flex items-center justify-center ${
+                                isPast
+                                  ? 'bg-gray-400 dark:bg-gray-600'
+                                  : 'bg-gradient-to-br from-indigo-500 to-purple-600'
+                              }`}>
+                                <Hash className="w-5 h-5 text-white" />
+                              </div>
+                              <div>
+                                <h3 className={`text-lg font-semibold ${
+                                  isPast
+                                    ? 'text-gray-500 dark:text-gray-400'
+                                    : 'text-gray-900 dark:text-white'
+                                }`}>
+                                  {group.name}
+                                </h3>
+                                <p className={`text-sm ${
+                                  isPast
+                                    ? 'text-gray-400 dark:text-gray-500'
+                                    : 'text-gray-600 dark:text-gray-400'
+                                }`}>
+                                  {group.class_type === 'individual' ? 'Zajęcia indywidualne' : 'Zajęcia grupowe'}
+                                </p>
+                              </div>
                             </div>
-                            <div>
-                              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                                {group.name}
-                              </h3>
-                              <p className="text-sm text-gray-600 dark:text-gray-400">
-                                {group.class_type === 'individual' ? 'Zajęcia indywidualne' : 'Zajęcia grupowe'}
-                              </p>
+                            
+                            <div className="space-y-2 mb-4">
+                              <div className={`flex items-center gap-2 text-sm ${
+                                isPast
+                                  ? 'text-gray-400 dark:text-gray-500'
+                                  : 'text-gray-600 dark:text-gray-400'
+                              }`}>
+                                <Calendar className="w-4 h-4" />
+                                <span>
+                                  {new Date(group.date).toLocaleDateString('pl-PL', {
+                                    weekday: 'long',
+                                    year: 'numeric',
+                                    month: 'long',
+                                    day: 'numeric'
+                                  })}
+                                </span>
+                              </div>
+                              <div className={`flex items-center gap-2 text-sm ${
+                                isPast
+                                  ? 'text-gray-400 dark:text-gray-500'
+                                  : 'text-gray-600 dark:text-gray-400'
+                              }`}>
+                                <Clock className="w-4 h-4" />
+                                <span>
+                                  {group.start_time.substring(0, 5)} - {group.end_time.substring(0, 5)}
+                                </span>
+                              </div>
+                              {group.description && (
+                                <div className={`mt-3 pt-3 border-t ${
+                                  isPast
+                                    ? 'border-gray-300 dark:border-gray-600'
+                                    : 'border-gray-200 dark:border-DarkblackText'
+                                }`}>
+                                  <p className={`text-sm ${
+                                    isPast
+                                      ? 'text-gray-400 dark:text-gray-500'
+                                      : 'text-gray-700 dark:text-gray-300'
+                                  }`}>
+                                    {group.description}
+                                  </p>
+                                </div>
+                              )}
                             </div>
                           </div>
                           
-                          <div className="space-y-2 mb-4">
-                            <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                              <Calendar className="w-4 h-4" />
-                              <span>
-                                {new Date(group.date).toLocaleDateString('pl-PL', {
-                                  weekday: 'long',
-                                  year: 'numeric',
-                                  month: 'long',
-                                  day: 'numeric'
-                                })}
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                              <Clock className="w-4 h-4" />
-                              <span>
-                                {group.start_time.substring(0, 5)} - {group.end_time.substring(0, 5)}
-                              </span>
-                            </div>
-                            {group.description && (
-                              <div className="mt-3 pt-3 border-t border-gray-200 dark:border-DarkblackText">
-                                <p className="text-sm text-gray-700 dark:text-gray-300">
-                                  {group.description}
-                                </p>
-                              </div>
-                            )}
-                          </div>
+                          {group.discord_link && (
+                            <button
+                              onClick={() => {
+                                if (isPast) return; // Prevent action if past
+                                let link = group.discord_link;
+                                // Add protocol if missing
+                                if (!link.startsWith('http://') && !link.startsWith('https://')) {
+                                  link = 'https://' + link;
+                                }
+                                window.open(link, '_blank', 'noopener,noreferrer');
+                              }}
+                              disabled={isPast}
+                              className={`ml-4 px-4 py-2 rounded-md font-medium flex items-center gap-2 transition-colors ${
+                                isPast
+                                  ? 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed opacity-60'
+                                  : 'bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white'
+                              }`}
+                            >
+                              <ExternalLink size={18} />
+                              Przejdź do Discord
+                            </button>
+                          )}
                         </div>
-                        
-                        {group.discord_link && (
-                          <button
-                            onClick={() => {
-                              let link = group.discord_link;
-                              // Add protocol if missing
-                              if (!link.startsWith('http://') && !link.startsWith('https://')) {
-                                link = 'https://' + link;
-                              }
-                              window.open(link, '_blank', 'noopener,noreferrer');
-                            }}
-                            className="ml-4 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white rounded-lg font-medium flex items-center gap-2 transition-colors"
-                          >
-                            <ExternalLink size={18} />
-                            Przejdź do Discord
-                          </button>
-                        )}
                       </div>
-                    </div>
-                  ));
+                      );
+                    });
                   }
                   
-                  return filteredGroups.map((group) => (
+                  return filteredGroups.map((group) => {
+                    // Check if group date has passed
+                    const groupDateTime = new Date(`${group.date}T${group.end_time}`);
+                    const now = new Date();
+                    const isPast = groupDateTime < now;
+                    
+                    return (
                     <div
                       key={group.id}
-                      className="bg-white dark:bg-DarkblackBorder rounded-lg shadow-sm border border-gray-200 dark:border-DarkblackText p-6"
+                      className={`rounded-lg shadow-sm border p-6 transition-all ${
+                        isPast
+                          ? 'bg-gray-200 dark:bg-gray-700 border-gray-300 dark:border-gray-600 opacity-70'
+                          : 'bg-white dark:bg-DarkblackBorder border-gray-200 dark:border-DarkblackText'
+                      }`}
                     >
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
                           <div className="flex items-center gap-3 mb-3">
-                            <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center">
+                            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                              isPast
+                                ? 'bg-gray-400 dark:bg-gray-600'
+                                : 'bg-gradient-to-br from-indigo-500 to-purple-600'
+                            }`}>
                               <Hash className="w-5 h-5 text-white" />
                             </div>
                             <div>
-                              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                              <h3 className={`text-lg font-semibold ${
+                                isPast
+                                  ? 'text-gray-500 dark:text-gray-400'
+                                  : 'text-gray-900 dark:text-white'
+                              }`}>
                                 {group.name}
                               </h3>
-                              <p className="text-sm text-gray-600 dark:text-gray-400">
+                              <p className={`text-sm ${
+                                isPast
+                                  ? 'text-gray-400 dark:text-gray-500'
+                                  : 'text-gray-600 dark:text-gray-400'
+                              }`}>
                                 {group.class_type === 'individual' ? 'Zajęcia indywidualne' : 'Zajęcia grupowe'}
                               </p>
                             </div>
                           </div>
                           
                           <div className="space-y-2 mb-4">
-                            <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                            <div className={`flex items-center gap-2 text-sm ${
+                              isPast
+                                ? 'text-gray-400 dark:text-gray-500'
+                                : 'text-gray-600 dark:text-gray-400'
+                            }`}>
                               <Calendar className="w-4 h-4" />
                               <span>
                                 {new Date(group.date).toLocaleDateString('pl-PL', {
@@ -1049,15 +1194,27 @@ export default function CalendarPage({ isDark, setIsDark }) {
                                 })}
                               </span>
                             </div>
-                            <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                            <div className={`flex items-center gap-2 text-sm ${
+                              isPast
+                                ? 'text-gray-400 dark:text-gray-500'
+                                : 'text-gray-600 dark:text-gray-400'
+                            }`}>
                               <Clock className="w-4 h-4" />
                               <span>
                                 {group.start_time.substring(0, 5)} - {group.end_time.substring(0, 5)}
                               </span>
                             </div>
                             {group.description && (
-                              <div className="mt-3 pt-3 border-t border-gray-200 dark:border-DarkblackText">
-                                <p className="text-sm text-gray-700 dark:text-gray-300">
+                              <div className={`mt-3 pt-3 border-t ${
+                                isPast
+                                  ? 'border-gray-300 dark:border-gray-600'
+                                  : 'border-gray-200 dark:border-DarkblackText'
+                              }`}>
+                                <p className={`text-sm ${
+                                  isPast
+                                    ? 'text-gray-400 dark:text-gray-500'
+                                    : 'text-gray-700 dark:text-gray-300'
+                                }`}>
                                   {group.description}
                                 </p>
                               </div>
@@ -1066,24 +1223,31 @@ export default function CalendarPage({ isDark, setIsDark }) {
                         </div>
                         
                         {group.discord_link && (
-                          <button
-                            onClick={() => {
-                              let link = group.discord_link;
-                              // Add protocol if missing
-                              if (!link.startsWith('http://') && !link.startsWith('https://')) {
-                                link = 'https://' + link;
-                              }
-                              window.open(link, '_blank', 'noopener,noreferrer');
-                            }}
-                            className="ml-4 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white rounded-lg font-medium flex items-center gap-2 transition-colors"
-                          >
-                            <ExternalLink size={18} />
-                            Przejdź do Discord
-                          </button>
-                        )}
+                            <button
+                              onClick={() => {
+                                if (isPast) return; // Prevent action if past
+                                let link = group.discord_link;
+                                // Add protocol if missing
+                                if (!link.startsWith('http://') && !link.startsWith('https://')) {
+                                  link = 'https://' + link;
+                                }
+                                window.open(link, '_blank', 'noopener,noreferrer');
+                              }}
+                              disabled={isPast}
+                              className={`ml-4 px-4 py-2 rounded-md font-medium flex items-center gap-2 transition-colors ${
+                                isPast
+                                  ? 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed opacity-60'
+                                  : 'bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white'
+                              }`}
+                            >
+                              <ExternalLink size={18} />
+                              Przejdź do Discord
+                            </button>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  ));
+                    );
+                  });
                 })()}
               </div>
             ) : (
@@ -1134,36 +1298,103 @@ export default function CalendarPage({ isDark, setIsDark }) {
                   </p>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Typ zajęć *
-                  </label>
-                  <select
-                    value={preferenceType}
-                    onChange={(e) => setPreferenceType(e.target.value)}
-                    className="w-full p-3 border border-gray-200 dark:border-DarkblackText rounded-lg focus:outline-none focus:ring-2 focus:ring-primaryBlue dark:focus:ring-primaryGreen text-sm dark:bg-DarkblackText dark:text-white"
-                    required
-                  >
-                    <option value="individual">Zajęcia indywidualne</option>
-                    <option value="group">Zajęcia grupowe</option>
-                  </select>
-                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Typ zajęć * (można wybrać wiele)
+                    </label>
+                    <div className="space-y-2 p-3 border border-gray-200 dark:border-DarkblackText rounded-lg bg-white dark:bg-DarkblackText">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={preferenceTypes.includes('individual')}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setPreferenceTypes([...preferenceTypes, 'individual']);
+                            } else {
+                              setPreferenceTypes(preferenceTypes.filter(t => t !== 'individual'));
+                            }
+                          }}
+                          className="w-4 h-4 text-primaryBlue dark:text-primaryGreen border-gray-300 rounded focus:ring-2 focus:ring-primaryBlue dark:focus:ring-primaryGreen"
+                        />
+                        <span className="text-sm text-gray-700 dark:text-gray-300">Zajęcia indywidualne</span>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={preferenceTypes.includes('group')}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setPreferenceTypes([...preferenceTypes, 'group']);
+                            } else {
+                              setPreferenceTypes(preferenceTypes.filter(t => t !== 'group'));
+                            }
+                          }}
+                          className="w-4 h-4 text-primaryBlue dark:text-primaryGreen border-gray-300 rounded focus:ring-2 focus:ring-primaryBlue dark:focus:ring-primaryGreen"
+                        />
+                        <span className="text-sm text-gray-700 dark:text-gray-300">Zajęcia grupowe</span>
+                      </label>
+                    </div>
+                    {preferenceTypes.length === 0 && (
+                      <p className="text-red-500 text-xs mt-1">Wybierz przynajmniej jeden typ zajęć</p>
+                    )}
+                  </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Temat *
-                  </label>
-                  <select
-                    value={preferenceTopic}
-                    onChange={(e) => setPreferenceTopic(e.target.value)}
-                    className="w-full p-3 border border-gray-200 dark:border-DarkblackText rounded-lg focus:outline-none focus:ring-2 focus:ring-primaryBlue dark:focus:ring-primaryGreen text-sm dark:bg-DarkblackText dark:text-white"
-                    required
-                  >
-                    <option value="">Wybierz temat</option>
-                    <option value="inf 0.3">inf 0.3</option>
-                    <option value="inf 0.4">inf 0.4</option>
-                    <option value="matura z informatyki">Matura z informatyki</option>
-                  </select>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Temat * (można wybrać wiele)
+                    </label>
+                    <div className="space-y-2 p-3 border border-gray-200 dark:border-DarkblackText rounded-lg bg-white dark:bg-DarkblackText">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={preferenceTopics.includes('inf 0.3')}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setPreferenceTopics([...preferenceTopics, 'inf 0.3']);
+                            } else {
+                              setPreferenceTopics(preferenceTopics.filter(t => t !== 'inf 0.3'));
+                            }
+                          }}
+                          className="w-4 h-4 text-primaryBlue dark:text-primaryGreen border-gray-300 rounded focus:ring-2 focus:ring-primaryBlue dark:focus:ring-primaryGreen"
+                        />
+                        <span className="text-sm text-gray-700 dark:text-gray-300">inf 0.3</span>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={preferenceTopics.includes('inf 0.4')}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setPreferenceTopics([...preferenceTopics, 'inf 0.4']);
+                            } else {
+                              setPreferenceTopics(preferenceTopics.filter(t => t !== 'inf 0.4'));
+                            }
+                          }}
+                          className="w-4 h-4 text-primaryBlue dark:text-primaryGreen border-gray-300 rounded focus:ring-2 focus:ring-primaryBlue dark:focus:ring-primaryGreen"
+                        />
+                        <span className="text-sm text-gray-700 dark:text-gray-300">inf 0.4</span>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={preferenceTopics.includes('matura z informatyki')}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setPreferenceTopics([...preferenceTopics, 'matura z informatyki']);
+                            } else {
+                              setPreferenceTopics(preferenceTopics.filter(t => t !== 'matura z informatyki'));
+                            }
+                          }}
+                          className="w-4 h-4 text-primaryBlue dark:text-primaryGreen border-gray-300 rounded focus:ring-2 focus:ring-primaryBlue dark:focus:ring-primaryGreen"
+                        />
+                        <span className="text-sm text-gray-700 dark:text-gray-300">Matura z informatyki</span>
+                      </label>
+                    </div>
+                    {preferenceTopics.length === 0 && (
+                      <p className="text-red-500 text-xs mt-1">Wybierz przynajmniej jeden temat</p>
+                    )}
+                  </div>
                 </div>
 
                 <div>
@@ -1398,6 +1629,110 @@ export default function CalendarPage({ isDark, setIsDark }) {
         </div>
       )}
 
+      {/* Preference Info Modal */}
+      {showPreferenceInfoModal && viewingPreference && (() => {
+        const allPrefs = viewingPreference.allPreferences || [viewingPreference];
+        
+        // Collect all unique types and topics
+        const selectedTypes = [...new Set(allPrefs.map(p => p.preference_labels?.type).filter(Boolean))];
+        const selectedTopics = [...new Set(allPrefs.map(p => p.preference_labels?.topic).filter(Boolean))];
+        const description = allPrefs[0]?.description; // Use description from first preference
+
+        return (
+          <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 animate-fadeIn p-4">
+            <div className="bg-white dark:bg-DarkblackBorder rounded-2xl shadow-xl w-full max-w-md animate-scaleIn">
+              <div className="p-6">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+                    Twoja preferencja
+                  </h3>
+                  <button
+                    onClick={() => {
+                      setShowPreferenceInfoModal(false);
+                      setViewingPreference(null);
+                    }}
+                    className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                  >
+                    <X className="w-6 h-6" />
+                  </button>
+                </div>
+
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Data i godzina:</p>
+                    <p className="font-medium text-gray-900 dark:text-white">
+                      {new Date(viewingPreference.date).toLocaleDateString('pl-PL', {
+                        weekday: 'long',
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      })}{' '}
+                      {viewingPreference.start_time.substring(0, 5)} - {viewingPreference.end_time.substring(0, 5)}
+                    </p>
+                  </div>
+
+                  <div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Typ zajęć:</p>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedTypes.map((type, idx) => (
+                        <span
+                          key={idx}
+                          className="px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-md text-sm font-medium"
+                        >
+                          {type === 'individual' ? 'Zajęcia indywidualne' : 'Zajęcia grupowe'}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Temat:</p>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedTopics.map((topic, idx) => (
+                        <span
+                          key={idx}
+                          className="px-3 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-md text-sm font-medium"
+                        >
+                          {topic}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  {description && (
+                    <div>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Opis:</p>
+                      <p className="font-medium text-gray-900 dark:text-white">
+                        {description}
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex justify-end gap-3 mt-6">
+                  <button
+                    onClick={() => {
+                      setShowPreferenceInfoModal(false);
+                      setViewingPreference(null);
+                    }}
+                    className="px-4 py-2 border border-gray-200 dark:border-DarkblackText text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-DarkblackText transition"
+                  >
+                    Zamknij
+                  </button>
+                  <button
+                    onClick={() => handleEditPreferenceClick(viewingPreference)}
+                    className="px-4 py-2 bg-primaryBlue dark:bg-primaryGreen text-white rounded-lg hover:opacity-90 transition flex items-center gap-2"
+                  >
+                    <Edit className="w-4 h-4" />
+                    Edytuj
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
       {/* Edit Preference Modal */}
       {showEditPreferenceModal && editingPreference && selectedTimeRange && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 animate-fadeIn p-4">
@@ -1439,34 +1774,99 @@ export default function CalendarPage({ isDark, setIsDark }) {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Typ zajęć *
+                    Typ zajęć * (można wybrać wiele)
                   </label>
-                  <select
-                    value={preferenceType}
-                    onChange={(e) => setPreferenceType(e.target.value)}
-                    className="w-full p-3 border border-gray-200 dark:border-DarkblackText rounded-lg focus:outline-none focus:ring-2 focus:ring-primaryBlue dark:focus:ring-primaryGreen text-sm dark:bg-DarkblackText dark:text-white"
-                    required
-                  >
-                    <option value="individual">Zajęcia indywidualne</option>
-                    <option value="group">Zajęcia grupowe</option>
-                  </select>
+                  <div className="space-y-2 p-3 border border-gray-200 dark:border-DarkblackText rounded-lg bg-white dark:bg-DarkblackText">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={preferenceTypes.includes('individual')}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setPreferenceTypes([...preferenceTypes, 'individual']);
+                          } else {
+                            setPreferenceTypes(preferenceTypes.filter(t => t !== 'individual'));
+                          }
+                        }}
+                        className="w-4 h-4 text-primaryBlue dark:text-primaryGreen border-gray-300 rounded focus:ring-2 focus:ring-primaryBlue dark:focus:ring-primaryGreen"
+                      />
+                      <span className="text-sm text-gray-700 dark:text-gray-300">Zajęcia indywidualne</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={preferenceTypes.includes('group')}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setPreferenceTypes([...preferenceTypes, 'group']);
+                          } else {
+                            setPreferenceTypes(preferenceTypes.filter(t => t !== 'group'));
+                          }
+                        }}
+                        className="w-4 h-4 text-primaryBlue dark:text-primaryGreen border-gray-300 rounded focus:ring-2 focus:ring-primaryBlue dark:focus:ring-primaryGreen"
+                      />
+                      <span className="text-sm text-gray-700 dark:text-gray-300">Zajęcia grupowe</span>
+                    </label>
+                  </div>
+                  {preferenceTypes.length === 0 && (
+                    <p className="text-red-500 text-xs mt-1">Wybierz przynajmniej jeden typ zajęć</p>
+                  )}
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Temat *
+                    Temat * (można wybrać wiele)
                   </label>
-                  <select
-                    value={preferenceTopic}
-                    onChange={(e) => setPreferenceTopic(e.target.value)}
-                    className="w-full p-3 border border-gray-200 dark:border-DarkblackText rounded-lg focus:outline-none focus:ring-2 focus:ring-primaryBlue dark:focus:ring-primaryGreen text-sm dark:bg-DarkblackText dark:text-white"
-                    required
-                  >
-                    <option value="">Wybierz temat</option>
-                    <option value="inf 0.3">inf 0.3</option>
-                    <option value="inf 0.4">inf 0.4</option>
-                    <option value="matura z informatyki">Matura z informatyki</option>
-                  </select>
+                  <div className="space-y-2 p-3 border border-gray-200 dark:border-DarkblackText rounded-lg bg-white dark:bg-DarkblackText">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={preferenceTopics.includes('inf 0.3')}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setPreferenceTopics([...preferenceTopics, 'inf 0.3']);
+                          } else {
+                            setPreferenceTopics(preferenceTopics.filter(t => t !== 'inf 0.3'));
+                          }
+                        }}
+                        className="w-4 h-4 text-primaryBlue dark:text-primaryGreen border-gray-300 rounded focus:ring-2 focus:ring-primaryBlue dark:focus:ring-primaryGreen"
+                      />
+                      <span className="text-sm text-gray-700 dark:text-gray-300">inf 0.3</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={preferenceTopics.includes('inf 0.4')}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setPreferenceTopics([...preferenceTopics, 'inf 0.4']);
+                          } else {
+                            setPreferenceTopics(preferenceTopics.filter(t => t !== 'inf 0.4'));
+                          }
+                        }}
+                        className="w-4 h-4 text-primaryBlue dark:text-primaryGreen border-gray-300 rounded focus:ring-2 focus:ring-primaryBlue dark:focus:ring-primaryGreen"
+                      />
+                      <span className="text-sm text-gray-700 dark:text-gray-300">inf 0.4</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={preferenceTopics.includes('matura z informatyki')}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setPreferenceTopics([...preferenceTopics, 'matura z informatyki']);
+                          } else {
+                            setPreferenceTopics(preferenceTopics.filter(t => t !== 'matura z informatyki'));
+                          }
+                        }}
+                        className="w-4 h-4 text-primaryBlue dark:text-primaryGreen border-gray-300 rounded focus:ring-2 focus:ring-primaryBlue dark:focus:ring-primaryGreen"
+                      />
+                      <span className="text-sm text-gray-700 dark:text-gray-300">Matura z informatyki</span>
+                    </label>
+                  </div>
+                  {preferenceTopics.length === 0 && (
+                    <p className="text-red-500 text-xs mt-1">Wybierz przynajmniej jeden temat</p>
+                  )}
                 </div>
 
                 <div>

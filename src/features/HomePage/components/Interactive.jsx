@@ -7,7 +7,7 @@ import SectionHeading from '../../../components/typography/SectionHeading';
 
 function Stats({ Title, Description }) {
   return (
-    <li className="flex flex-col gap-2 bg-secondaryBlue/25 rounded-[12px] border border-secondaryBlue/50 p-4 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+    <li className="flex flex-col gap-2 bg-secondaryBlue/25 rounded-lg border border-secondaryBlue/50 p-4 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
       <p className="text-m md:text-lg md:font-semibold">{Title}</p>
       <p className="opacity-75 text-sm md:max-w-[200px] md:w-full">
         {Description}

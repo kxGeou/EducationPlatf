@@ -1,13 +1,7 @@
-import { Viewer, Worker } from '@react-pdf-viewer/core';
-import { defaultLayoutPlugin } from '@react-pdf-viewer/default-layout';
-import '@react-pdf-viewer/core/lib/styles/index.css';
-import '@react-pdf-viewer/default-layout/lib/styles/index.css';
 import { useState } from 'react';
 
 function EbookViewerPanel({ ebook }) {
   const [pdfError, setPdfError] = useState(false);
-  
-  const defaultLayoutPluginInstance = defaultLayoutPlugin();
 
   if (!ebook?.pdf_url) {
     return (
@@ -20,6 +14,9 @@ function EbookViewerPanel({ ebook }) {
       </div>
     );
   }
+
+  // Dodajemy parametry do URL aby ukryć toolbar i wyłączyć pobieranie/drukowanie
+  const pdfUrl = `${ebook.pdf_url}#toolbar=0&navpanes=0&scrollbar=1`;
 
   return (
     <div className="w-full h-full flex flex-col">
@@ -42,18 +39,16 @@ function EbookViewerPanel({ ebook }) {
             </div>
           </div>
         ) : (
-          <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js">
-            <div style={{ height: '100%', width: '100%' }}>
-              <Viewer
-                fileUrl={ebook.pdf_url}
-                plugins={[defaultLayoutPluginInstance]}
-                onLoadError={(error) => {
-                  console.error('PDF load error:', error);
-                  setPdfError(true);
-                }}
-              />
-            </div>
-          </Worker>
+          <iframe
+            src={pdfUrl}
+            className="w-full h-full"
+            title={ebook.title}
+            onError={() => {
+              console.error('PDF load error');
+              setPdfError(true);
+            }}
+            style={{ border: 'none' }}
+          />
         )}
       </div>
     </div>
@@ -61,11 +56,6 @@ function EbookViewerPanel({ ebook }) {
 }
 
 export default EbookViewerPanel;
-
-
-
-
-
 
 
 

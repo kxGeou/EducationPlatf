@@ -4,8 +4,8 @@ import useWindowWidth from "../hooks/useWindowWidth";
 import { useAuthStore } from "../store/authStore";
 import { motion, AnimatePresence } from "framer-motion";
 // DEV: Calendar import - odkomentuj na development, zakomentuj na main
-import { Menu, User, X, Sun, Moon, ChevronDown } from "lucide-react";
-// import { Menu, User, X, Sun, Moon, ChevronDown, Calendar } from "lucide-react";
+// import { Menu, User, X, Sun, Moon, ChevronDown } from "lucide-react";
+import { Menu, User, X, Sun, Moon, ChevronDown, Calendar } from "lucide-react";
 // DEV: END Calendar import
 import React, { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
@@ -36,7 +36,7 @@ function Header({ setIsDark, isDark }) {
 
   return (
     <header className="fixed top-6 left-1/2 transform -translate-x-1/2 w-full max-w-[1100px] text-darkerBlack flex flex-col px-4 justify-center z-50">
-      <div className="bg-slate-950/35 border dark:bg-slate-600/50 border-slate-500/25 backdrop-blur-md w-full py-2.5 px-4 rounded-[12px] flex justify-between items-center shadow-lg">
+      <div className="bg-slate-950/35 border dark:bg-slate-600/50 border-slate-500/25 backdrop-blur-md w-full py-2.5 px-4 rounded-lg flex justify-between items-center shadow-lg">
         <Link to="/" aria-label="Strona główna – Platforma edukacyjna Informatyka">
           <img
             src={width > 850 ? DesktopLogo : MobileDesktop}
@@ -123,7 +123,7 @@ function Header({ setIsDark, isDark }) {
               <li>
                 <Link 
                   to="/exam" 
-                  className={`px-2.5 py-1.5 rounded-lg transition-all duration-200 text-sm ${
+                  className={`px-2.5 py-1.5 rounded-md transition-all duration-200 text-sm ${
                     isActive('/exam')
                       ? 'bg-white/15 text-white font-medium'
                       : 'hover:bg-white/10 hover:text-gray-200'
@@ -135,7 +135,7 @@ function Header({ setIsDark, isDark }) {
               <li>
                 <Link 
                   to="/contact" 
-                  className={`px-2.5 py-1.5 rounded-lg transition-all duration-200 text-sm ${
+                  className={`px-2.5 py-1.5 rounded-md transition-all duration-200 text-sm ${
                     isActive('/contact')
                       ? 'bg-white/15 text-white font-medium'
                       : 'hover:bg-white/10 hover:text-gray-200'
@@ -159,10 +159,10 @@ function Header({ setIsDark, isDark }) {
               </li> */}
               {/* DEV: END Blog link */}
               {/* DEV: TestResources link - odkomentuj na development, zakomentuj na main */}
-              {/* <li>
+              <li>
                 <Link 
                   to="/zasoby" 
-                  className={`px-2.5 py-1.5 rounded-lg transition-all duration-200 text-sm ${
+                  className={`px-2.5 py-1.5 rounded-md transition-all duration-200 text-sm ${
                     isActive('/zasoby')
                       ? 'bg-white/15 text-white font-medium'
                       : 'hover:bg-white/10 hover:text-gray-200'
@@ -170,21 +170,21 @@ function Header({ setIsDark, isDark }) {
                 >
                   Arkusze
                 </Link>
-              </li> */}
+              </li>
               {/* DEV: END TestResources link */}
 
               {/* DEV: Calendar Button - odkomentuj na development, zakomentuj na main */}
-              {/* <li>
+              <li>
                 <Link
                   to="/calendar"
-                  className={`flex items-center gap-1.5 bg-gradient-to-r from-primaryBlue to-secondaryBlue px-3 py-1.5 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg hover:scale-105 text-sm ${
+                  className={`flex items-center gap-1.5 bg-gradient-to-r from-primaryBlue to-secondaryBlue px-3 py-1.5 rounded-md transition-all duration-200 shadow-md hover:shadow-lg hover:scale-105 text-sm ${
                     isActive('/calendar') ? 'ring-2 ring-white/30' : ''
                   }`}
                 >
                   <Calendar size={16} aria-hidden="true" />
                   <span className="font-medium">Kalendarz</span>
                 </Link>
-              </li> */}
+              </li>
               {/* DEV: END Calendar Button */}
 
               {/* User Button */}
@@ -192,7 +192,7 @@ function Header({ setIsDark, isDark }) {
                 <li>
                   <Link
                     to="/user_page"
-                    className="flex items-center gap-1.5 bg-gradient-to-r to-primaryGreen from-secondaryGreen px-3 py-1.5 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg hover:scale-105 text-sm font-medium"
+                    className="flex items-center gap-1.5 bg-gradient-to-r to-primaryGreen from-secondaryGreen px-3 py-1.5 rounded-md transition-all duration-200 shadow-md hover:shadow-lg hover:scale-105 text-sm font-medium"
                   >
                     <span>Moje kursy</span>
                     <User size={16} aria-hidden="true" />
@@ -252,7 +252,7 @@ function Header({ setIsDark, isDark }) {
             transition={{ duration: 0.3, ease: "easeInOut" }}
             className="overflow-hidden mt-2 w-full"
           >
-            <nav className="bg-slate-950/35 border border-slate-500/25 backdrop-blur-lg rounded-[12px] px-6 py-4 text-white shadow-lg">
+            <nav className="bg-slate-950/35 border border-slate-500/25 backdrop-blur-lg rounded-lg px-6 py-4 text-white shadow-lg">
               <ul className="flex flex-col gap-2 items-stretch text-white">
                 {/* DEV: Kursy Dropdown (mobile) - odkomentuj na development, zakomentuj na main */}
                 {/* <li>
@@ -307,7 +307,7 @@ function Header({ setIsDark, isDark }) {
                 <li>
                   <Link 
                     to="/exam" 
-                    className={`block px-3 py-2.5 rounded-lg transition-colors duration-200 ${
+                    className={`block px-3 py-2.5 rounded-md transition-colors duration-200 ${
                       isActive('/exam')
                         ? 'bg-white/15 font-medium'
                         : 'hover:bg-white/10'
@@ -320,7 +320,7 @@ function Header({ setIsDark, isDark }) {
                 <li>
                   <Link 
                     to="/contact" 
-                    className={`block px-3 py-2.5 rounded-lg transition-colors duration-200 ${
+                    className={`block px-3 py-2.5 rounded-md transition-colors duration-200 ${
                       isActive('/contact')
                         ? 'bg-white/15 font-medium'
                         : 'hover:bg-white/10'
@@ -346,10 +346,10 @@ function Header({ setIsDark, isDark }) {
                 </li> */}
                 {/* DEV: END Blog link (mobile) */}
                 {/* DEV: TestResources link (mobile) - odkomentuj na development, zakomentuj na main */}
-                {/* <li>
+                <li>
                   <Link 
                     to="/zasoby" 
-                    className={`block px-3 py-2.5 rounded-lg transition-colors duration-200 ${
+                    className={`block px-3 py-2.5 rounded-md transition-colors duration-200 ${
                       isActive('/zasoby')
                         ? 'bg-white/15 font-medium'
                         : 'hover:bg-white/10'
@@ -358,20 +358,20 @@ function Header({ setIsDark, isDark }) {
                   >
                     Arkusze
                   </Link>
-                </li> */}
+                </li>
                 {/* DEV: END TestResources link (mobile) */}
 
                 {/* DEV: Calendar Button (mobile) - odkomentuj na development, zakomentuj na main */}
-                {/* <li className="pt-1">
+                <li className="pt-1">
                   <Link
                     to="/calendar"
-                    className="flex items-center justify-center gap-2 w-full bg-gradient-to-r from-primaryBlue to-secondaryBlue px-4 py-2.5 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg font-medium"
+                    className="flex items-center justify-center gap-2 w-full bg-gradient-to-r from-primaryBlue to-secondaryBlue px-4 py-2.5 rounded-md transition-all duration-200 shadow-md hover:shadow-lg font-medium"
                     onClick={() => setVisibleModal(false)}
                   >
                     <Calendar size={18} aria-hidden="true" />
                     Kalendarz
                   </Link>
-                </li> */}
+                </li>
                 {/* DEV: END Calendar Button (mobile) */}
 
                 {/* User Button */}
@@ -379,7 +379,7 @@ function Header({ setIsDark, isDark }) {
                   <li>
                     <Link
                       to="/user_page"
-                      className="flex items-center justify-center gap-2 w-full bg-gradient-to-r to-primaryGreen from-secondaryGreen px-4 py-2.5 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg font-medium"
+                      className="flex items-center justify-center gap-2 w-full bg-gradient-to-r to-primaryGreen from-secondaryGreen px-4 py-2.5 rounded-md transition-all duration-200 shadow-md hover:shadow-lg font-medium"
                       onClick={() => setVisibleModal(false)}
                     >
                       <span>Moje kursy</span>
