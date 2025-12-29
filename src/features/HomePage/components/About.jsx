@@ -1,23 +1,56 @@
 import Description from '../../../components/typography/Description';
 import Heading2 from '../../../components/typography/Heading2';
 import SectionHeading from '../../../components/typography/SectionHeading';
-import { motion, useAnimation } from "framer-motion";
-import React, { useEffect } from "react";
-import { useInView } from "react-intersection-observer";
+import { motion } from "framer-motion";
+import React from "react";
 import Turek from '../../../assets/routerRobot.svg';
 
 function About() {
-  const controls = useAnimation();
-  const [ref, inView] = useInView({ triggerOnce: true, threshold: 0.2 });
 
+  const leftVariants = {
+    hidden: { opacity: 0, x: -50 },
+    visible: {
+      opacity: 1,
+      x: 0,
+      transition: {
+        duration: 0.6,
+        ease: "easeOut",
+      },
+    },
+  };
+
+  const rightVariants = {
+    hidden: { opacity: 0, x: 50 },
+    visible: {
+      opacity: 1,
+      x: 0,
+      transition: {
+        duration: 0.6,
+        ease: "easeOut",
+      },
+    },
+  };
 
   return (
-    <div
-      ref={ref}
+    <motion.div
       aria-labelledby="about-heading"
       className="w-full mt-26 px-4 py-8 flex flex-col md:flex-row md:justify-between md:mb-16 items-center"
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, amount: 0.2 }}
+      variants={{
+        hidden: {},
+        visible: {
+          transition: {
+            staggerChildren: 0.2,
+          },
+        },
+      }}
     >
-      <div className="lg:flex md:flex-col md:w-[500px]">
+      <motion.div 
+        className="lg:flex md:flex-col md:w-[500px]"
+        variants={leftVariants}
+      >
         <SectionHeading
           textColor={"text-secondaryBlue dark:text-secondaryGreen"}
         >
@@ -43,16 +76,17 @@ function About() {
             ścieżka bez zbędnej teorii i stresu – z gwarancją efektów.
           </Description>
         </div>
-      </div>
+      </motion.div>
 
-      <img
+      <motion.img
         src={Turek}
         alt="Ilustracja – robot z routerem symbolizujący naukę informatyki"
         className="w-[45%] hidden md:flex"
         width="400"
         height="400"
+        variants={rightVariants}
       />
-    </div>
+    </motion.div>
   );
 }
 

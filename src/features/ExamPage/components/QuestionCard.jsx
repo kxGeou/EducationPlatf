@@ -7,7 +7,7 @@ export default function QuestionCard({ q , isDark}) {
 
   return (
     <div className="mb-16 w-full">
-      <h3 className="font-bold mb-4 text-xl bg-white dark:bg-DarkblackBorder dark:text-white text-blackText p-5 shadow rounded-[12px]">
+      <h3 className="font-bold mb-4 text-xl bg-white dark:bg-DarkblackBorder dark:text-white text-blackText p-5 shadow rounded-lg">
         {q.prompt}
       </h3>
       <div className="space-y-3 w-full ">
@@ -21,7 +21,7 @@ export default function QuestionCard({ q , isDark}) {
           return (
             <label
               key={choiceId}
-              className={`flex items-center transition-colors duration-150  dark:text-white p-3 rounded-xl shadow-sm cursor-pointer ${
+              className={`flex items-center transition-colors duration-150  dark:text-white p-3 rounded-lg shadow-sm cursor-pointer ${
                 answers[q.id]?.choiceId === choiceId ? "text-white bg-secondaryBlue dark:bg-primaryGreen" : "border-gray-200 bg-white dark:bg-DarkblackBorder"
               }`}
             >
@@ -31,7 +31,11 @@ export default function QuestionCard({ q , isDark}) {
                 onChange={() => answerQuestion(q, { id: choiceId, is_correct: isCorrect })}
                 className="mr-3 accent-primaryBlue dark:accent-primaryGreen"
               />
-              <span className="font-medium mr-2 text-blackText dark:text-white ">{choiceLabel}.</span>
+              <span className={`font-medium mr-2 ${
+                answers[q.id]?.choiceId === choiceId 
+                  ? "text-white" 
+                  : "text-blackText dark:text-white"
+              }`}>{choiceLabel}.</span>
               <span>{choiceText}</span>
             </label>
           );

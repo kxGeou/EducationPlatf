@@ -10,12 +10,71 @@ function EbookInfoPanel({ ebook }) {
 
         <div className="flex flex-col md:flex-row gap-8">
           {ebook.image_url && (
-            <img 
-              src={ebook.image_url} 
-              alt={ebook.title} 
-              className="rounded-[10px] max-w-md" 
-              loading="lazy"
-            />
+            <div 
+              className="relative"
+              onContextMenu={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+                return false;
+              }}
+              onDragStart={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+              }}
+              style={{
+                userSelect: 'none',
+                WebkitUserSelect: 'none',
+                MozUserSelect: 'none',
+                msUserSelect: 'none'
+              }}
+            >
+              <img 
+                src={ebook.image_url} 
+                alt={ebook.title} 
+                className="rounded-[10px] max-w-md pointer-events-none select-none" 
+                loading="lazy"
+                draggable="false"
+                onContextMenu={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  return false;
+                }}
+                onDragStart={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  return false;
+                }}
+                style={{
+                  userSelect: 'none',
+                  WebkitUserSelect: 'none',
+                  MozUserSelect: 'none',
+                  msUserSelect: 'none',
+                  pointerEvents: 'none',
+                  WebkitTouchCallout: 'none'
+                }}
+              />
+              {/* Przezroczysty overlay blokujący interakcje */}
+              <div 
+                className="absolute inset-0 cursor-not-allowed"
+                style={{
+                  pointerEvents: 'auto',
+                  zIndex: 10
+                }}
+                onContextMenu={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  e.stopImmediatePropagation();
+                  return false;
+                }}
+                onDragStart={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  return false;
+                }}
+              />
+            </div>
           )}
           <div className="flex flex-col gap-4">
             <div className="flex flex-col">

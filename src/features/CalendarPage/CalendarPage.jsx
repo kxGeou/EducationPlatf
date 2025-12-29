@@ -646,43 +646,13 @@ export default function CalendarPage({ isDark, setIsDark }) {
 
   return (
     <PageLayout isDark={isDark} setIsDark={setIsDark} from="#5e91ff" fromDark="#15316b" stopAt="30%">
-      <div className="w-full max-w-7xl mx-auto mt-24 mb-12">
+      <div className="w-full max-w-7xl mx-auto mt-32 mb-12">
         {/* Header */}
         <div className="mb-8">
           <div className="flex flex-col gap-4">
             <h1 className="text-lg font-semibold text-gray-900 dark:text-white">
               Kalendarz zajęć
             </h1>
-            {user && (
-              <button
-                onClick={() => {
-                  if (activeTab === 'preferences') {
-                    // Open preference modal by setting a default time range
-                    const now = new Date();
-                    const tomorrow = new Date(now);
-                    tomorrow.setDate(tomorrow.getDate() + 1);
-                    tomorrow.setHours(9, 0, 0, 0);
-                    const endTime = new Date(tomorrow);
-                    endTime.setHours(10, 0, 0, 0);
-                    
-                    setSelectedTimeRange({
-                      date: tomorrow.toISOString().split('T')[0],
-                      startTime: '09:00',
-                      endTime: '10:00',
-                      start: tomorrow,
-                      end: endTime
-                    });
-                    setShowPreferenceModal(true);
-                  } else {
-                    // Switch to preferences tab
-                    setActiveTab('preferences');
-                  }
-                }}
-                className="px-4 py-2.5 bg-primaryBlue dark:bg-primaryGreen text-white rounded-md shadow-sm max-w-[300px] transition-opacity hover:opacity-90"
-              >
-                Dodaj preferencję czasową
-              </button>
-            )}
           </div>
         </div>
 

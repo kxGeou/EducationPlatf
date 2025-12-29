@@ -4,8 +4,8 @@ import useWindowWidth from "../hooks/useWindowWidth";
 import { useAuthStore } from "../store/authStore";
 import { motion, AnimatePresence } from "framer-motion";
 // DEV: Calendar import - odkomentuj na development, zakomentuj na main
-// import { Menu, User, X, Sun, Moon, ChevronDown } from "lucide-react";
-import { Menu, User, X, Sun, Moon, ChevronDown, Calendar } from "lucide-react";
+import { Menu, User, X, Sun, Moon, ChevronDown } from "lucide-react";
+// import { Menu, User, X, Sun, Moon, ChevronDown, Calendar } from "lucide-react";
 // DEV: END Calendar import
 import React, { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
@@ -35,7 +35,12 @@ function Header({ setIsDark, isDark }) {
   ];
 
   return (
-    <header className="fixed top-6 left-1/2 transform -translate-x-1/2 w-full max-w-[1100px] text-darkerBlack flex flex-col px-4 justify-center z-50">
+    <motion.header 
+      className="fixed top-6 left-1/2 transform -translate-x-1/2 w-full max-w-[1100px] text-darkerBlack flex flex-col px-4 justify-center z-50"
+      initial={{ opacity: 0, y: -50 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
+    >
       <div className="bg-slate-950/35 border dark:bg-slate-600/50 border-slate-500/25 backdrop-blur-md w-full py-2.5 px-4 rounded-lg flex justify-between items-center shadow-lg">
         <Link to="/" aria-label="Strona główna – Platforma edukacyjna Informatyka">
           <img
@@ -122,6 +127,18 @@ function Header({ setIsDark, isDark }) {
               {/* Navigation Links */}
               <li>
                 <Link 
+                  to="/ebooks" 
+                  className={`px-2.5 py-1.5 rounded-md transition-all duration-200 text-sm ${
+                    isActive('/ebooks')
+                      ? 'bg-white/15 text-white font-medium'
+                      : 'hover:bg-white/10 hover:text-gray-200'
+                  }`}
+                >
+                  Ebooki
+                </Link>
+              </li>
+              <li>
+                <Link 
                   to="/exam" 
                   className={`px-2.5 py-1.5 rounded-md transition-all duration-200 text-sm ${
                     isActive('/exam')
@@ -174,7 +191,7 @@ function Header({ setIsDark, isDark }) {
               {/* DEV: END TestResources link */}
 
               {/* DEV: Calendar Button - odkomentuj na development, zakomentuj na main */}
-              <li>
+              {/* <li>
                 <Link
                   to="/calendar"
                   className={`flex items-center gap-1.5 bg-gradient-to-r from-primaryBlue to-secondaryBlue px-3 py-1.5 rounded-md transition-all duration-200 shadow-md hover:shadow-lg hover:scale-105 text-sm ${
@@ -184,7 +201,7 @@ function Header({ setIsDark, isDark }) {
                   <Calendar size={16} aria-hidden="true" />
                   <span className="font-medium">Kalendarz</span>
                 </Link>
-              </li>
+              </li> */}
               {/* DEV: END Calendar Button */}
 
               {/* User Button */}
@@ -306,6 +323,19 @@ function Header({ setIsDark, isDark }) {
                 {/* Navigation Links */}
                 <li>
                   <Link 
+                    to="/ebooks" 
+                    className={`block px-3 py-2.5 rounded-md transition-colors duration-200 ${
+                      isActive('/ebooks')
+                        ? 'bg-white/15 font-medium'
+                        : 'hover:bg-white/10'
+                    }`}
+                    onClick={() => setVisibleModal(false)}
+                  >
+                    Ebooki
+                  </Link>
+                </li>
+                <li>
+                  <Link 
                     to="/exam" 
                     className={`block px-3 py-2.5 rounded-md transition-colors duration-200 ${
                       isActive('/exam')
@@ -362,7 +392,7 @@ function Header({ setIsDark, isDark }) {
                 {/* DEV: END TestResources link (mobile) */}
 
                 {/* DEV: Calendar Button (mobile) - odkomentuj na development, zakomentuj na main */}
-                <li className="pt-1">
+                {/* <li className="pt-1">
                   <Link
                     to="/calendar"
                     className="flex items-center justify-center gap-2 w-full bg-gradient-to-r from-primaryBlue to-secondaryBlue px-4 py-2.5 rounded-md transition-all duration-200 shadow-md hover:shadow-lg font-medium"
@@ -371,7 +401,7 @@ function Header({ setIsDark, isDark }) {
                     <Calendar size={18} aria-hidden="true" />
                     Kalendarz
                   </Link>
-                </li>
+                </li> */}
                 {/* DEV: END Calendar Button (mobile) */}
 
                 {/* User Button */}
@@ -402,7 +432,7 @@ function Header({ setIsDark, isDark }) {
           </motion.div>
         )}
       </AnimatePresence>
-    </header>
+    </motion.header>
   );
 }
 

@@ -53,7 +53,7 @@ function Navigation({
       <nav
         className={`hidden md:block ${
           isOpen ? "w-1/6" : "w-[4rem]"
-        } bg-white dark:bg-DarkblackBorder text-blackText dark:text-white shadow-md p-4 rounded-[12px] min-h-[99vh] max-h-[99vh] sticky top-1 transition-all duration-300`}
+        } bg-white dark:bg-DarkblackBorder text-blackText dark:text-white shadow-md p-4 rounded-[12px] h-full sticky top-1 transition-all duration-300`}
       >
         {isOpen && (
           <div className="flex flex-col w-full h-full justify-between transition-all duration-200">
@@ -366,9 +366,9 @@ function Navigation({
               </div>
             </div>
             <div>
-              <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-4 items-center">
                 <div
-                  className="flex gap-4 items-center cursor-pointer"
+                  className="cursor-pointer"
                   onClick={() => setActivePage("profile")}
                   aria-label="Otwórz profil użytkownika"
                   role="button"
@@ -385,15 +385,6 @@ function Navigation({
                     variant="beam"
                     size={30}
                   />
-                  <div className="flex flex-col items-start">
-                    <span className="opacity-85 text-sm">
-                      {user?.user_metadata?.full_name || "Użytkownik"}
-                    </span>
-                    <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
-                      <Star size={12} className="text-yellow-500" />
-                      {userPoints || 0} pkt
-                    </span>
-                  </div>
                 </div>
                 <span
                   onClick={() => {

@@ -1,5 +1,6 @@
 import { Star } from "lucide-react";
 import { useState } from "react";
+import { motion } from "framer-motion";
 
 function Review({ user, description, rating }) {
   const maxStars = 5;
@@ -7,7 +8,7 @@ function Review({ user, description, rating }) {
   return (
     <div className="w-full h-full shadow-lg rounded-lg p-5 flex flex-col gap-3 dark:text-white dark:bg-DarkblackText bg-white transition overflow-hidden">
       <div className="flex gap-3 items-center">
-        <span className="w-12 h-12 bg-darkBlue rounded-full dark:bg-primaryGreen shrink-0"></span>
+        <span className="w-10 h-10 bg-darkBlue rounded-md dark:bg-primaryGreen shrink-0"></span>
         <div className="flex flex-col">
           <p className="text-base font-semibold break-words">{user}</p>
           <div className="flex gap-[2px] mt-1">
@@ -99,17 +100,45 @@ export default function Reviews() {
           Opinie
         </h2>
       </div>
-      <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
+      <motion.ul
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full"
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.2 }}
+        variants={{
+          hidden: { opacity: 0 },
+          visible: {
+            opacity: 1,
+            transition: {
+              staggerChildren: 0.15,
+              delayChildren: 0.1,
+            },
+          },
+        }}
+      >
         {displayedReviews.map((r, index) => (
-          <li key={index} className="w-full h-full">
+          <motion.li
+            key={index}
+            className="w-full h-full"
+            variants={{
+              hidden: { opacity: 0 },
+              visible: {
+                opacity: 1,
+                transition: {
+                  duration: 0.5,
+                  ease: "easeOut",
+                },
+              },
+            }}
+          >
             <Review
               user={r.user}
               description={r.description}
               rating={r.rating}
             />
-          </li>
+          </motion.li>
         ))}
-      </ul>
+      </motion.ul>
 
       {hasMore && (
         <button 

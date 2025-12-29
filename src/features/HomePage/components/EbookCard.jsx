@@ -33,13 +33,8 @@ export default function EbookCard({ ebook }) {
   }, [ebook]);
 
   function handleClick() {
-    // Jeśli ebook ma course_id, przekieruj do kursu z panelem shop i zakładką ebooków
-    if (courseId) {
-      navigate(`/course/${courseId}?section=shop&tab=ebooks`);
-    } else {
-      // Fallback - jeśli nie ma course_id, przekieruj do strony ebooka
-      navigate(`/ebook/${ebook.id}`);
-    }
+    // Przekieruj do strony z listą ebooków
+    navigate('/ebooks');
   }
 
   const priceInZloty = ebook.price_cents.toFixed(2);
@@ -47,16 +42,11 @@ export default function EbookCard({ ebook }) {
   return (
     <div
       onClick={handleClick}
-      className="group relative flex flex-col md:flex-row cursor-pointer rounded-2xl overflow-hidden shadow-lg hover:shadow-lg transition-all duration-300 border border-gray-100 bg-white dark:border-DarkblackBorder dark:bg-DarkblackBorder dark:text-white hover:-translate-y-1"
+      className="group relative flex flex-col md:flex-row cursor-pointer rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 border border-gray-100 bg-white dark:border-DarkblackBorder dark:bg-DarkblackBorder dark:text-white  md:min-h-[280px]"
     >
-      {ebook.image_url && (
-        <img
-          src={ebook.image_url}
-          alt={`Okładka ebooka ${ebook.title}`}
-          className="w-full md:w-72 h-48 md:h-auto object-cover md:rounded-l-2xl rounded-t-2xl md:rounded-t-none"
-          loading="lazy"
-        />
-      )}
+      <div 
+        className="w-full md:w-72 h-48 md:h-full bg-red-300 dark:bg-red-900"
+      ></div>
 
       <div className="flex flex-col justify-between flex-1 p-6 gap-8">
         <div>
@@ -70,16 +60,15 @@ export default function EbookCard({ ebook }) {
           )}
         </div>
 
-        <div className="flex items-center justify-between">
+        <div className="flex items-end justify-between">
           <div>
             <span className="text-xs text-gray-500 dark:text-gray-400">Cena:</span>
-            <div className="text-2xl font-bold text-primaryBlue dark:text-primaryGreen">
+            <div className="text-xl font-bold text-primaryBlue dark:text-primaryGreen">
               {priceInZloty} zł
             </div>
           </div>
           <div className="flex items-center gap-2 text-primaryBlue dark:text-primaryGreen">
-            <BookOpen size={24} />
-            <span className="font-semibold">Zobacz szczegóły</span>
+            <span className="text-sm font-semibold">Zobacz szczegóły</span>
           </div>
         </div>
       </div>

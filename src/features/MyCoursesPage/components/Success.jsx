@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import supabase from '../../../util/supabaseClient'
-import { CheckCircle, BookOpen, FileText, ArrowRight, Home } from 'lucide-react'
+import { BookOpen, FileText, ArrowRight, Home } from 'lucide-react'
 import { useToast } from '../../../context/ToastContext'
 import { useAuthStore } from '../../../store/authStore'
 import { useCartStore } from '../../../store/cartStore'
@@ -189,15 +189,17 @@ export default function Success() {
   }
 
   return (
-    <div className='flex flex-col w-full min-h-screen items-center justify-center bg-gray-50 dark:bg-blackText p-4'>
-      <div className="max-w-2xl w-full bg-white dark:bg-DarkblackBorder rounded-2xl shadow-xl p-8">
-        {/* Success Icon */}
-        <div className="flex justify-center mb-6">
-          <div className="w-20 h-20 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
-            <CheckCircle className="w-12 h-12 text-green-600 dark:text-green-400" />
-          </div>
-        </div>
+    <div className='flex flex-col md:flex-row w-full min-h-screen items-center justify-center gap-8 bg-gray-50 dark:bg-blackText p-4'>
+      {/* Success Robot Image */}
+      <div className="flex justify-center">
+        <img 
+          src="/successRobot.svg" 
+          alt="Sukces zakupu" 
+          className="w-64 h-64 object-contain"
+        />
+      </div>
 
+      <div className="max-w-2xl w-full bg-white dark:bg-DarkblackBorder rounded-xl shadow-xl p-8">
         {/* Success Message */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
@@ -218,7 +220,7 @@ export default function Success() {
               {purchasedItems.map((item, index) => (
                 <div
                   key={index}
-                  className="flex items-center justify-between p-4 bg-gray-50 dark:bg-DarkblackText rounded-lg border border-gray-200 dark:border-DarkblackBorder"
+                  className="flex items-center justify-between p-4 bg-gray-50 dark:bg-DarkblackText rounded-md border border-gray-200 dark:border-DarkblackBorder"
                 >
                   <div className="flex items-center gap-3 flex-1">
                     {item.type === 'ebook' ? (
@@ -237,7 +239,7 @@ export default function Success() {
                   </div>
                   <button
                     onClick={() => handleGoToProduct(item)}
-                    className="ml-4 px-4 py-2 bg-primaryBlue dark:bg-primaryGreen text-white rounded-lg font-medium hover:opacity-90 transition flex items-center gap-2 flex-shrink-0"
+                    className="ml-4 px-4 py-2 bg-primaryBlue dark:bg-primaryGreen text-white rounded-md font-medium hover:opacity-90 transition flex items-center gap-2 flex-shrink-0"
                   >
                     Otwórz
                     <ArrowRight className="w-4 h-4" />
@@ -252,13 +254,13 @@ export default function Success() {
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <button
             onClick={() => navigate('/user_page')}
-            className="px-6 py-3 bg-gray-200 dark:bg-DarkblackText text-gray-900 dark:text-white rounded-lg font-medium hover:bg-gray-300 dark:hover:bg-DarkblackBorder transition flex items-center justify-center gap-2"
+            className="px-6 py-3 bg-gray-200 dark:bg-DarkblackText text-gray-900 dark:text-white rounded-md font-medium hover:bg-gray-300 dark:hover:bg-DarkblackBorder transition flex items-center justify-center gap-2"
           >
             Moje kursy
           </button>
           <button
             onClick={() => navigate('/')}
-            className="px-6 py-3 bg-primaryBlue dark:bg-primaryGreen text-white rounded-lg font-medium hover:opacity-90 transition flex items-center justify-center gap-2"
+            className="px-6 py-3 bg-primaryBlue dark:bg-primaryGreen text-white rounded-md font-medium hover:opacity-90 transition flex items-center justify-center gap-2"
           >
             <Home className="w-5 h-5" />
             Strona główna

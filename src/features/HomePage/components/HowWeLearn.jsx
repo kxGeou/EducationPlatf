@@ -2,6 +2,7 @@ import Fiszki from '../../../assets/ikony/fiszki.svg';
 import Test from '../../../assets/ikony/test.svg';
 import Video from '../../../assets/ikony/video.svg';
 import Zadan from '../../../assets/ikony/zadan.svg';
+import { motion } from 'framer-motion';
 
 function HowWeLearn() {
   const learnData = [
@@ -31,16 +32,44 @@ function HowWeLearn() {
     },
   ];
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.15,
+        delayChildren: 0.1,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 30 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.5,
+        ease: "easeOut",
+      },
+    },
+  };
+
   return (
-    <section
+    <motion.section
       className="px-4 "
       aria-label="Jak uczymy się informatyki – metody nauki"
+      variants={containerVariants}
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, amount: 0.1 }}
     >
       <ul className="grid grid-cols-1 grid-rows-4 md:grid-rows-2 md:grid-cols-2 lg:grid-cols-4 lg:grid-rows-1 gap-6">
         {learnData.map((l, index) => (
-          <li
+          <motion.li
             key={index}
             className="border border-gray-100 bg-white  dark:border-DarkblackBorder dark:bg-DarkblackBorder dark:text-white p-6 flex flex-col items-start justify-start shadow-lg rounded-lg transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl"
+            variants={itemVariants}
           >
             <img
               src={l.img}
@@ -50,10 +79,10 @@ function HowWeLearn() {
             />
             <h3 className="text-lg font-semibold mt-3">{l.title}</h3>
             <p className="opacity-75 font-light mt-2">{l.description}</p>
-          </li>
+          </motion.li>
         ))}
       </ul>
-    </section>
+    </motion.section>
   );
 }
 

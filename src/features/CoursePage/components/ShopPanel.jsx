@@ -144,7 +144,13 @@ export default function ShopPanel({ course, isDark, setActivePage, setSelectedEb
 
       if (error) throw error;
       // DEV: Filtrowanie - pokaż wszystkie ebooki w sklepie (żeby można było kupić)
-      setEbooks(data || []);
+      // Sortuj ebooki - najpierw te za 0 zł (darmowe)
+      const sortedEbooks = (data || []).sort((a, b) => {
+        if (a.price_cents === 0 && b.price_cents !== 0) return -1;
+        if (a.price_cents !== 0 && b.price_cents === 0) return 1;
+        return 0;
+      });
+      setEbooks(sortedEbooks);
       // DEV: END Filtrowanie
     } catch (error) {
       console.error('Error fetching ebooks:', error);

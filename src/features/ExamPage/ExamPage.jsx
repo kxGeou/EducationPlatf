@@ -15,6 +15,7 @@ export default function ExamPage({ isDark, setIsDark }) {
   const remaining = useExamStore((s) => s.remainingSeconds);
   const randomQuestionMode = useExamStore((s) => s.randomQuestionMode);
   const timerRef = useRef(null);
+  const resultRef = useRef(null);
   const [showStickyTimer, setShowStickyTimer] = useState(false);
 
   useEffect(() => {
@@ -29,16 +30,19 @@ export default function ExamPage({ isDark, setIsDark }) {
   }, []);
 
   useEffect(() => {
-    if (result) {
-      setTimeout(() => {
-        const resultEl = document.getElementById("result-view");
-        if (resultEl) {
-          const yOffset = -120;
-          const y =
-            resultEl.getBoundingClientRect().top + window.pageYOffset + yOffset;
-          window.scrollTo({ top: y, behavior: "smooth" });
-        }
-      }, 100);
+    if (result && resultRef.current) {
+      // Użyj requestAnimationFrame dla lepszej synchronizacji z renderowaniem
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          if (resultRef.current) {
+            resultRef.current.scrollIntoView({ 
+              behavior: "smooth", 
+              block: "start",
+              inline: "nearest"
+            });
+          }
+        }, 100);
+      });
     }
   }, [result]);
 
@@ -52,7 +56,7 @@ export default function ExamPage({ isDark, setIsDark }) {
 
   return (
     <PageLayout isDark={isDark} setIsDark={setIsDark} from="#5e91ff"
-  fromDark="#15316b" stopAt="30%">
+  fromDark="#15316b" stopAt="30%" gradientDirection="vertical">
       <div className="overflow-hidden w-full mt-28">
 
         <div className="relative flex flex-col md:flex-row  w-full items-center z-20 mb-26">
@@ -98,7 +102,7 @@ export default function ExamPage({ isDark, setIsDark }) {
         <>
           <div
             ref={timerRef}
-            className="mb-12 text-xl py-3 rounded-[12px] text-center sticky dark:bg-primaryGreen text-white font-bold bg-primaryBlue flex items-center justify-center gap-3 z-20"
+            className="mb-12 text-xl py-3 rounded-lg text-center sticky dark:bg-primaryGreen text-white font-bold bg-primaryBlue flex items-center justify-center gap-3 z-20"
           >
             Pozostały czas: {formatTime(remaining)}{" "}
             <TimerIcon size={20}></TimerIcon>
@@ -112,19 +116,19 @@ export default function ExamPage({ isDark, setIsDark }) {
           </form>
           <button
             onClick={() => useExamStore.getState().finishExam()}
-            className="mt-6 px-4 py-3 bg-primaryBlue w-full max-w-[600px] text-white rounded-[12px] dark:bg-primaryGreen dark:hover:bg-secondaryGreen hover:bg-secondaryBlue hover:-translate-y-1 duration-300 hover:shadow-md transition-all cursor-pointer block mx-auto"
+            className="mt-6 px-4 py-3 bg-primaryBlue w-full max-w-[600px] text-white rounded-[12px] dark:bg-primaryGreen dark:hover:bg-secondaryGreen hover:bg-secondaryBlue duration-300 hover:shadow-md transition-all cursor-pointer block mx-auto"
           >
             Zakończ test
           </button>
           {showStickyTimer && (
-            <div className="fixed bottom-0 left-0 w-full flex justify-center z-50">
-              <div className="bg-white border border-gray-200 dark:border-0 dark:bg-DarkblackText shadow-lg rounded-t-xl px-6 py-4 flex items-center justify-between gap-6 max-w-[600px] w-full">
+            <div className="fixed bottom-4 left-0 w-full flex justify-center z-50">
+              <div className="bg-white border border-gray-200 dark:border-0 dark:bg-DarkblackText shadow-lg rounded-xl px-6 py-4 flex items-center justify-between gap-6 max-w-[600px] w-full">
                 <span className="text-xl font-bold dark:text-white">
                   Pozostały czas: {formatTime(remaining)}
                 </span>
                 <button
                   onClick={() => useExamStore.getState().finishExam()}
-                  className="hidden md:inline-block px-4 py-2 bg-primaryBlue text-white rounded-[12px] dark:bg-primaryGreen dark:hover:bg-secondaryGreen hover:bg-secondaryBlue hover:-translate-y-1 duration-300 hover:shadow-md transition-all cursor-pointer"
+                  className="hidden md:inline-block px-4 py-2 bg-primaryBlue text-white rounded-[12px] dark:bg-primaryGreen dark:hover:bg-secondaryGreen hover:bg-secondaryBlue duration-300 hover:shadow-md transition-all cursor-pointer"
                 >
                   Zakończ test
                 </button>
@@ -133,7 +137,7 @@ export default function ExamPage({ isDark, setIsDark }) {
           )}
         </>
       ) : (
-        <div id="result-view">
+        <div id="result-view" ref={resultRef}>
           <ResultView />
         </div>
       )}

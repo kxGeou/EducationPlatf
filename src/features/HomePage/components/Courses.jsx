@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import supabase from '../../../util/supabaseClient';
 // DEV: CourseCard import - odkomentuj na development, zakomentuj na main
 // import CourseCard from "./CourseCard";
@@ -41,11 +42,16 @@ export default function Courses() {
         setLoading(true);
         const { data, error } = await supabase
           .from("ebooks")
-          .select("id, title, description, price_cents, image_url, course_id")
-          .order('created_at', { ascending: false });
+          .select("id, title, description, price_cents, image_url, course_id");
 
         if (error) throw error;
-        setEbooks(data || []);
+        
+        // Filtruj darmowe ebooki (cena 0) i sortuj pozostałe według daty utworzenia
+        const filteredData = (data || []).filter(ebook => ebook.price_cents > 0);
+        const sortedData = filteredData.sort((a, b) => {
+          return new Date(b.created_at || 0) - new Date(a.created_at || 0);
+        });
+        setEbooks(sortedData);
       } catch (err) {
         console.error("Failed to fetch ebooks:", err.message);
         setError(err.message || "Wystąpił błąd podczas pobierania ebooków.");
@@ -79,7 +85,22 @@ export default function Courses() {
         </div>
       )}
 
-      <div className="flex flex-col-reverse gap-12">
+      <motion.div
+        className="flex flex-col-reverse gap-12"
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.2 }}
+        variants={{
+          hidden: { opacity: 0 },
+          visible: {
+            opacity: 1,
+            transition: {
+              staggerChildren: 0.15,
+              delayChildren: 0.1,
+            },
+          },
+        }}
+      >
         {loading
           ? Array.from({ length: ebooks.length || 4 }).map((_, i) => (
               <div
@@ -101,11 +122,26 @@ export default function Courses() {
             // DEV: END Courses mapping
             // DEV: Ebooks mapping - odkomentuj na development, zakomentuj na main
             ebooks.map((ebook) => (
-              <EbookCard key={ebook.id} ebook={ebook} />
+              <motion.div
+                key={ebook.id}
+                variants={{
+                  hidden: { opacity: 0, x: -50 },
+                  visible: {
+                    opacity: 1,
+                    x: 0,
+                    transition: {
+                      duration: 0.6,
+                      ease: "easeOut",
+                    },
+                  },
+                }}
+              >
+                <EbookCard ebook={ebook} />
+              </motion.div>
             ))
             // DEV: END Ebooks mapping
           )}
-      </div>
+      </motion.div>
 
       {!loading && !error && ebooks.length === 0 && (
         <p className="text-gray-500 text-center mt-10">
