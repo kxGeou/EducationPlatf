@@ -13,7 +13,7 @@ function TestResources({ isDark, setIsDark }) {
      isDark={isDark} 
       setIsDark={setIsDark}
       from="#12e396"
-  fromDark="#038f5b" stopAt="8%"
+  fromDark="#038f5b" stopAt="8%" gradientDirection="vertical"
     >
 
         <Hero></Hero>

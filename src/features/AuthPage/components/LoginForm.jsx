@@ -2,7 +2,7 @@ import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useToast } from '../../../context/ToastContext';
 import { Eye, EyeOff } from 'lucide-react'
 
@@ -32,6 +32,7 @@ export default function LoginForm() {
   } = useForm({ resolver: zodResolver(loginSchema) })
 
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
@@ -42,9 +43,10 @@ export default function LoginForm() {
   // Handle navigation when user is already logged in
   useEffect(() => {
     if (user) {
-      navigate("/")
+      const returnTo = searchParams.get('returnTo')
+      navigate(returnTo || "/")
     }
-  }, [user, navigate])
+  }, [user, navigate, searchParams])
 
   const onSubmit = async () => {
     const valid = await trigger()
@@ -66,7 +68,8 @@ export default function LoginForm() {
     setLoading(false)
 
     if (result === true) {
-      navigate('/')
+      const returnTo = searchParams.get('returnTo')
+      navigate(returnTo || '/')
     }
   }
 

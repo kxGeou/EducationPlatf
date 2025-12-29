@@ -1,4 +1,5 @@
 import React from "react";
+import { motion } from "framer-motion";
 import "../../../styles/Interactive.css";
 import RobotStat from '../../../assets/robotStat.svg';
 import Description from '../../../components/typography/Description';
@@ -7,7 +8,7 @@ import SectionHeading from '../../../components/typography/SectionHeading';
 
 function Stats({ Title, Description }) {
   return (
-    <li className="flex flex-col gap-2 bg-secondaryBlue/25 rounded-lg border border-secondaryBlue/50 p-4 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+    <li className="flex flex-col gap-2 bg-secondaryBlue/25 rounded-lg border border-secondaryBlue/50 p-4 shadow-lg hover:shadow-xl transition-all duration-300 ">
       <p className="text-m md:text-lg md:font-semibold">{Title}</p>
       <p className="opacity-75 text-sm md:max-w-[200px] md:w-full">
         {Description}
@@ -40,17 +41,57 @@ function Interactive() {
     },
   ];
 
+  const imageVariants = {
+    hidden: { opacity: 0, x: 50 },
+    visible: {
+      opacity: 1,
+      x: 0,
+      transition: {
+        duration: 0.6,
+        ease: "easeOut",
+      },
+    },
+  };
+
+  const textVariants = {
+    hidden: { opacity: 0, x: -50 },
+    visible: {
+      opacity: 1,
+      x: 0,
+      transition: {
+        duration: 0.6,
+        ease: "easeOut",
+      },
+    },
+  };
+
+  const boxesVariants = {
+    hidden: { opacity: 0, y: 30 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.5,
+        ease: "easeOut",
+      },
+    },
+  };
+
   return (
     <section
       className="relative bg-darkBlue dark:bg-DarkblackText text-white py-20 pb-12 w-full px-4 overflow-hidden"
       aria-labelledby="stats-heading"
     >
-      <img
+      <motion.img
         src={RobotStat}
         alt="Ilustracja robota z wykresami – symbol statystyk kursów informatyki"
         className="absolute top-10 right-0 md:right-40 w-[550px] dark:md:opacity-100 pointer-events-none select-none opacity-10 md:opacity-100"
         width="550"
         height="400"
+        variants={imageVariants}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.2 }}
       />
 
       <div className="relative z-10">
@@ -58,7 +99,13 @@ function Interactive() {
           Matura z informatyki? Z nami to formalność.
         </SectionHeading>
 
-        <div className="mt-8 flex flex-col gap-4 md:w-full md:max-w-[400px]">
+        <motion.div
+          className="mt-8 flex flex-col gap-4 md:w-full md:max-w-[400px]"
+          variants={textVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.2 }}
+        >
           <Heading2 margin={"mb-2"} textColor={"text-white"}>
             Statystyki, które mówią same za siebie
           </Heading2>
@@ -68,13 +115,19 @@ function Interactive() {
             — efekty mówią same za siebie. To najlepsze przygotowanie do <strong className="text-primaryGreen">matury z informatyki </strong>
             oraz egzaminów zawodowych <strong className="text-primaryGreen">INF.02</strong> i <strong className="text-primaryGreen">INF.03</strong>.
           </Description>
-        </div>
+        </motion.div>
 
-        <ul className="grid md:grid-cols-4 w-full mt-10 md:mt-30 gap-6">
+        <motion.ul
+          className="grid md:grid-cols-4 w-full mt-10 md:mt-30 gap-6"
+          variants={boxesVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.2 }}
+        >
           {stats.map((s, index) => (
             <Stats Title={s.title} Description={s.description} key={index} />
           ))}
-        </ul>
+        </motion.ul>
       </div>
     </section>
   );

@@ -10,15 +10,19 @@ export default function PageLayout({
   to = "#f3f4f6",            // kolor końcowy
   toDark = "#0a2540",        // kolor końcowy w dark mode
   stopAt = "30%",            // gdzie gradient ma się kończyć
+  gradientDirection = "diagonal", // "diagonal" (od górnego prawego rogu) lub "vertical" (od góry do dołu)
   className = "",
   showFooter = true,
   maxWidth = "1100px"
 }) {
 
-  // Tworzymy gradient zależny od trybu (od prawego górnego rogu do lewego dolnego)
+  // Wybieramy kierunek gradientu
+  const direction = gradientDirection === "vertical" ? "to bottom" : "to bottom left";
+  
+  // Tworzymy gradient zależny od trybu
   const gradient = isDark
-    ? `linear-gradient(to bottom left, ${fromDark} 0%, ${toDark} ${stopAt})`
-    : `linear-gradient(to bottom left, ${from} 0%, ${to} ${stopAt})`;
+    ? `linear-gradient(${direction}, ${fromDark} 0%, ${toDark} ${stopAt})`
+    : `linear-gradient(${direction}, ${from} 0%, ${to} ${stopAt})`;
 
   return (
     <div

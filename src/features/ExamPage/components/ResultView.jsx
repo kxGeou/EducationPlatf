@@ -10,7 +10,7 @@ export default function ResultView() {
   const passed = res.score >= 75;
 
   return (
-    <div className="mt-6 bg-gray-100 dark:bg-blackText flex flex-col items-center justify-center min-h-[80vh] w-full">
+    <div className="mt-6 flex flex-col items-center justify-center min-h-[80vh] w-full">
       <div className="flex flex-col items-center justify-center mb-10 w-full">
         <div
           className={`w-24 h-24 md:w-32 md:h-32 rounded-full flex items-center justify-center text-2xl md:text-4xl font-bold shadow-lg mb-4 border-4 ${

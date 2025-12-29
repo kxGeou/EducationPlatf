@@ -29,7 +29,7 @@ export default function MyCourses({ isDark, setIsDark }) {
       data-theme={isDark ? "dark" : "light"}
       className="flex justify-center bg-slate-200 w-full dark:bg-blackText relative h-screen overflow-hidden"
     >
-      <div className="w-full max-w-[1920px] p-1 h-full overflow-hidden">
+      <div className="w-full max-w-[2560px] p-1 h-full overflow-hidden">
         <div className="w-full h-full">
           <div className="flex gap-1 h-full">
             <Navigation

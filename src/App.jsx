@@ -8,6 +8,7 @@ import CoursePage from './features/CoursePage/CoursePage.jsx'
 // import CourseLandingPage from './features/CoursePage/CourseLandingPage.jsx'
 // DEV: END CourseLandingPage import
 import EbookPage from './features/EbookPage/EbookPage.jsx'
+import EbooksListPage from './features/EbooksListPage/EbooksListPage.jsx'
 import Loading from './components/systemLayouts/Loading.jsx'
 import Error from './components/systemLayouts/Error.jsx'
 import WrongPage from './components/systemLayouts/WrongPage.jsx'
@@ -26,7 +27,7 @@ import AdminPage from './features/AdminPage/AdminPage.jsx'
 import Regulations from './features/AuthPage/Regulations.jsx'
 import ExamPage from './features/ExamPage/ExamPage.jsx'
 // DEV: Calendar import - odkomentuj na development, zakomentuj na main
-import CalendarPage from './features/CalendarPage/CalendarPage.jsx'
+// import CalendarPage from './features/CalendarPage/CalendarPage.jsx'
 // DEV: END Calendar import
 import { ToastProvider, useToast } from './context/ToastContext.jsx'
 import ToastContainer from './components/ui/ToastContainer.jsx'
@@ -67,6 +68,8 @@ function AppContent({ isDark, setIsDark }) {
         {/* <Route path='/kurs/:id' element={<CourseLandingPage isDark={isDark} setIsDark={setIsDark}/>} /> */}
         {/* DEV: END Course Landing Page route */}
         <Route path='/ebook/:id' element={<EbookPage isDark={isDark} setIsDark={setIsDark}/>} />
+        <Route path='/ebook' element={<EbookPage isDark={isDark} setIsDark={setIsDark}/>} />
+        <Route path='/ebooks' element={<EbooksListPage isDark={isDark} setIsDark={setIsDark}/>} />
         <Route path='/loading' element={<Loading isDark={isDark}/>} />
         <Route path='/error' element={<Error isDark={isDark} />} />
         {/* DEV: Blog routes - odkomentuj na development, zakomentuj na main */}
@@ -79,7 +82,7 @@ function AppContent({ isDark, setIsDark }) {
         <Route path='/admin' element={<AdminPage isDark={isDark} setIsDark={setIsDark}></AdminPage>}></Route>
         <Route path='/exam' element={<ExamPage isDark={isDark} setIsDark={setIsDark}></ExamPage>}></Route>
         {/* DEV: Calendar route - odkomentuj na development, zakomentuj na main */}
-        <Route path='/calendar' element={<CalendarPage isDark={isDark} setIsDark={setIsDark}></CalendarPage>}></Route>
+        {/* <Route path='/calendar' element={<CalendarPage isDark={isDark} setIsDark={setIsDark}></CalendarPage>}></Route> */}
         {/* DEV: END Calendar route */}
         <Route path='/*' element={<WrongPage isDark={isDark} setIsDark={setIsDark} />} />
       </Routes>

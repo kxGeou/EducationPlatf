@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { motion } from "framer-motion";
 import { Wrench, Bot, Cable, Settings } from "lucide-react";
 import Heading2 from '../../../components/typography/Heading2';
 import SectionHeading from '../../../components/typography/SectionHeading';
@@ -98,10 +99,52 @@ export default function StripeHero() {
     }
   }, [charIndex, lineIndex, startTyping]);
 
+  const leftVariants = {
+    hidden: { opacity: 0, x: -50 },
+    visible: {
+      opacity: 1,
+      x: 0,
+      transition: {
+        duration: 0.6,
+        ease: "easeOut",
+      },
+    },
+  };
+
+  const rightVariants = {
+    hidden: { opacity: 0, x: 50 },
+    visible: {
+      opacity: 1,
+      x: 0,
+      transition: {
+        duration: 0.6,
+        ease: "easeOut",
+      },
+    },
+  };
+
+  const boxesVariants = {
+    hidden: { opacity: 0, y: 30 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.5,
+        ease: "easeOut",
+      },
+    },
+  };
+
   return (
     <div className="bg-gradient-to-br from-darkBlue to-indigo-900 dark:from-DarkblackBorder dark:to-DarkblackText text-white w-full mt-24 pt-12">
       <div className="flex flex-col md:flex-row justify-between max-w-[1100px] px-4 mx-auto items-center gap-12">
-        <div className="w-full md:mb-12">
+        <motion.div
+          className="w-full md:mb-12"
+          variants={leftVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.2 }}
+        >
           <SectionHeading textColor="text-primaryGreen">Chcesz wiedzieć więcej?</SectionHeading>
           <Heading2 margin="mb-2" textColor="text-white">
             Sprawdź naszego bloga i ucz się jeszcze skuteczniej
@@ -118,22 +161,46 @@ export default function StripeHero() {
             Zobacz blogi »
           </button> */}
           {/* DEV: END Blog button */}
-        </div>
+        </motion.div>
 
-        <div
+        <motion.div
           ref={ref}
           className="bg-blue-950 dark:bg-gray-800 text-green-200 h-72 font-mono w-full text-sm rounded-lg shadow-lg mt-8 md:mt-0 md:w-1/2 p-4 overflow-auto mb-12 md:mb-0"
+          variants={rightVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.2 }}
         >
           <pre className="whitespace-pre-wrap">{displayedCode}</pre>
-        </div>
+        </motion.div>
       </div>
 
       <div className="bg-primaryBlue dark:bg-DarkblackText text-white py-12 w-full flex justify-center">
-        <div className="max-w-[1100px] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 px-4">
+        <motion.div
+          className="max-w-[1100px] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 px-4"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.2 }}
+          variants={{
+            hidden: { opacity: 0 },
+            visible: {
+              opacity: 1,
+              transition: {
+                staggerChildren: 0.15,
+                delayChildren: 0.1,
+              },
+            },
+          }}
+        >
           {features.map((feature, idx) => (
-            <FeatureCard key={idx} {...feature} />
+            <motion.div
+              key={idx}
+              variants={boxesVariants}
+            >
+              <FeatureCard {...feature} />
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       </div>
     </div>
   );

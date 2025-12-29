@@ -5,7 +5,7 @@ import zxcvbn from 'zxcvbn'
 import { useState } from 'react'
 import { useToast } from '../../../context/ToastContext';
 
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuthStore } from '../../../store/authStore';
 
 const registerSchema = z
@@ -82,6 +82,7 @@ export default function RegisterForm() {
   } = useForm({ resolver: zodResolver(registerSchema) })
 
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const [loading, setLoading] = useState(false)
   const password = watch('password')
 
@@ -103,6 +104,20 @@ export default function RegisterForm() {
     const success = await registerUser({ email, password, full_name })
     setLoading(false)
 
+    if (success) {
+      const returnTo = searchParams.get('returnTo')
+      // Jeśli użytkownik musi potwierdzić email, przekieruj do logowania z returnTo
+      // Jeśli jest automatycznie zalogowany, przekieruj bezpośrednio
+      const user = useAuthStore.getState().user
+      if (user) {
+        navigate(returnTo || '/')
+      } else {
+        // Użytkownik musi potwierdzić email - przekieruj do logowania z returnTo
+        if (returnTo) {
+          navigate(`/authentication?returnTo=${encodeURIComponent(returnTo)}`)
+        }
+      }
+    }
   }
 
   return (

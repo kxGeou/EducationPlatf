@@ -16,11 +16,17 @@ export const useEbookStore = create((set) => ({
       const { data, error } = await supabase
         .from('ebooks')
         .select('*')
-        .order('created_at', { ascending: false })
 
       if (error) throw error
 
-      set({ ebooks: data || [], loading: false })
+      // Sortuj ebooki - najpierw te za 0 zł (darmowe)
+      const sortedEbooks = (data || []).sort((a, b) => {
+        if (a.price_cents === 0 && b.price_cents !== 0) return -1;
+        if (a.price_cents !== 0 && b.price_cents === 0) return 1;
+        return new Date(b.created_at || 0) - new Date(a.created_at || 0);
+      });
+
+      set({ ebooks: sortedEbooks, loading: false })
     } catch (err) {
       toast.error('Nie udało się załadować e-booków')
       set({ error: err.message, ebooks: [], loading: false })
@@ -62,7 +68,31 @@ export const useEbookStore = create((set) => ({
       set({ loading: false })
     }
   },
+
+  fetchUserEbooks: async () => {
+    const { user, purchasedEbooks, initialized } = useAuthStore.getState()
+
+    if (!initialized || !user || !purchasedEbooks || purchasedEbooks.length === 0) {
+      return []
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('ebooks')
+        .select('*')
+        .in('id', purchasedEbooks)
+        .order('created_at', { ascending: false })
+
+      if (error) throw error
+
+      return data || []
+    } catch (err) {
+      console.error('Error fetching user ebooks:', err)
+      return []
+    }
+  },
 }))
+
 
 
 

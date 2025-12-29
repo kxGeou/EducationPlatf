@@ -449,12 +449,31 @@ export const useAuthStore = create(
 
           // Utwórz lub zaktualizuj rekord w tabeli users z emailem
           try {
+            // Najpierw pobierz darmowy ebook (price_cents = 0)
+            let freeEbookId = [];
+            try {
+              const { data: freeEbook, error: freeEbookError } = await supabase
+                .from('ebooks')
+                .select('id')
+                .eq('price_cents', 0)
+                .limit(1)
+                .maybeSingle();
+
+              if (!freeEbookError && freeEbook?.id) {
+                freeEbookId = [freeEbook.id];
+              }
+            } catch (freeEbookErr) {
+              console.log('No free ebook found or error fetching:', freeEbookErr);
+              // Kontynuuj bez darmowego ebooka
+            }
+
             const { error: userError } = await supabase
               .from('users')
               .upsert({
                 id: data.user.id,
                 email: email,
-                full_name: full_name
+                full_name: full_name,
+                purchased_ebooks: freeEbookId
               }, {
                 onConflict: 'id'
               });
@@ -596,6 +615,9 @@ export const useAuthStore = create(
           cartStore.clearCart();
           
           toast.success("Wylogowano");
+          
+          // Przekieruj na stronę główną
+          window.location.href = '/';
         } catch (error) {
           toast.error("Błąd wylogowywania");
         }

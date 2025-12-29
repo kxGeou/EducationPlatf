@@ -118,7 +118,7 @@ function TaskPanel({ courseId, isEbook = false }) {
                     setShowCorrectAnswerButton(true);
                 }
                 
-                setTimer(5);
+                setShowNextButton(true);
             } else {
                 setFeedbackType('incorrect');
                 setFeedbackMessage('Niepoprawna odpowiedź. Sprawdź tłumaczenia poniżej i spróbuj ponownie!');
@@ -533,11 +533,7 @@ function TaskPanel({ courseId, isEbook = false }) {
                                     </p>
                                     {feedbackType === 'correct' && (
                                         <p className="text-sm text-green-700 dark:text-green-300 mt-1">
-                                            {timer > 0 ? (
-                                                <>Następne pytanie za {timer} sekund{timer === 1 ? 'ę' : timer < 5 ? 'y' : ''}...</>
-                                            ) : (
-                                                <>Kliknij przycisk poniżej, aby przejść do następnego pytania.</>
-                                            )}
+                                            Kliknij przycisk poniżej, aby przejść do następnego pytania.
                                         </p>
                                     )}
                                     {feedbackType === 'incorrect' && (

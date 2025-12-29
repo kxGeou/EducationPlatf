@@ -101,43 +101,65 @@ const ResourceVideo = memo(({ videoTitle, videoDescription, category }) => {
   );
 });
 
-const CourseItem = memo(({ course, onClick }) => (
-  <li className="flex flex-col sm:flex-row p-4 border rounded-[12px] bg-white border-blackText/10 dark:text-white dark:bg-DarkblackText shadow-md text-blackText gap-4">
-    <img
-      src={course.image_url}
-      alt="course img"
-      className="w-full sm:w-64 h-40 sm:h-auto object-cover rounded-[12px] flex-shrink-0"
-    />
-    <div className="px-0 sm:px-4 flex flex-1 min-w-0">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full">
-        <div className="flex flex-col justify-between pr-0 lg:pr-4 lg:border-r border-blackText/15 dark:border-white/20">
-          <div>
-            <h3 className="font-bold text-lg sm:text-xl w-full">
-              {course.title}
-            </h3>
-            <p className="text-sm opacity-70 w-full break-words line-clamp-4 sm:line-clamp-6 overflow-hidden leading-snug">
-              {course.description}
+const CourseItem = memo(({ course, onClick }) => {
+  // Sprawdź czy kurs to INF.02 lub INF.03
+  const isBlocked = course.title?.includes('INF.02') || course.title?.includes('INF.03');
+
+  return (
+    <li 
+      className="flex flex-col sm:flex-row p-4 border rounded-lg bg-white border-blackText/10 dark:text-white dark:bg-DarkblackText shadow-md text-blackText gap-4 relative"
+    >
+      {/* Overlay z tekstem - POZA blur */}
+      {isBlocked && (
+        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 dark:bg-black/80 rounded-lg pointer-events-auto">
+          <div className="bg-white dark:bg-DarkblackText px-6 py-2 rounded-lg dark:border-primaryGreen">
+            <p className="text-lg font-extrabold text-primaryBlue dark:text-primaryGreen text-center whitespace-nowrap">
+              Dostępne wkrótce
             </p>
           </div>
-          <button
-            className="w-full py-3 bg-gradient-to-br from-primaryGreen to-secondaryGreen transition-transform hover:-translate-y-1 duration-300 hover:shadow-md rounded-[12px] text-white font-semibold cursor-pointer mt-4 sm:mt-0"
-            onClick={() => onClick(course.id)}
-          >
-            Zobacz kurs
-          </button>
         </div>
+      )}
+      
+      {/* Zawartość kursu z blur */}
+      <div className={`w-full flex flex-col sm:flex-row gap-4 ${isBlocked ? 'blur-sm opacity-60 pointer-events-none' : ''}`}>
+        <img
+          src={course.image_url}
+          alt="course img"
+          className="w-full sm:w-64 h-40 sm:h-auto object-cover rounded-md flex-shrink-0"
+        />
+        <div className="px-0 sm:px-4 flex flex-1 min-w-0">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full">
+          <div className="flex flex-col justify-between pr-0 lg:pr-4 lg:border-r border-blackText/15 dark:border-white/20">
+            <div>
+              <h3 className="font-bold text-lg sm:text-xl w-full">
+                {course.title}
+              </h3>
+              <p className="text-sm opacity-70 w-full break-words line-clamp-4 sm:line-clamp-6 overflow-hidden leading-snug">
+                {course.description}
+              </p>
+            </div>
+            <button
+              className={`w-full py-3 bg-gradient-to-br from-primaryGreen to-secondaryGreen transition-transform hover:-translate-y-1 duration-300 hover:shadow-md rounded-md text-white font-semibold mt-4 sm:mt-0 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 ${
+                isBlocked ? 'pointer-events-none cursor-not-allowed' : 'cursor-pointer'
+              }`}
+              onClick={() => onClick(course.id)}
+              disabled={isBlocked}
+            >
+              Zobacz kurs
+            </button>
+          </div>
 
         <div className="flex flex-col gap-6 pt-4 lg:pt-0">
           <div>
             <h2 className="text-lg sm:text-xl font-bold">Kurs zawiera</h2>
             <div className="w-full grid grid-cols-2 sm:grid-cols-3 text-center gap-2 sm:gap-4 items-center mt-2">
-              <div className="bg-primaryBlue dark:bg-primaryGreen/75 dark:border-primaryGreen dark:border text-white font-semibold px-3 py-2 sm:px-4 sm:py-3 rounded-[8px]">
+              <div className="bg-primaryBlue dark:bg-primaryGreen/75 dark:border-primaryGreen dark:border text-white font-semibold px-3 py-2 sm:px-4 sm:py-3 rounded-md">
                 4 działy
               </div>
-              <div className="bg-primaryBlue dark:bg-primaryGreen/75 dark:border-primaryGreen dark:border text-white font-semibold px-3 py-2 sm:px-4 sm:py-3 rounded-[8px]">
+              <div className="bg-primaryBlue dark:bg-primaryGreen/75 dark:border-primaryGreen dark:border text-white font-semibold px-3 py-2 sm:px-4 sm:py-3 rounded-md">
                 100+ lekcji
               </div>
-              <div className="bg-primaryBlue dark:bg-primaryGreen/75 dark:border-primaryGreen dark:border text-white font-semibold px-3 py-2 sm:px-4 sm:py-3 rounded-[8px]">
+              <div className="bg-primaryBlue dark:bg-primaryGreen/75 dark:border-primaryGreen dark:border text-white font-semibold px-3 py-2 sm:px-4 sm:py-3 rounded-md">
                 100+ zadań
               </div>
             </div>
@@ -151,10 +173,12 @@ const CourseItem = memo(({ course, onClick }) => (
             </ol>
           </div>
         </div>
+        </div>
+        </div>
       </div>
-    </div>
-  </li>
-));
+    </li>
+  );
+});
 
 function CourseList({ activePage, setActivePage, setTutorialVisible, tutorialVisible }) {
   const user = useAuthStore((state) => state.user);

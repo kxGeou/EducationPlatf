@@ -52,7 +52,7 @@ export default function RandomQuestionCard({ isDark }) {
         </button>
       </div>
       
-      <div className="bg-gradient-to-r from-primaryBlue/5 to-secondaryBlue/5 dark:from-primaryGreen/5 dark:to-secondaryBlue/5 rounded-xl p-6 mb-8">
+      <div className="bg-gradient-to-r from-primaryBlue/5 to-secondaryBlue/5 dark:from-primaryGreen/5 dark:to-secondaryBlue/5 rounded-lg p-6 mb-8">
         <h3 className="font-bold text-xl dark:text-white text-blackText leading-relaxed">
           {currentRandomQuestion.prompt}
         </h3>
@@ -69,7 +69,7 @@ export default function RandomQuestionCard({ isDark }) {
           return (
             <label
               key={choiceId}
-              className={`flex items-center transition-all duration-200 p-4 rounded-xl cursor-pointer border-2 ${getChoiceStyle({ id: choiceId, is_correct: isCorrect })}`}
+              className={`flex items-center transition-all duration-200 p-4 rounded-lg cursor-pointer border-2 ${getChoiceStyle({ id: choiceId, is_correct: isCorrect })}`}
             >
               <input
                 type="radio"
@@ -78,7 +78,11 @@ export default function RandomQuestionCard({ isDark }) {
                 disabled={!!randomQuestionAnswer}
                 className="mr-4 accent-primaryBlue dark:accent-primaryGreen disabled:opacity-50 w-5 h-5"
               />
-              <span className="font-semibold mr-3 text-lg">{choiceLabel}.</span>
+              <span className={`font-semibold mr-3 text-lg ${
+                randomQuestionAnswer?.id === choiceId || (randomQuestionAnswer && isCorrect)
+                  ? "text-white" 
+                  : ""
+              }`}>{choiceLabel}.</span>
               <span className="text-base">{choiceText}</span>
             </label>
           );
