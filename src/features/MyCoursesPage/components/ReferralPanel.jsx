@@ -48,7 +48,7 @@ export default function ReferralPanel() {
       </div>
 
       {/* Section 1: Your Referral Code */}
-      <div className="bg-white dark:bg-DarkblackText rounded-[12px] shadow-md border border-primaryBlue/10 dark:border-primaryGreen/10 p-6">
+      <div className="bg-white dark:bg-DarkblackText rounded-2xl shadow-md border border-primaryBlue/10 dark:border-primaryGreen/10 p-6">
         <div className="flex items-center gap-3 mb-4">
           <div className="p-2 bg-primaryBlue/10 dark:bg-primaryGreen/10 rounded-[10px]">
             <UserPlus size={20} className="text-primaryBlue dark:text-primaryGreen" />
@@ -66,7 +66,7 @@ export default function ReferralPanel() {
             <button
               onClick={handleGenerateCode}
               disabled={loading}
-              className="px-6 py-3 bg-primaryBlue dark:bg-primaryGreen text-white rounded-[12px] font-semibold hover:opacity-90 hover:shadow-lg transition-all duration-200 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
+              className="px-6 py-3 bg-primaryBlue dark:bg-primaryGreen text-white rounded-xl font-semibold hover:opacity-90 hover:shadow-lg transition-all duration-200 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
             >
               {loading ? (
                 <>
@@ -92,7 +92,7 @@ export default function ReferralPanel() {
               </div>
               <button
                 onClick={handleCopyCode}
-                className="p-4 bg-primaryBlue/10 dark:bg-primaryGreen/10 hover:bg-primaryBlue/20 dark:hover:bg-primaryGreen/20 rounded-[12px] transition-all duration-200"
+                className="p-4 bg-primaryBlue/10 dark:bg-primaryGreen/10 hover:bg-primaryBlue/20 dark:hover:bg-primaryGreen/20 rounded-xl transition-all duration-200"
                 title="Kopiuj kod"
               >
                 {copied ? (
@@ -130,7 +130,7 @@ export default function ReferralPanel() {
       </div>
 
       {/* Section 2: Your 75% Discount */}
-      <div className="bg-white dark:bg-DarkblackText rounded-[12px] shadow-md border border-primaryBlue/10 dark:border-primaryGreen/10 p-6">
+      <div className="bg-white dark:bg-DarkblackText rounded-2xl shadow-md border border-primaryBlue/10 dark:border-primaryGreen/10 p-6">
         <div className="flex items-center gap-3 mb-4">
           <div className="p-2 bg-primaryBlue/10 dark:bg-primaryGreen/10 rounded-[10px]">
             <Gift size={20} className="text-primaryBlue dark:text-primaryGreen" />
@@ -170,7 +170,7 @@ export default function ReferralPanel() {
       </div>
 
       {/* Section 3: How it Works */}
-      <div className="bg-white dark:bg-DarkblackText rounded-[12px] shadow-md border border-primaryBlue/10 dark:border-primaryGreen/10 p-6">
+      <div className="bg-white dark:bg-DarkblackText rounded-2xl shadow-md border border-primaryBlue/10 dark:border-primaryGreen/10 p-6">
         <div className="flex items-center gap-3 mb-4">
           <div className="p-2 bg-primaryBlue/10 dark:bg-primaryGreen/10 rounded-[10px]">
             <Info size={20} className="text-primaryBlue dark:text-primaryGreen" />

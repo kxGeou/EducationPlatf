@@ -188,6 +188,56 @@ export default function ShopPanel({ course, isDark, setActivePage, setSelectedEb
     */
   };
 
+  const handleClaimFreeEbook = async (ebookId) => {
+    if (!user) {
+      toast.error("Musisz być zalogowany, żeby odebrać ebook.");
+      return;
+    }
+
+    const ebookData = ebooks.find(ebook => ebook.id === ebookId);
+    if (!ebookData) {
+      toast.error("Nie udało się pobrać informacji o e-booku.");
+      return;
+    }
+
+    // Sprawdź czy ebook jest już zakupiony
+    if (purchasedEbooks.includes(ebookId)) {
+      toast.info("Ten ebook jest już w Twojej bibliotece.");
+      return;
+    }
+
+    try {
+      // Pobierz aktualną listę purchased_ebooks
+      const { data: userData, error: fetchError } = await supabase
+        .from('users')
+        .select('purchased_ebooks')
+        .eq('id', user.id)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      // Dodaj nowy ebook do listy
+      const currentEbooks = userData?.purchased_ebooks || [];
+      const updatedEbooks = [...new Set([...currentEbooks, ebookId])];
+
+      // Zaktualizuj w bazie danych
+      const { error: updateError } = await supabase
+        .from('users')
+        .update({ purchased_ebooks: updatedEbooks })
+        .eq('id', user.id);
+
+      if (updateError) throw updateError;
+
+      // Odśwież dane użytkownika
+      await fetchUserData(user.id);
+
+      toast.success(`Ebook "${ebookData.title}" został dodany do Twojej biblioteki!`);
+    } catch (error) {
+      console.error('Error claiming free ebook:', error);
+      toast.error("Nie udało się dodać ebooka. Spróbuj ponownie.");
+    }
+  };
+
   const handleAddEbookToCart = (ebookId) => {
     if (!user) {
       toast.error("Musisz być zalogowany, żeby dodać produkt do koszyka.");
@@ -462,11 +512,6 @@ export default function ShopPanel({ course, isDark, setActivePage, setSelectedEb
       {activeTab === 'sections' && (
         <div className="absolute inset-0 top-0 left-0 right-0 bottom-0 z-30 flex flex-col items-center justify-center bg-gradient-to-br from-gray-900/30 via-gray-800/30 to-gray-900/30 dark:from-black/85 dark:via-gray-900/90 dark:to-black/85 backdrop-blur-lg rounded-lg">
           <div className="text-center px-8 max-w-2xl">
-            <div className="mb-8">
-              <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-primaryBlue/25 to-primaryBlue/15 dark:from-primaryGreen/25 dark:to-primaryGreen/15 rounded-full flex items-center justify-center backdrop-blur-sm border-2 border-primaryBlue/40 dark:border-primaryGreen/40 shadow-2xl">
-                <ShoppingBasket size={42} className="text-primaryBlue dark:text-primaryGreen" />
-              </div>
-            </div>
             <h3 className="text-4xl font-bold text-white mb-4 drop-shadow-xl">
               W trakcie budowy
             </h3>
@@ -507,6 +552,7 @@ export default function ShopPanel({ course, isDark, setActivePage, setSelectedEb
               {ebooks.map((ebook) => {
                 const isPurchased = purchasedEbooks.includes(ebook.id);
                 const inCart = isInCart(ebook.id, true);
+                const isFree = ebook.price_cents === 0;
                 // price_cents w bazie jest w złotych (tak jak dla kursów)
                 const priceInZloty = ebook.price_cents.toFixed(2);
                 const hasMaturaDate = canPurchaseCourses();
@@ -514,7 +560,7 @@ export default function ShopPanel({ course, isDark, setActivePage, setSelectedEb
                 return (
                   <div
                     key={ebook.id}
-                    className={`relative bg-white dark:bg-DarkblackText rounded-lg shadow-lg overflow-hidden transition-all duration-200 ${
+                    className={`relative bg-white dark:bg-DarkblackText rounded-2xl shadow-lg overflow-hidden transition-all duration-200 ${
                       isPurchased 
                         ? 'bg-green-50/30 dark:bg-green-900/10' 
                         : 'bg-gray-50/50 dark:bg-gray-800/50 shadow-gray-200 dark:shadow-gray-700'
@@ -545,7 +591,7 @@ export default function ShopPanel({ course, isDark, setActivePage, setSelectedEb
                       <div className="mb-3">
                         <span className="text-xs text-gray-500 dark:text-gray-400">Cena:</span>
                         <div className="text-lg font-bold text-gray-900 dark:text-white">
-                          {priceInZloty} zł
+                          {isFree ? 'Za darmo' : `${priceInZloty} zł`}
                         </div>
                       </div>
                     </div>
@@ -560,19 +606,27 @@ export default function ShopPanel({ course, isDark, setActivePage, setSelectedEb
                               setActiveSection('ebook');
                             }
                           }}
-                          className="w-full py-2.5 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-lg text-center font-semibold text-sm shadow-sm border border-green-200 dark:border-green-700 hover:bg-green-200 dark:hover:bg-green-800 transition-colors cursor-pointer"
+                          className="w-full py-2.5 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-xl text-center font-semibold text-sm shadow-sm border border-green-200 dark:border-green-700 hover:bg-green-200 dark:hover:bg-green-800 transition-colors cursor-pointer"
                         >
                           ✓ Zakupione - Otwórz ebook
                         </button>
+                      ) : isFree ? (
+                        <button
+                          onClick={() => handleClaimFreeEbook(ebook.id)}
+                          className="w-full py-2.5 bg-primaryGreen dark:bg-primaryGreen text-white rounded-xl font-semibold text-sm shadow-lg transition-all duration-200 flex items-center justify-center gap-2 hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
+                        >
+                          <BookOpen size={16} />
+                          Odbierz za darmo
+                        </button>
                       ) : inCart ? (
-                        <div className="w-full py-2.5 bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-lg text-center font-semibold text-sm shadow-sm border border-green-200 dark:border-green-700 flex items-center justify-center gap-2">
+                        <div className="w-full py-2.5 bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-xl text-center font-semibold text-sm shadow-sm border border-green-200 dark:border-green-700 flex items-center justify-center gap-2">
                           <Check size={16} />
                           W koszyku
                         </div>
                       ) : hasMaturaDate ? (
                         <button
                           onClick={() => handleAddEbookToCart(ebook.id)}
-                          className="w-full py-2.5 bg-primaryBlue dark:bg-primaryGreen text-white rounded-lg font-semibold text-sm shadow-lg transition-all duration-200 flex items-center justify-center gap-2 hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
+                          className="w-full py-2.5 bg-primaryBlue dark:bg-primaryGreen text-white rounded-xl font-semibold text-sm shadow-lg transition-all duration-200 flex items-center justify-center gap-2 hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
                         >
                           <ShoppingBasket size={16} />
                           Dodaj do koszyka
@@ -580,7 +634,7 @@ export default function ShopPanel({ course, isDark, setActivePage, setSelectedEb
                       ) : (
                         <button
                           onClick={() => setActivePage("profile")}
-                          className="w-full py-2.5 bg-orange-200 dark:bg-orange-800 text-orange-800 dark:text-orange-200 rounded-lg text-center font-semibold text-sm hover:bg-orange-300 dark:hover:bg-orange-700 transition-colors cursor-pointer"
+                          className="w-full py-2.5 bg-orange-200 dark:bg-orange-800 text-orange-800 dark:text-orange-200 rounded-xl text-center font-semibold text-sm hover:bg-orange-300 dark:hover:bg-orange-700 transition-colors cursor-pointer"
                         >
                           Ustaw datę matury w profilu
                         </button>

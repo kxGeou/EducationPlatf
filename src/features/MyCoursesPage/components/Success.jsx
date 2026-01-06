@@ -5,12 +5,14 @@ import { BookOpen, FileText, ArrowRight, Home } from 'lucide-react'
 import { useToast } from '../../../context/ToastContext'
 import { useAuthStore } from '../../../store/authStore'
 import { useCartStore } from '../../../store/cartStore'
+import confetti from 'canvas-confetti'
 
 export default function Success() {
   const toast = useToast();
   const [params] = useSearchParams()
   const navigate = useNavigate()
   const hasProcessed = useRef(false)
+  const confettiFired = useRef(false)
   const { fetchUserData, purchasedCourses: currentPurchasedCourses, purchasedEbooks: currentPurchasedEbooks } = useAuthStore()
   const clearCart = useCartStore((state) => state.clearCart)
   const [loading, setLoading] = useState(true)
@@ -124,7 +126,13 @@ export default function Success() {
 
           setPurchasedItems(items)
           setLoading(false)
-          toast.success('Zakupy zapisane! Kursy zostały dodane do Twojego konta.')
+          
+          // Fire confetti and toast only once
+          if (!confettiFired.current) {
+            confettiFired.current = true
+            toast.success('Zakupy zapisane! Kursy zostały dodane do Twojego konta.')
+            confetti({ particleCount: 80, spread: 70, origin: { y: 0.7 } })
+          }
         } else {
           const errorMessage = data?.error || `Status: ${res.status}`
           console.error('Payment confirmation error:', errorMessage)

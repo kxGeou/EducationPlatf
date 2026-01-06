@@ -68,7 +68,7 @@ function HowWeLearn() {
         {learnData.map((l, index) => (
           <motion.li
             key={index}
-            className="border border-gray-100 bg-white  dark:border-DarkblackBorder dark:bg-DarkblackBorder dark:text-white p-6 flex flex-col items-start justify-start shadow-lg rounded-lg transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl"
+            className="border border-gray-100 bg-white  dark:border-DarkblackBorder dark:bg-DarkblackBorder dark:text-white p-6 flex flex-col items-start justify-start shadow-lg rounded-2xl transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl"
             variants={itemVariants}
           >
             <img

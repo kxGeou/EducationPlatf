@@ -327,7 +327,7 @@ function TaskPanel({ courseId, isEbook = false }) {
             )}
             
             {!loading && !error && currentTask && filteredTasks.length > 0 && hasSelectedStatus && (
-                <div className="bg-white dark:bg-DarkblackText rounded-[16px] p-6 shadow-md">
+                <div className="bg-white dark:bg-DarkblackText rounded-xl p-6 shadow-md">
                     <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-200">
                         {currentTask.topic}
                     </h3>

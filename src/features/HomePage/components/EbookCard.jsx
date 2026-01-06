@@ -42,7 +42,7 @@ export default function EbookCard({ ebook }) {
   return (
     <div
       onClick={handleClick}
-      className="group relative flex flex-col md:flex-row cursor-pointer rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 border border-gray-100 bg-white dark:border-DarkblackBorder dark:bg-DarkblackBorder dark:text-white  md:min-h-[280px]"
+      className="group relative flex flex-col md:flex-row cursor-pointer rounded-2xl overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 border border-gray-100 bg-white dark:border-DarkblackBorder dark:bg-DarkblackBorder dark:text-white  md:min-h-[280px]"
     >
       <div 
         className="w-full md:w-72 h-48 md:h-full bg-red-300 dark:bg-red-900"

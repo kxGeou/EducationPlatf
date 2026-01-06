@@ -132,28 +132,28 @@ export default function RegisterForm() {
         type="email"
         {...register('email')}
         placeholder="Email"
-        className="w-full p-2 border border-gray-300 rounded dark:border-DarkblackBorder dark:bg-DarkblackBorder/50"
+        className="w-full p-2 border border-gray-300 rounded-xl dark:border-DarkblackBorder dark:bg-DarkblackBorder/50"
       />
 
       <input
         type="text"
         {...register('full_name')}
         placeholder="Imię i nazwisko"
-        className="w-full p-2 border border-gray-300 rounded dark:border-DarkblackBorder dark:bg-DarkblackBorder/50"
+        className="w-full p-2 border border-gray-300 rounded-xl dark:border-DarkblackBorder dark:bg-DarkblackBorder/50"
       />
 
       <input
         type="password"
         {...register('password')}
         placeholder="Hasło"
-        className="w-full p-2 border border-gray-300 rounded dark:border-DarkblackBorder dark:bg-DarkblackBorder/50"
+        className="w-full p-2 border border-gray-300 rounded-xl dark:border-DarkblackBorder dark:bg-DarkblackBorder/50"
       />
 
       <input
         type="password"
         {...register('confirmPassword')}
         placeholder="Powtórz hasło"
-        className="w-full p-2 border border-gray-300 rounded dark:border-DarkblackBorder dark:bg-DarkblackBorder/50"
+        className="w-full p-2 border border-gray-300 rounded-xl dark:border-DarkblackBorder dark:bg-DarkblackBorder/50"
       />
       <PasswordStrength password={password} />
 <div className="flex items-center gap-2">
@@ -181,7 +181,7 @@ export default function RegisterForm() {
       <button
         type="submit"
         disabled={loading}
-        className="w-full bg-primaryBlue text-white p-2 rounded hover:bg-secondaryBlue cursor-pointer transition"
+          className="w-full bg-primaryBlue text-white p-2 rounded-xl hover:bg-secondaryBlue cursor-pointer transition"
       >
         {loading ? 'Rejestruję...' : 'Zarejestruj się'}
       </button>

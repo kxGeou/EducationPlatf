@@ -176,7 +176,7 @@ export default function CoursePage({ isDark, setIsDark }) {
           setSelectedEbookId={setSelectedEbookId}
         />
 
-        <main className={`flex flex-col w-full items-start h-full rounded-[12px] p-2 overflow-y-auto hide-scrollbar ${activeSection === "ebook" ? "bg-white dark:bg-DarkblackText" : "bg-gray-100 dark:bg-DarkblackBorder"}`}>
+        <main className={`flex flex-col w-full items-start h-full rounded-2xl p-2 overflow-y-auto hide-scrollbar ${activeSection === "ebook" ? "bg-white dark:bg-DarkblackText" : "bg-gray-100 dark:bg-DarkblackBorder"}`}>
 
           {activeSection === "info" && (
             <CourseInfo course={course} videos={videos} />
@@ -292,7 +292,7 @@ export default function CoursePage({ isDark, setIsDark }) {
           )} */}
           {/* DEV: END ChartPanel */}
           {activeSection === "profile" && (
-            <UserData />
+            <UserData isInCourse={true} />
           )}
     
           
@@ -302,6 +302,7 @@ export default function CoursePage({ isDark, setIsDark }) {
         <UserData
           userDataModal={userDataModal}
           setUserDataModal={setUserDataModal}
+          isInCourse={true}
         />
       )}
     </div>

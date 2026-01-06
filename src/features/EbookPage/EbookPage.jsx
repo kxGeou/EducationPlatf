@@ -222,7 +222,7 @@ export default function EbookPage({ isDark, setIsDark }) {
               <div
                 key={ebook.id}
                 onClick={() => handleEbookSelect(ebook.id)}
-                className={`bg-white dark:bg-DarkblackBorder rounded-lg shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer overflow-hidden border-2 ${
+                className={`bg-white dark:bg-DarkblackBorder rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer overflow-hidden border-2 ${
                   id === ebook.id
                     ? 'border-primaryBlue dark:border-primaryGreen shadow-lg'
                     : 'border-gray-200 dark:border-DarkblackText hover:-translate-y-1'

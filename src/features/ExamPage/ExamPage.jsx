@@ -56,7 +56,7 @@ export default function ExamPage({ isDark, setIsDark }) {
 
   return (
     <PageLayout isDark={isDark} setIsDark={setIsDark} from="#5e91ff"
-  fromDark="#15316b" stopAt="30%" gradientDirection="vertical">
+  fromDark="#15316b" stopAt="15%" gradientDirection="vertical">
       <div className="overflow-hidden w-full mt-28">
 
         <div className="relative flex flex-col md:flex-row  w-full items-center z-20 mb-26">

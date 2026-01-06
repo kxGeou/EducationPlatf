@@ -19,20 +19,21 @@ function LessonBlock({ Resources }) {
   const [activeDropdown, setActiveDropdown] = useState(null);
 
   return (
-    <motion.div
-      className="w-full shadow-lg rounded-lg bg-white text-darkBlue dark:bg-DarkblackText bg:text-white"
-      initial={{ opacity: 0, y: 0 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-    >
+    <div className="w-full">
       <div
-        className="w-full h-3 rounded-t-lg"
+        className="w-full h-3 rounded-2xl mb-1 shadow-md"
         style={{
           background: `linear-gradient(to right, ${Resources.colors[0]}, ${Resources.colors[1]})`,
         }}
       ></div>
-      <div className="p-6">
-        <h3 className="text-2xl font-semibold dark:text-white">{Resources.title}</h3>
+      <motion.div
+        className="w-full shadow-lg rounded-2xl bg-white text-darkBlue dark:bg-DarkblackText bg:text-white"
+        initial={{ opacity: 0, y: 0 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <div className="p-6">
+          <h3 className="text-2xl font-semibold dark:text-white">{Resources.title}</h3>
         {Resources.resource.map((r, index) => (
           <ReSection
             key={index}
@@ -42,8 +43,9 @@ function LessonBlock({ Resources }) {
             setActiveDropdown={setActiveDropdown}
           />
         ))}
-      </div>
-    </motion.div>
+        </div>
+      </motion.div>
+    </div>
   );
 }
 
@@ -79,7 +81,7 @@ function ReSection({ ReSection, Color, activeDropdown, setActiveDropdown }) {
               <button
                 key={index}
                 onClick={() => handleClick(s.pdfUrl)}
-                className="w-full p-2 rounded-md cursor-pointer text-white shadow"
+                className="w-full p-2 rounded-xl cursor-pointer text-white shadow"
                 style={{ background: Color }}
               >
                 {s.title}
@@ -104,7 +106,7 @@ function ReSection({ ReSection, Color, activeDropdown, setActiveDropdown }) {
               <button
                 key={index}
                 onClick={() => handleClick(s.pdfUrl)}
-                className="cursor-pointer transition-all duration-300 hover:scale-[1.05] text-white flex items-center justify-center px-8 py-3 rounded-md"
+                className="cursor-pointer transition-all duration-300 hover:scale-[1.05] text-white flex items-center justify-center px-8 py-3 rounded-xl"
                 style={{ background: Color }}
               >
                 {s.title}
@@ -158,7 +160,7 @@ function DropdownButton({ title, options, color, dropdownKey, activeDropdown, se
     >
       <button
         onClick={handleToggle}
-        className="cursor-pointer w-full transition-all duration-300 hover:scale-[1.05] text-white flex items-center justify-center gap-2 px-8 py-3 rounded-md"
+        className="cursor-pointer w-full transition-all duration-300 hover:scale-[1.05] text-white flex items-center justify-center gap-2 px-8 py-3 rounded-xl"
         style={{ background: color }}
         aria-expanded={isOpen}
         aria-haspopup="true"
@@ -171,7 +173,7 @@ function DropdownButton({ title, options, color, dropdownKey, activeDropdown, se
       </button>
       {isOpen && (
         <motion.div
-          className="absolute z-20 mt-2 w-full rounded-md shadow-lg"
+          className="absolute z-20 mt-2 w-full rounded-xl shadow-lg"
           style={{ background: color }}
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -181,7 +183,7 @@ function DropdownButton({ title, options, color, dropdownKey, activeDropdown, se
             <button
               key={idx}
               onClick={() => handleSelect(opt.pdfUrl)}
-              className="block w-full p-4 text-left hover:bg-black/20 cursor-pointer rounded-md text-sm text-white transition-colors"
+              className="block w-full p-4 text-left hover:bg-black/20 cursor-pointer rounded-xl text-sm text-white transition-colors"
             >
               {opt.label}
             </button>

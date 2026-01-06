@@ -68,7 +68,7 @@ function Hero() {
             </Description>
             <a
               href="#kursy"
-              className="bg-primaryBlue font-semibold cursor-pointer transition-all duration-300 hover:-translate-y-1 shadow-lg hover:shadow-xl hover:bg-secondaryBlue dark:bg-primaryGreen dark:hover:bg-secondaryGreen w-full  px-12 py-3 text-white rounded-md dark:text-blackText text-center"
+              className="bg-primaryBlue font-semibold cursor-pointer transition-all duration-300 hover:-translate-y-1 shadow-lg hover:shadow-xl hover:bg-secondaryBlue dark:bg-primaryGreen dark:hover:bg-secondaryGreen w-full  px-20 py-3 text-white rounded-xl dark:text-blackText text-center"
             >
               Zobacz kursy
             </a>

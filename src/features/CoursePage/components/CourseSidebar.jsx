@@ -201,7 +201,7 @@ export default function CourseSidebar({
         <div className="flex flex-col gap-4 mt-4">
           <div
             onClick={toggleTheme}
-            className="cursor-pointer flex items-center justify-center gap-2 py-3 px-3 bg-secondaryBlue text-white rounded-lg dark:bg-secondaryGreen"
+            className="cursor-pointer flex items-center justify-center gap-2 py-3 px-3 bg-secondaryBlue text-white rounded-xl dark:bg-secondaryGreen"
           >
             {isDark ? <Sun size={20} /> : <Moon size={20} />}
             <span>Tryb {isDark ? "jasny" : "ciemny"}</span>
@@ -222,7 +222,7 @@ export default function CourseSidebar({
       <aside
         data-theme={isDark ? "dark" : "light"}
         className={`
-          hidden md:flex h-[99vh] rounded-[12px] bg-white dark:bg-DarkblackBorder shadow-md
+          hidden md:flex h-[99vh] rounded-2xl bg-white dark:bg-DarkblackBorder shadow-md
           flex-col justify-between p-4 transition-all duration-300 overflow-hidden sticky top-0 
           ${showSidebar ? "w-[17.5rem]" : "w-[4.5rem]"}
         `}

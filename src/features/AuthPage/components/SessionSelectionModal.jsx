@@ -100,7 +100,7 @@ export default function SessionSelectionModal({
 
   return (
     <div className="fixed inset-0 bg-black/50 dark:bg-black/70 z-50 flex items-center justify-center p-4">
-      <div className="bg-white dark:bg-DarkblackText rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+      <div className="bg-white dark:bg-DarkblackText rounded-2xl shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-DarkblackBorder">
           <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
@@ -125,7 +125,7 @@ export default function SessionSelectionModal({
               <div
                 key={session.sessionToken}
                 onClick={() => setSelectedSession(session)}
-                className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
                   selectedSession?.sessionToken === session.sessionToken
                     ? 'border-primaryBlue dark:border-primaryGreen bg-primaryBlue/5 dark:bg-primaryGreen/10'
                     : 'border-gray-200 dark:border-DarkblackBorder hover:border-gray-300 dark:hover:border-gray-600'
@@ -148,7 +148,7 @@ export default function SessionSelectionModal({
                       <span className="font-medium text-gray-900 dark:text-white">
                         {getDeviceName(session.userAgent)}
                       </span>
-                      <span className="text-xs px-2 py-0.5 rounded bg-gray-100 dark:bg-DarkblackBorder text-gray-600 dark:text-gray-400">
+                      <span className="text-xs px-2 py-0.5 rounded-xl bg-gray-100 dark:bg-DarkblackBorder text-gray-600 dark:text-gray-400">
                         {session.deviceType === 'mobile' ? 'Mobilne' : 'Komputer'}
                       </span>
                     </div>
@@ -178,14 +178,14 @@ export default function SessionSelectionModal({
             <button
               onClick={onClose}
               disabled={loading}
-              className="flex-1 px-4 py-2 border border-gray-300 dark:border-DarkblackBorder rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-DarkblackBorder transition-colors disabled:opacity-50"
+              className="flex-1 px-4 py-2 border border-gray-300 dark:border-DarkblackBorder rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-DarkblackBorder transition-colors disabled:opacity-50"
             >
               Anuluj
             </button>
             <button
               onClick={handleLogoutAndLogin}
               disabled={!selectedSession || loading}
-              className="flex-1 px-4 py-2 bg-primaryBlue dark:bg-primaryGreen text-white rounded-lg hover:bg-secondaryBlue dark:hover:bg-secondaryGreen transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="flex-1 px-4 py-2 bg-primaryBlue dark:bg-primaryGreen text-white rounded-xl hover:bg-secondaryBlue dark:hover:bg-secondaryGreen transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {loading ? (
                 'Przetwarzanie...'

@@ -29,7 +29,7 @@ function CourseInfo({ course, videos }) {
   console.log(course)
 
   return (
-    <div className="w-full h-full p-3 rounded-[12px] flex flex-col gap-8 justify-between transition-all">
+    <div className="w-full h-full p-3 rounded-2xl flex flex-col gap-8 justify-between transition-all">
       <div>
 
         <span className="flex gap-2 text-lg items-center font-semibold border-l-4 px-3 border-primaryBlue dark:border-primaryGreen text-primaryBlue dark:text-primaryGreen mb-6">
@@ -37,7 +37,7 @@ function CourseInfo({ course, videos }) {
       </span>
 
       <div className="flex flex-col md:flex-row gap-8">
-        <img src={course.image_url} alt={course.title} className="rounded-[10px]" loading="lazy"/>
+        <img src={course.image_url} alt={course.title} className="rounded-xl" loading="lazy"/>
         <div className="flex flex-col gap-4">
           <div className="flex flex-col">
           <span className="text-sm font-medium dark:text-white/50 text-blackText/75">
@@ -73,7 +73,7 @@ function CourseInfo({ course, videos }) {
       </div>
 
 
-      <div className="w-full bg-gradient-to-r from-secondaryBlue to-primaryBlue dark:from-secondaryBlue dark:to-primaryGreen text-white rounded-[12px] p-6 shadow-md text-center">
+      <div className="w-full bg-gradient-to-r from-secondaryBlue to-primaryBlue dark:from-secondaryBlue dark:to-primaryGreen text-white rounded-xl p-6 shadow-md text-center">
         <p className="text-lg  tracking-wide font-semibold mb-2 flex flex-col items-center gap-3">
           <Clock></Clock>
           Czas do matury

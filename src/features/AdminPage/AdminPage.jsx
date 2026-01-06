@@ -35,6 +35,7 @@ import VideoReviewsSection from "./components/sections/VideoReviewsSection";
 import TransactionsSection from "./components/sections/TransactionsSection";
 import CalendarSection from "./components/sections/CalendarSection";
 import UsersSection from "./components/sections/UsersSection";
+import ResourcesSection from "./components/sections/ResourcesSection";
 import supabase from "../../util/supabaseClient";
 
 function timeAgo(dateString) {
@@ -462,6 +463,11 @@ export default function AdminPage({ isDark, setIsDark }) {
         {/* Users Section */}
         {activeSection === "users" && (
           <UsersSection timeAgo={timeAgo} />
+        )}
+
+        {/* Resources Section */}
+        {activeSection === "resources" && (
+          <ResourcesSection isDark={isDark} />
         )}
         </div>
       </div>
