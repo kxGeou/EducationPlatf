@@ -28,9 +28,9 @@ export default function ResultView() {
           Wynik: <span className="font-bold">{res.correctCount}/{res.total}</span> poprawnych odpowiedzi
         </p>
         {passed ? (
-          <span className="w-full max-w-[300px] text-center py-3 md:py-4 mt-6 cursor-pointer bg-primaryGreen text-white rounded-[12px] font-semibold shadow" onClick={() => document.location.reload()}>Gratulacje!</span>
+          <span className="w-full max-w-[300px] text-center py-3 md:py-4 mt-6 cursor-pointer bg-primaryGreen text-white rounded-xl font-semibold shadow" onClick={() => document.location.reload()}>Gratulacje!</span>
         ) : (
-          <span className="w-full max-w-[300px] text-center py-3 md:py-4 mt-6 cursor-pointer bg-red-500 text-white rounded-[12px] font-semibold shadow" onClick={() => document.location.reload()}>Spróbuj ponownie!</span>
+          <span className="w-full max-w-[300px] text-center py-3 md:py-4 mt-6 cursor-pointer bg-red-500 text-white rounded-xl font-semibold shadow" onClick={() => document.location.reload()}>Spróbuj ponownie!</span>
         )}
       </div>
       <div className="flex flex-col gap-16 w-full ">
@@ -39,7 +39,7 @@ export default function ResultView() {
           const correctChoice = q.choices.find((c) => c.is_correct || c.isCorrect);
           return (
             <div key={q.id} className="flex flex-col gap-3">
-              <h4 className="font-semibold mb-2 bg-primaryBlue dark:bg-primaryGreen text-white p-4 rounded-[12px]">
+              <h4 className="font-semibold mb-2 bg-primaryBlue dark:bg-primaryGreen text-white p-4 rounded-xl">
                 {q.prompt}
               </h4>
               {q.choices.map((c, index) => {
@@ -53,12 +53,12 @@ export default function ResultView() {
                 return (
                   <div
                     key={choiceId}
-                    className={`p-3 md:p-4 rounded-[12px] transition-all duration-200 ${
+                    className={`p-3 md:p-4 rounded-xl transition-all duration-200 ${
                       isCorrect
                         ? "border-2 border-primaryGreen  text-primaryGreen"
                         : isUser && !isCorrect
                         ? "border-2 border-red-500  text-red-500"
-                        : " rounded-[12px] shadow-sm border border-gray-200 dark:bg-DarkblackBorder dark:border-DarkblackText"
+                        : " rounded-xl shadow-sm border border-gray-200 dark:bg-DarkblackBorder dark:border-DarkblackText"
                     }`}
                   >
                     <span className="font-bold mr-2">{choiceLabel}.</span> {choiceText}

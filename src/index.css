@@ -3,8 +3,16 @@
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 
 
+html {
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
 body {
-    font-family: "Manrope", sans-serif;     
+    font-family: "Manrope", sans-serif;
+    overflow-x: hidden;
+    width: 100%;
+    position: relative;
 }
 
 *{
@@ -134,5 +142,53 @@ body {
 
 .hide-scrollbar::-webkit-scrollbar {
   display: none;  /* Chrome, Safari and Opera */
+}
+
+/* Custom Scrollbar - Webkit browsers (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+  width: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 73, 138, 0.05);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #00498a 0%, #006aa7 100%);
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  transition: all 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #006aa7 0%, #17d19b 100%);
+  background-clip: padding-box;
+}
+
+/* Dark mode scrollbar */
+.dark ::-webkit-scrollbar-track {
+  background: rgba(23, 209, 155, 0.05);
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #17d19b 0%, #00bfaf 100%);
+  background-clip: padding-box;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #00bfaf 0%, #17d19b 100%);
+  background-clip: padding-box;
+}
+
+/* Custom Scrollbar - Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #00498a rgba(0, 73, 138, 0.1);
+}
+
+.dark * {
+  scrollbar-color: #17d19b rgba(23, 209, 155, 0.1);
 }
 

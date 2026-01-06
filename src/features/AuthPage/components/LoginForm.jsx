@@ -87,7 +87,7 @@ export default function LoginForm() {
           <input
             type="email"
             {...register('email')}
-            className="w-full p-2 border border-gray-300 dark:border-DarkblackBorder dark:bg-DarkblackBorder/50 rounded bg-gray-50 sm:bg-transparent"
+            className="w-full p-2 border border-gray-300 dark:border-DarkblackBorder dark:bg-DarkblackBorder/50 rounded-xl bg-gray-50 sm:bg-transparent"
             placeholder="Wprowadź swój email"
           />
         </div>
@@ -98,7 +98,7 @@ export default function LoginForm() {
             <input
               type={showPassword ? 'text' : 'password'}
               {...register('password')}
-              className="w-full p-2 pr-10 border border-gray-300 rounded bg-gray-50 sm:bg-transparent dark:border-DarkblackBorder dark:bg-DarkblackBorder/50"
+              className="w-full p-2 pr-10 border border-gray-300 rounded-xl bg-gray-50 sm:bg-transparent dark:border-DarkblackBorder dark:bg-DarkblackBorder/50"
               placeholder="Podaj swoje hasło"
             />
             <button
@@ -120,7 +120,7 @@ export default function LoginForm() {
               <input
                 type={showConfirmPassword ? 'text' : 'password'}
                 {...register('confirmPassword')}
-                className="w-full p-2 pr-10 border border-gray-300 rounded bg-gray-50 sm:bg-transparent dark:border-DarkblackBorder dark:bg-DarkblackBorder/50"
+                className="w-full p-2 pr-10 border border-gray-300 rounded-xl bg-gray-50 sm:bg-transparent dark:border-DarkblackBorder dark:bg-DarkblackBorder/50"
                 placeholder="Powtórz hasło"
               />
               <button
@@ -147,7 +147,7 @@ export default function LoginForm() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-primaryBlue dark:bg-primaryGreen dark:hover:bg-secondaryGreen text-white p-2 rounded hover:bg-secondaryBlue transition mt-4"
+          className="w-full bg-primaryBlue dark:bg-primaryGreen dark:hover:bg-secondaryGreen text-white p-2 rounded-xl hover:bg-secondaryBlue transition mt-4"
         >
           {loading ? 'Logowanie...' : 'Zaloguj się'}
         </button>

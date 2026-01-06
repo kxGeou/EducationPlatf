@@ -162,7 +162,7 @@ export default function NewPassword() {
             type={showPassword ? 'text' : 'password'}
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
-            className="w-full p-2 pr-10 border border-gray-300 dark:border-DarkblackBorder dark:bg-DarkblackBorder/50 rounded bg-gray-50 sm:bg-transparent"
+            className="w-full p-2 pr-10 border border-gray-300 dark:border-DarkblackBorder dark:bg-DarkblackBorder/50 rounded-xl bg-gray-50 sm:bg-transparent"
             placeholder="Wprowadź nowe hasło"
           />
           <button
@@ -180,7 +180,7 @@ export default function NewPassword() {
       
       <button
         type="submit"
-        className="w-full bg-primaryBlue dark:bg-primaryGreen dark:hover:bg-secondaryGreen text-white p-2 rounded hover:bg-secondaryBlue transition mt-4"
+        className="w-full bg-primaryBlue dark:bg-primaryGreen dark:hover:bg-secondaryGreen text-white p-2 rounded-xl hover:bg-secondaryBlue transition mt-4"
         disabled={loading}
       >
         {loading ? 'Zapisuję...' : 'Zapisz nowe hasło'}

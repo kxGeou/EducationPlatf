@@ -1,5 +1,5 @@
 import React from "react";
-import { Trophy, Bell, BarChart3, PenBoxIcon, Video, Gift, Sun, Moon, CreditCard, Tag, Calendar, Users } from "lucide-react";
+import { Trophy, Bell, BarChart3, PenBoxIcon, Video, Gift, Sun, Moon, CreditCard, Tag, Calendar, Users, BookOpen } from "lucide-react";
 
 export default function AdminNavigation({ activeSection, setActiveSection, isDark, setIsDark }) {
   return (
@@ -105,6 +105,16 @@ export default function AdminNavigation({ activeSection, setActiveSection, isDar
           >
             <Users size={20} />
             Użytkownicy
+          </span>
+          <span
+            onClick={() => setActiveSection("resources")}
+            className={`cursor-pointer flex items-center gap-2 transition duration-200 ${
+              activeSection === "resources" &&
+              "border-l-6 px-2 border-secondaryBlue text-secondaryBlue dark:border-primaryGreen dark:text-primaryGreen"
+            }`}
+          >
+            <BookOpen size={20} />
+            Zasoby
           </span>
         </div>
 

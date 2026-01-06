@@ -51,7 +51,7 @@ function FormUserPage() {
                   {poll.options.map((opt) => (
                     <li
                       key={opt.id}
-                      className="flex justify-between items-center bg-gray-100 dark:bg-DarkblackBorder px-3 py-2 rounded-lg"
+                      className="flex justify-between items-center bg-gray-100 dark:bg-DarkblackBorder px-3 py-2 rounded-xl"
                     >
                       <span className="dark:text-white">{opt.option_text}</span>
                       <button

@@ -50,7 +50,7 @@ function CustomSelect({ value, onChange, options, placeholder = "-- Wybierz tema
         aria-haspopup="listbox"
         aria-expanded={open}
         className={
-          "w-full text-left p-4 rounded-md border border-gray-300 dark:border-gray-700 dark:bg-DarkblackText dark:text-white focus:outline-none focus:ring-2 focus:ring-primaryBlue flex items-center justify-between transition shadow-sm hover:shadow-md " +
+          "w-full text-left p-4 rounded-xl border border-gray-300 dark:border-gray-700 dark:bg-DarkblackText dark:text-white focus:outline-none focus:ring-2 focus:ring-primaryBlue flex items-center justify-between transition shadow-sm hover:shadow-md " +
           className
         }
         onClick={() => setOpen((o) => !o)}
@@ -65,7 +65,7 @@ function CustomSelect({ value, onChange, options, placeholder = "-- Wybierz tema
         <ul
           role="listbox"
           tabIndex={-1}
-          className="absolute z-50 mt-2 w-full max-h-60 overflow-auto rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-DarkblackBorder shadow-xl focus:outline-none"
+          className="absolute z-50 mt-2 w-full max-h-60 overflow-auto rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-DarkblackBorder shadow-xl focus:outline-none"
         >
           {options.map((opt, idx) => {
             const isSelected = opt.value === value;
@@ -158,7 +158,7 @@ function CalendlyModal({ isOpen, onClose, isDark }) {
       ></div>
       
       {/* Modal z Calendly */}
-      <div className="relative bg-white dark:bg-DarkblackText rounded-lg shadow-2xl w-full max-w-6xl max-h-[90vh] overflow-hidden z-50 animate-scaleIn">
+      <div className="relative bg-white dark:bg-DarkblackText rounded-2xl shadow-2xl w-full max-w-6xl max-h-[90vh] overflow-hidden z-50 animate-scaleIn">
         {/* Przycisk zamknięcia */}
         <button
           onClick={onClose}
@@ -266,10 +266,10 @@ function ContactPage({ isDark, setIsDark }) {
         <ContactHero />
         
         {/* Przycisk do otwarcia Calendly */}
-        <div className="bg-white/50 dark:bg-DarkblackBorder/50 rounded-lg z-20 p-6 shadow-sm">
+        <div className="bg-white/50 dark:bg-DarkblackBorder/50 rounded-2xl z-20 p-6 shadow-sm">
           <div className="flex flex-col items-center justify-center py-12">
             <div className="mb-6">
-              <div className="w-12 h-12 bg-primaryBlue dark:bg-primaryGreen rounded-md flex items-center justify-center mx-auto mb-4 shadow-lg">
+              <div className="w-12 h-12 bg-primaryBlue dark:bg-primaryGreen rounded-xl flex items-center justify-center mx-auto mb-4 shadow-lg">
                 <Calendar size={24} className="text-white" />
               </div>
               <h3 className="text-2xl font-bold text-center mb-2 dark:text-white">
@@ -281,7 +281,7 @@ function ContactPage({ isDark, setIsDark }) {
             </div>
             <button
               onClick={() => setIsCalendlyOpen(true)}
-              className="px-8 py-4 bg-primaryBlue dark:bg-primaryGreen text-white rounded-md font-semibold hover:opacity-90 hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2 shadow-md"
+              className="px-8 py-4 bg-primaryBlue dark:bg-primaryGreen text-white rounded-xl font-semibold hover:opacity-90 hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2 shadow-md"
             >
               <Calendar size={20} />
               <span>Otwórz kalendarz</span>
@@ -292,7 +292,7 @@ function ContactPage({ isDark, setIsDark }) {
         {/* Modal z Calendly */}
         <CalendlyModal isOpen={isCalendlyOpen} onClose={() => setIsCalendlyOpen(false)} isDark={isDark} />
 
-        <div className="w-full bg-white dark:bg-DarkblackBorder rounded-lg shadow-lg p-8">
+        <div className="w-full bg-white dark:bg-DarkblackBorder rounded-2xl shadow-lg p-8">
           <h2 className="text-2xl font-bold text-center mb-6 dark:text-white">
             Skontaktuj się z nami
           </h2>
@@ -305,7 +305,7 @@ function ContactPage({ isDark, setIsDark }) {
               value={formData.email}
               onChange={handleChange}
               required
-              className="p-4 rounded-md border border-gray-300 dark:border-gray-700 dark:bg-DarkblackText dark:text-white focus:outline-none focus:ring-2 focus:ring-primaryBlue shadow-sm transition"
+              className="p-4 rounded-xl border border-gray-300 dark:border-gray-700 dark:bg-DarkblackText dark:text-white focus:outline-none focus:ring-2 focus:ring-primaryBlue shadow-sm transition"
             />
             <input
               type="text"
@@ -314,7 +314,7 @@ function ContactPage({ isDark, setIsDark }) {
               value={formData.name}
               onChange={handleChange}
               required
-              className="p-4 rounded-md border border-gray-300 dark:border-gray-700 dark:bg-DarkblackText dark:text-white focus:outline-none focus:ring-2 focus:ring-primaryBlue shadow-sm transition"
+              className="p-4 rounded-xl border border-gray-300 dark:border-gray-700 dark:bg-DarkblackText dark:text-white focus:outline-none focus:ring-2 focus:ring-primaryBlue shadow-sm transition"
             />
             <input
               type="tel"
@@ -322,7 +322,7 @@ function ContactPage({ isDark, setIsDark }) {
               placeholder="Numer telefonu (opcjonalnie)"
               value={formData.phone}
               onChange={handleChange}
-              className="p-4 rounded-md border border-gray-300 dark:border-gray-700 dark:bg-DarkblackText dark:text-white focus:outline-none focus:ring-2 focus:ring-primaryBlue shadow-sm transition"
+              className="p-4 rounded-xl border border-gray-300 dark:border-gray-700 dark:bg-DarkblackText dark:text-white focus:outline-none focus:ring-2 focus:ring-primaryBlue shadow-sm transition"
             />
             <CustomSelect
               value={formData.topic}
@@ -338,13 +338,13 @@ function ContactPage({ isDark, setIsDark }) {
               onChange={handleChange}
               required
               rows="5"
-              className="p-4 col-span-1 md:col-span-2 rounded-md border border-gray-300 dark:border-gray-700 dark:bg-DarkblackText dark:text-white focus:outline-none focus:ring-2 focus:ring-primaryBlue shadow-sm transition"
+              className="p-4 col-span-1 md:col-span-2 rounded-xl border border-gray-300 dark:border-gray-700 dark:bg-DarkblackText dark:text-white focus:outline-none focus:ring-2 focus:ring-primaryBlue shadow-sm transition"
             />
 
             <div className="col-span-1 md:col-span-2 flex flex-col md:flex-row gap-4 mt-4">
               <button
                 type="submit"
-                className="bg-primaryBlue dark:bg-primaryGreen w-full md:w-auto flex-1 text-white font-semibold py-4 px-6 rounded-md transition shadow-lg flex items-center justify-center gap-2"
+                className="bg-primaryBlue dark:bg-primaryGreen w-full md:w-auto flex-1 text-white font-semibold py-4 px-6 rounded-xl transition shadow-lg flex items-center justify-center gap-2"
               >
                 {loading ? <LoaderCircle size={20} className="animate-spin" /> : "Wyślij formularz"}
               </button>
@@ -352,7 +352,7 @@ function ContactPage({ isDark, setIsDark }) {
                 href="https://mail.google.com/mail/?view=cm&fs=1&to=educationplatform.supabase@gmail.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex gap-2 items-center justify-center w-full md:w-auto px-6 py-4 font-semibold rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 shadow hover:scale-105 transition"
+                className="flex gap-2 items-center justify-center w-full md:w-auto px-6 py-4 font-semibold rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 shadow hover:scale-105 transition"
               >
                 <img src={Gmail} className="h-5" alt="Gmail" /> Wyślij przez Gmail
               </a>

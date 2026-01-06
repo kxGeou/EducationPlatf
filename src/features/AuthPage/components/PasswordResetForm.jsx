@@ -34,7 +34,7 @@ export default function PasswordResetForm() {
         <input
           type="email"
           {...register('email')}
-          className="w-full p-2 border border-gray-300 dark:border-DarkblackBorder dark:bg-DarkblackBorder/50 rounded bg-gray-50 sm:bg-transparent"
+          className="w-full p-2 border border-gray-300 dark:border-DarkblackBorder dark:bg-DarkblackBorder/50 rounded-xl bg-gray-50 sm:bg-transparent"
           placeholder="Wprowadź swój email"
         />
         {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>}
@@ -46,7 +46,7 @@ export default function PasswordResetForm() {
       <button
         type="submit"
         disabled={loading}
-        className="w-full bg-primaryBlue dark:bg-primaryGreen dark:hover:bg-secondaryGreen text-white p-2 rounded hover:bg-secondaryBlue transition mt-4"
+        className="w-full bg-primaryBlue dark:bg-primaryGreen dark:hover:bg-secondaryGreen text-white p-2 rounded-xl hover:bg-secondaryBlue transition mt-4"
       >
         {loading ? 'Wysyłanie...' : 'Wyślij link resetujący'}
       </button>

@@ -14,7 +14,7 @@ export default function EbookGridItem({ ebook, onClick }) {
   return (
     <div
       onClick={onClick}
-      className="group bg-white dark:bg-DarkblackBorder rounded-lg shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer overflow-hidden border border-gray-200 dark:border-DarkblackText hover:-translate-y-1"
+      className="group bg-white dark:bg-DarkblackBorder rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer overflow-hidden border border-gray-200 dark:border-DarkblackText hover:-translate-y-1"
     >
       {/* Image */}
       <div className="relative aspect-[16/9] overflow-hidden bg-gray-100 dark:bg-DarkblackText">
@@ -30,7 +30,7 @@ export default function EbookGridItem({ ebook, onClick }) {
             <ImageIcon className="w-16 h-16 text-gray-400 dark:text-gray-600" />
           </div>
         )}
-        <div className="absolute top-2 right-2 bg-primaryBlue dark:bg-primaryGreen text-white px-2 py-1 rounded-md text-sm font-semibold">
+        <div className="absolute top-2 right-2 bg-primaryBlue dark:bg-primaryGreen text-white px-2 py-1 rounded-xl text-sm font-semibold">
           {priceInZloty} zł
         </div>
       </div>
@@ -64,7 +64,7 @@ export default function EbookGridItem({ ebook, onClick }) {
           {mockTopics.slice(0, 2).map((topic, index) => (
             <span
               key={index}
-              className="px-2 py-1 bg-primaryBlue/10 dark:bg-primaryGreen/10 text-primaryBlue dark:text-primaryGreen rounded text-xs font-medium"
+              className="px-2 py-1 bg-primaryBlue/10 dark:bg-primaryGreen/10 text-primaryBlue dark:text-primaryGreen rounded-xl text-xs font-medium"
             >
               {topic}
             </span>

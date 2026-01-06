@@ -165,7 +165,7 @@ export default function StripeHero() {
 
         <motion.div
           ref={ref}
-          className="bg-blue-950 dark:bg-gray-800 text-green-200 h-72 font-mono w-full text-sm rounded-lg shadow-lg mt-8 md:mt-0 md:w-1/2 p-4 overflow-auto mb-12 md:mb-0"
+          className="bg-blue-950 dark:bg-gray-800 text-green-200 h-72 font-mono w-full text-sm rounded-xl shadow-lg mt-8 md:mt-0 md:w-1/2 p-4 overflow-auto mb-20 md:mb-16"
           variants={rightVariants}
           initial="hidden"
           whileInView="visible"

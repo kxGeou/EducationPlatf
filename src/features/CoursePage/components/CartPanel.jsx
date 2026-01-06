@@ -312,12 +312,12 @@ export default function CartPanel({ course, isDark, setActiveSection }) {
       </span>
 
       {/* Tabs */}
-      <div className="flex gap-2 border-b border-primaryBlue/20 dark:border-primaryGreen/20 pb-0">
+      <div className="flex gap-2">
         <button
           onClick={() => setActiveTab('cart')}
-          className={`px-6 py-3 font-medium transition-all rounded-t-[12px] ${
+          className={`px-6 py-3 font-medium transition-all rounded-xl ${
             activeTab === 'cart'
-              ? 'border-b-2 border-primaryBlue dark:border-primaryGreen text-primaryBlue dark:text-primaryGreen bg-white dark:bg-DarkblackText'
+              ? 'text-primaryBlue dark:text-primaryGreen bg-white dark:bg-DarkblackText'
               : 'text-primaryBlue/70 dark:text-primaryGreen/70 hover:text-primaryBlue dark:hover:text-primaryGreen hover:bg-primaryBlue/5 dark:hover:bg-primaryGreen/5'
           }`}
         >
@@ -333,9 +333,9 @@ export default function CartPanel({ course, isDark, setActiveSection }) {
         </button>
         <button
           onClick={() => setActiveTab('receipts')}
-          className={`px-6 py-3 font-medium transition-all rounded-t-[12px] ${
+          className={`px-6 py-3 font-medium transition-all rounded-xl ${
             activeTab === 'receipts'
-              ? 'border-b-2 border-primaryBlue dark:border-primaryGreen text-primaryBlue dark:text-primaryGreen bg-white dark:bg-DarkblackText'
+              ? 'text-primaryBlue dark:text-primaryGreen bg-white dark:bg-DarkblackText'
               : 'text-primaryBlue/70 dark:text-primaryGreen/70 hover:text-primaryBlue dark:hover:text-primaryGreen hover:bg-primaryBlue/5 dark:hover:bg-primaryGreen/5'
           }`}
         >
@@ -358,7 +358,7 @@ export default function CartPanel({ course, isDark, setActiveSection }) {
               </p>
               <button
                 onClick={() => setActiveSection('shop')}
-                className="px-6 py-3 bg-primaryBlue dark:bg-primaryGreen text-white rounded-[12px] font-semibold hover:opacity-90 hover:shadow-lg transition-all duration-200 shadow-md"
+                className="px-6 py-3 bg-primaryBlue dark:bg-primaryGreen text-white rounded-xl font-semibold hover:opacity-90 hover:shadow-lg transition-all duration-200 shadow-md"
               >
                 <Plus size={18} className="inline mr-2" />
                 Przejdź do sklepu
@@ -387,7 +387,7 @@ export default function CartPanel({ course, isDark, setActiveSection }) {
                     </div>
                     <button
                       onClick={() => removeItem(item.packageId, item.isEbook)}
-                      className="ml-4 p-2.5 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-[10px] transition-all duration-200 hover:scale-105 active:scale-95"
+                      className="ml-4 p-2.5 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all duration-200 hover:scale-105 active:scale-95"
                       title="Usuń z koszyka"
                     >
                       <Trash2 size={18} />
@@ -402,7 +402,7 @@ export default function CartPanel({ course, isDark, setActiveSection }) {
                   <div className="mb-6 p-5 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-[12px] border-2 border-green-500 dark:border-green-600">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="p-2 bg-green-500 dark:bg-green-600 rounded-[10px]">
+                        <div className="p-2 bg-green-500 dark:bg-green-600 rounded-xl">
                           <Gift size={18} className="text-white" />
                         </div>
                         <div>
@@ -415,7 +415,7 @@ export default function CartPanel({ course, isDark, setActiveSection }) {
                       {isReferralDiscountApplied() ? (
                         <button
                           onClick={removeReferralDiscount}
-                          className="p-2 hover:bg-green-100 dark:hover:bg-green-900/30 rounded-[10px] transition-all duration-200"
+                          className="p-2 hover:bg-green-100 dark:hover:bg-green-900/30 rounded-xl transition-all duration-200"
                           title="Usuń zniżkę"
                         >
                           <X size={18} className="text-green-600 dark:text-green-400" />
@@ -423,7 +423,7 @@ export default function CartPanel({ course, isDark, setActiveSection }) {
                       ) : (
                         <button
                           onClick={applyReferralDiscount}
-                          className="px-5 py-2.5 bg-green-500 dark:bg-green-600 hover:bg-green-600 dark:hover:bg-green-700 text-white rounded-[12px] font-semibold transition-all duration-200 shadow-md hover:shadow-lg flex items-center gap-2"
+                          className="px-5 py-2.5 bg-green-500 dark:bg-green-600 hover:bg-green-600 dark:hover:bg-green-700 text-white rounded-xl font-semibold transition-all duration-200 shadow-md hover:shadow-lg flex items-center gap-2"
                         >
                           <Gift size={16} />
                           <span>Zastosuj</span>
@@ -443,11 +443,11 @@ export default function CartPanel({ course, isDark, setActiveSection }) {
 
                 {/* Promo Code Section */}
                 {!isReferralDiscountApplied() && (
-                <div className="mb-6 p-5 bg-gradient-to-br from-primaryBlue/5 to-primaryGreen/5 dark:from-primaryBlue/10 dark:to-primaryGreen/10 rounded-[12px] border border-primaryBlue/20 dark:border-primaryGreen/20">
+                <div className="mb-6">
                   {appliedPromoCode ? (
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-[10px]">
+                        <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-xl">
                           <Tag size={18} className="text-green-600 dark:text-green-400" />
                         </div>
                         <div>
@@ -459,7 +459,7 @@ export default function CartPanel({ course, isDark, setActiveSection }) {
                       </div>
                       <button
                         onClick={handleRemovePromoCode}
-                        className="p-2 hover:bg-primaryBlue/10 dark:hover:bg-primaryGreen/10 rounded-[10px] transition-all duration-200"
+                        className="p-2 hover:bg-primaryBlue/10 dark:hover:bg-primaryGreen/10 rounded-xl transition-all duration-200"
                         title="Usuń kod"
                       >
                         <X size={18} className="text-primaryBlue dark:text-primaryGreen" />
@@ -473,12 +473,12 @@ export default function CartPanel({ course, isDark, setActiveSection }) {
                         onChange={(e) => setPromoCodeInput(e.target.value.toUpperCase())}
                         onKeyPress={(e) => e.key === 'Enter' && handleApplyPromoCode()}
                         placeholder="Wprowadź kod promocyjny"
-                        className="flex-1 px-4 py-3 border border-primaryBlue/20 dark:border-primaryGreen/20 rounded-[12px] bg-white dark:bg-DarkblackText text-blackText dark:text-white text-sm font-mono placeholder:text-primaryBlue/40 dark:placeholder:text-primaryGreen/40 focus:outline-none focus:ring-2 focus:ring-primaryBlue/20 dark:focus:ring-primaryGreen/20 focus:border-primaryBlue dark:focus:border-primaryGreen transition-all"
+                        className="flex-1 px-4 py-3 border border-primaryBlue/20 dark:border-primaryGreen/20 rounded-xl bg-white dark:bg-DarkblackText text-blackText dark:text-white text-sm font-mono placeholder:text-primaryBlue/40 dark:placeholder:text-primaryGreen/40 focus:outline-none focus:ring-2 focus:ring-primaryBlue/20 dark:focus:ring-primaryGreen/20 focus:border-primaryBlue dark:focus:border-primaryGreen transition-all"
                       />
                       <button
                         onClick={handleApplyPromoCode}
                         disabled={applyingPromoCode || !promoCodeInput.trim()}
-                        className="px-6 py-3 bg-primaryBlue dark:bg-primaryGreen hover:opacity-90 text-white rounded-[12px] font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-sm hover:shadow-md"
+                        className="px-6 py-3 bg-primaryBlue dark:bg-primaryGreen hover:opacity-90 text-white rounded-xl font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-sm hover:shadow-md"
                       >
                         {applyingPromoCode ? (
                           <>
@@ -530,7 +530,7 @@ export default function CartPanel({ course, isDark, setActiveSection }) {
                 <div className="flex gap-3">
                   <button
                     onClick={() => setActiveSection('shop')}
-                    className="flex-1 px-6 py-3.5 bg-primaryBlue/10 dark:bg-primaryGreen/10 text-primaryBlue dark:text-primaryGreen rounded-[12px] font-semibold hover:bg-primaryBlue/20 dark:hover:bg-primaryGreen/20 transition-all duration-200 flex items-center justify-center gap-2 shadow-sm hover:shadow-md border border-primaryBlue/20 dark:border-primaryGreen/20"
+                    className="flex-1 px-6 py-3.5 bg-primaryBlue/10 dark:bg-primaryGreen/10 text-primaryBlue dark:text-primaryGreen rounded-xl font-semibold hover:bg-primaryBlue/20 dark:hover:bg-primaryGreen/20 transition-all duration-200 flex items-center justify-center gap-2 shadow-sm hover:shadow-md border border-primaryBlue/20 dark:border-primaryGreen/20"
                   >
                     <Plus size={18} />
                     <span>Dodaj nowy produkt</span>
@@ -538,7 +538,7 @@ export default function CartPanel({ course, isDark, setActiveSection }) {
                   <button
                     onClick={handleCheckout}
                     disabled={loading}
-                    className="flex-1 px-6 py-3.5 bg-primaryBlue dark:bg-primaryGreen text-white rounded-[12px] font-semibold hover:opacity-90 hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none shadow-md"
+                    className="flex-1 px-6 py-3.5 bg-primaryBlue dark:bg-primaryGreen text-white rounded-xl font-semibold hover:opacity-90 hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none shadow-md"
                   >
                     {loading ? (
                       <>
@@ -633,7 +633,7 @@ export default function CartPanel({ course, isDark, setActiveSection }) {
                     {purchase.status === 'completed' && (
                       <button
                         onClick={() => handleGenerateReceiptPDF(purchase)}
-                        className="flex-1 px-5 py-3 bg-primaryBlue dark:bg-primaryGreen text-white rounded-[12px] font-semibold hover:opacity-90 hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2 shadow-md"
+                        className="flex-1 px-5 py-3 bg-primaryBlue dark:bg-primaryGreen text-white rounded-xl font-semibold hover:opacity-90 hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2 shadow-md"
                       >
                         <FileText size={18} />
                         <span>Pobierz paragon PDF</span>
@@ -642,7 +642,7 @@ export default function CartPanel({ course, isDark, setActiveSection }) {
                     {purchase.invoice_url && (
                       <button
                         onClick={() => window.open(purchase.invoice_url, '_blank')}
-                        className="flex-1 px-5 py-3 bg-primaryBlue/10 dark:bg-primaryGreen/10 text-primaryBlue dark:text-primaryGreen rounded-[12px] font-semibold hover:bg-primaryBlue/20 dark:hover:bg-primaryGreen/20 transition-all duration-200 flex items-center justify-center gap-2 border border-primaryBlue/20 dark:border-primaryGreen/20 shadow-sm hover:shadow-md"
+                        className="flex-1 px-5 py-3 bg-primaryBlue/10 dark:bg-primaryGreen/10 text-primaryBlue dark:text-primaryGreen rounded-xl font-semibold hover:bg-primaryBlue/20 dark:hover:bg-primaryGreen/20 transition-all duration-200 flex items-center justify-center gap-2 border border-primaryBlue/20 dark:border-primaryGreen/20 shadow-sm hover:shadow-md"
                       >
                         <Download size={18} />
                         <span>Faktura Stripe</span>

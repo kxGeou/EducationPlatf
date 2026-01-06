@@ -53,7 +53,7 @@ function Navigation({
       <nav
         className={`hidden md:block ${
           isOpen ? "w-1/6" : "w-[4rem]"
-        } bg-white dark:bg-DarkblackBorder text-blackText dark:text-white shadow-md p-4 rounded-[12px] h-full sticky top-1 transition-all duration-300`}
+        } bg-white dark:bg-DarkblackBorder text-blackText dark:text-white shadow-md p-4 rounded-2xl h-full sticky top-1 transition-all duration-300`}
       >
         {isOpen && (
           <div className="flex flex-col w-full h-full justify-between transition-all duration-200">

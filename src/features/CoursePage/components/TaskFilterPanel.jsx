@@ -241,7 +241,7 @@ function TaskFilterPanel() {
 
             <div className="mt-auto">
                 <div className="pt-3 lg:pt-4 border-t border-gray-200 dark:border-gray-600 mb-3 lg:mb-4">
-                    <div className="bg-primaryBlue/10 dark:bg-primaryGreen/10 rounded-lg p-2 lg:p-3">
+                    <div className="bg-primaryBlue/10 dark:bg-primaryGreen/10 rounded-xl p-2 lg:p-3">
                         <div className="text-sm text-gray-600 dark:text-gray-400 text-center">
                             <p className="font-medium">Dostępne zadania</p>
                             <p className="text-xl lg:text-2xl font-bold text-primaryBlue dark:text-primaryGreen mt-1">
@@ -254,7 +254,7 @@ function TaskFilterPanel() {
                 <div className="space-y-2 lg:space-y-3">
                 <button
                     onClick={applyFilters}
-                    className="w-full px-3 py-2 bg-primaryBlue dark:bg-primaryGreen text-white rounded-lg hover:opacity-90 transition-opacity font-semibold shadow-md text-sm"
+                    className="w-full px-3 py-2 bg-primaryBlue dark:bg-primaryGreen text-white rounded-xl hover:opacity-90 transition-opacity font-semibold shadow-md text-sm"
                 >
                     <div className="flex items-center justify-center">
                         <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -272,7 +272,7 @@ function TaskFilterPanel() {
                             selectedTopics: [...availableTopics]
                         });
                     }}
-                    className="w-full px-3 py-2 text-sm bg-gray-200 dark:bg-DarkblackBorder dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors font-medium"
+                    className="w-full px-3 py-2 text-sm bg-gray-200 dark:bg-DarkblackBorder dark:text-gray-300 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors font-medium"
                 >
                     <div className="flex items-center justify-center">
                         <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">

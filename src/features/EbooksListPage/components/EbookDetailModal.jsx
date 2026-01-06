@@ -88,7 +88,7 @@ export default function EbookDetailModal({ ebook, isOpen, onClose, isDark }) {
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 z-10 p-2 rounded-md bg-white/90 dark:bg-DarkblackText/90 hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors shadow-lg"
+          className="absolute top-4 right-4 z-10 p-2 rounded-xl bg-white/90 dark:bg-DarkblackText/90 hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors shadow-lg"
         >
           <X className="w-5 h-5 text-gray-700 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400" />
         </button>
@@ -97,7 +97,7 @@ export default function EbookDetailModal({ ebook, isOpen, onClose, isDark }) {
           <div className="grid md:grid-cols-2 gap-8 p-8">
             {/* Left Side - Screenshots */}
             <div className="flex flex-col gap-4">
-              <div className="relative aspect-[4/3] bg-gray-100 dark:bg-DarkblackText rounded-lg overflow-hidden">
+              <div className="relative aspect-[4/3] bg-gray-100 dark:bg-DarkblackText rounded-xl overflow-hidden">
                 <img
                   src={mockScreenshots[currentScreenshotIndex]}
                   alt={`Preview ${currentScreenshotIndex + 1}`}
@@ -150,7 +150,7 @@ export default function EbookDetailModal({ ebook, isOpen, onClose, isDark }) {
                     <button
                       key={index}
                       onClick={() => setCurrentScreenshotIndex(index)}
-                      className={`flex-shrink-0 w-16 h-12 rounded-md overflow-hidden border-2 transition-all ${
+                      className={`flex-shrink-0 w-16 h-12 rounded-xl overflow-hidden border-2 transition-all ${
                         index === currentScreenshotIndex
                           ? 'border-primaryBlue dark:border-primaryGreen'
                           : 'border-transparent opacity-60 hover:opacity-100'
@@ -183,7 +183,7 @@ export default function EbookDetailModal({ ebook, isOpen, onClose, isDark }) {
 
               {/* Info Grid */}
               <div className="grid grid-cols-2 gap-4">
-                <div className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-DarkblackText rounded-lg">
+                <div className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-DarkblackText rounded-xl">
                   <FileText className="w-5 h-5 text-primaryBlue dark:text-primaryGreen flex-shrink-0" />
                   <div>
                     <div className="text-xs text-gray-500 dark:text-gray-400">Stron</div>
@@ -193,7 +193,7 @@ export default function EbookDetailModal({ ebook, isOpen, onClose, isDark }) {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-DarkblackText rounded-lg">
+                <div className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-DarkblackText rounded-xl">
                   <BookOpen className="w-5 h-5 text-primaryBlue dark:text-primaryGreen flex-shrink-0" />
                   <div>
                     <div className="text-xs text-gray-500 dark:text-gray-400">Tematy</div>
@@ -213,7 +213,7 @@ export default function EbookDetailModal({ ebook, isOpen, onClose, isDark }) {
                   {mockTopics.slice(0, 4).map((topic, index) => (
                     <span
                       key={index}
-                      className="px-2 py-1 bg-primaryBlue/10 dark:bg-primaryGreen/10 text-primaryBlue dark:text-primaryGreen rounded text-xs font-medium"
+                      className="px-2 py-1 bg-primaryBlue/10 dark:bg-primaryGreen/10 text-primaryBlue dark:text-primaryGreen rounded-xl text-xs font-medium"
                     >
                       {topic}
                     </span>
@@ -239,7 +239,7 @@ export default function EbookDetailModal({ ebook, isOpen, onClose, isDark }) {
                 
                 <button
                   onClick={handleBuyClick}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-primaryBlue dark:bg-primaryGreen text-white font-semibold text-base rounded-lg hover:shadow-xl hover:-translate-y-1 duration-300 transition-all"
+                  className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-primaryBlue dark:bg-primaryGreen text-white font-semibold text-base rounded-xl hover:shadow-xl hover:-translate-y-1 duration-300 transition-all"
                 >
                   <ShoppingBag className="w-4 h-4" />
                   {user ? 'Kup ebook' : 'Zaloguj się, aby kupić'}

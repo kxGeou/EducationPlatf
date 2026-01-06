@@ -1,5 +1,6 @@
 import { useAuthStore } from '../../../store/authStore';
 import { useCourseStore } from '../../../store/courseStore';
+import { useResourcesStore } from '../../../store/resourcesStore';
 import Error from '../../../components/systemLayouts/Error';
 import Loading from '../../../components/systemLayouts/Loading';
 import ReportPanel from "./ReportPanel";
@@ -17,86 +18,95 @@ import UserData from "./UserData";
 import Dashboard from "./Dashboard";
 import ReferralPanel from "./ReferralPanel";
 
-const videoResources = [
-  {
-    title: "Kurs Java dla początkujących",
-    description:
-      "Poznaj podstawy Javy krok po kroku – od instalacji środowiska po pierwsze programy i proste projekty.",
-    category: "YouTube",
-  },
-  {
-    title: "Kurs JavaScript dla początkujących",
-    description:
-      "Poznaj podstawy JavaScript krok po kroku, ucząc się składni, pracy z przeglądarką i tworzenia interaktywnych stron.",
-    category: "YouTube",
-  },
-  {
-    title: "Python AI",
-    description:
-      "Zrozum jak działa zaawansowana sztuczna inteligencja przy użyciu Pythona – od prostych algorytmów po modele uczenia maszynowego.",
-    category: "Tekst",
-  },
-  {
-    title: "Zaawansowany React",
-    description:
-      "Buduj skalowalne aplikacje z React + Zustand, poznając architekturę komponentów, zarządzanie stanem i dobre praktyki.",
-    category: "DokumentPDF",
-  },
-  {
-    title: "Zaawansowany TailWind",
-    description:
-      "Buduj skalowalne aplikacje z React + Tailwind, korzystając z gotowych klas i tworząc estetyczne, responsywne interfejsy.",
-    category: "DokumentPDF",
-  },
-  {
-    title: "Podstawy UI/UX",
-    description:
-      "Dowiedz się, jak tworzyć nowoczesne interfejsy, poprawiać doświadczenie użytkownika i stosować zasady projektowania.",
-    category: "Tekst",
-  },
-];
+const ResourceVideo = memo(({ resource }) => {
+  const getCategoryColor = (category) => {
+    switch (category) {
+      case 'YouTube':
+        return 'text-red-500'
+      case 'Tekst':
+        return 'text-blue-500'
+      case 'DokumentPDF':
+        return 'text-green-500'
+      default:
+        return 'text-gray-500'
+    }
+  }
 
-const ResourceVideo = memo(({ videoTitle, videoDescription, category }) => {
-  const userPoints = useAuthStore((state) => state.userPoints);
+  const getCategoryBgColor = (category) => {
+    switch (category) {
+      case 'YouTube':
+        return 'bg-red-500'
+      case 'Tekst':
+        return 'bg-blue-500'
+      case 'DokumentPDF':
+        return 'bg-green-500'
+      default:
+        return 'bg-gray-500'
+    }
+  }
+
+  const handleClick = () => {
+    if (resource.link) {
+      window.open(resource.link, '_blank', 'noopener,noreferrer')
+    }
+  }
   
   return (
-    <div className="w-full text-blackText border border-gray-200 bg-white dark:border-DarkblackBorder dark:bg-blackText dark:text-white rounded-[12px] shadow-md transition-all duration-300 flex flex-col items-start justify-between p-4 ">
-      <div className="w-full">
-        <div className="flex items-center justify-between mb-2">
-          <span
-            className={`${category == "YouTube" && "text-red-500"} ${
-              category == "Tekst" && "text-blue-500"
-            } ${
-              category == "DokumentPDF" && "text-green-500"
-            } font-semibold text-sm`}
-          >
-            #{category}
-          </span>
-          <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-full">
-            <Star className="w-3 h-3 text-yellow-500" />
-            <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
-              {userPoints || 0} pkt
-            </span>
+    <div 
+      className="w-full rounded-xl shadow-[0_0_6px_rgba(0,0,0,0.1)] border border-gray-200 dark:border-gray-700 overflow-hidden transition-all duration-300 hover:shadow-[0_0_8px_rgba(0,0,0,0.15)] hover:-translate-y-1 cursor-pointer bg-white dark:bg-DarkblackBorder"
+      onClick={handleClick}
+    >
+      {/* Image Section */}
+      {resource.image_url ? (
+        <div className="relative w-full h-48 sm:h-56 lg:h-64 overflow-hidden">
+          <img
+            src={resource.image_url}
+            alt={resource.title}
+            className="w-full h-full object-cover"
+          />
+        </div>
+      ) : (
+        <div className="relative w-full h-48 sm:h-56 lg:h-64 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 flex items-center justify-center">
+          <div className="text-center p-4">
+            <div className={`inline-block ${getCategoryBgColor(resource.category)} text-white px-4 py-2 rounded-md mb-2`}>
+              #{resource.category}
+            </div>
           </div>
         </div>
-        <h4 className="font-bold text-lg mt-1 w-full">{videoTitle}</h4>
-        <p className="text-sm opacity-70 break-words line-clamp-3 leading-snug">
-          {videoDescription}
+      )}
+
+      {/* Content Section */}
+      <div className="p-4 sm:p-6">
+        {/* Category Badge */}
+        <div className="mb-3">
+          <span className={`font-semibold text-sm ${getCategoryColor(resource.category)}`}>
+            #{resource.category}
+          </span>
+        </div>
+
+        {/* Title */}
+        <h4 className="font-bold text-lg sm:text-xl text-blackText dark:text-white mb-3 line-clamp-2 leading-tight">
+          {resource.title}
+        </h4>
+
+        {/* Description */}
+        <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-3 leading-relaxed mb-4">
+          {resource.description}
         </p>
+
+        {/* Action Button */}
+        <button
+          className={`${getCategoryBgColor(resource.category)} text-white w-full px-4 py-2.5 font-semibold rounded-lg transition-all duration-300 hover:opacity-90 hover:scale-[1.02] active:scale-[0.98]`}
+          onClick={(e) => {
+            e.stopPropagation()
+            handleClick()
+          }}
+        >
+          {resource.category === "YouTube" && "Zobacz video"}
+          {resource.category === "Tekst" && "Przeczytaj tekst"}
+          {resource.category === "DokumentPDF" && "Zobacz dokument"}
+        </button>
       </div>
-      <button
-        className={`
-          transition-transform duration-300 hover:-translate-y-1 hover:shadow-md
-          ${category == "YouTube" && "bg-red-500 text-white"} ${
-          category == "Tekst" && "bg-blue-500 text-white"
-        } ${
-          category == "DokumentPDF" && "bg-green-500 text-white"
-        } w-full p-2 font-semibold mt-6 cursor-pointer rounded-[8px]`}
-      >
-        {category == "YouTube" && "Zobacz video"}
-        {category == "Tekst" && "Przeczytaj tekst"}
-        {category == "DokumentPDF" && "Zobacz dokument"}
-      </button>
     </div>
   );
 });
@@ -107,11 +117,11 @@ const CourseItem = memo(({ course, onClick }) => {
 
   return (
     <li 
-      className="flex flex-col sm:flex-row p-4 border rounded-lg bg-white border-blackText/10 dark:text-white dark:bg-DarkblackText shadow-md text-blackText gap-4 relative"
+      className="flex flex-col sm:flex-row p-4 border rounded-xl bg-white border-blackText/10 dark:text-white dark:bg-DarkblackText shadow-md text-blackText gap-4 relative"
     >
       {/* Overlay z tekstem - POZA blur */}
       {isBlocked && (
-        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 dark:bg-black/80 rounded-lg pointer-events-auto">
+        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 dark:bg-black/80 rounded-xl pointer-events-auto">
           <div className="bg-white dark:bg-DarkblackText px-6 py-2 rounded-lg dark:border-primaryGreen">
             <p className="text-lg font-extrabold text-primaryBlue dark:text-primaryGreen text-center whitespace-nowrap">
               Dostępne wkrótce
@@ -139,7 +149,7 @@ const CourseItem = memo(({ course, onClick }) => {
               </p>
             </div>
             <button
-              className={`w-full py-3 bg-gradient-to-br from-primaryGreen to-secondaryGreen transition-transform hover:-translate-y-1 duration-300 hover:shadow-md rounded-md text-white font-semibold mt-4 sm:mt-0 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 ${
+              className={`w-full py-3 bg-gradient-to-br from-primaryGreen to-secondaryGreen transition-transform hover:-translate-y-1 duration-300 hover:shadow-md rounded-lg text-white font-semibold mt-4 sm:mt-0 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 ${
                 isBlocked ? 'pointer-events-none cursor-not-allowed' : 'cursor-pointer'
               }`}
               onClick={() => onClick(course.id)}
@@ -153,13 +163,13 @@ const CourseItem = memo(({ course, onClick }) => {
           <div>
             <h2 className="text-lg sm:text-xl font-bold">Kurs zawiera</h2>
             <div className="w-full grid grid-cols-2 sm:grid-cols-3 text-center gap-2 sm:gap-4 items-center mt-2">
-              <div className="bg-primaryBlue dark:bg-primaryGreen/75 dark:border-primaryGreen dark:border text-white font-semibold px-3 py-2 sm:px-4 sm:py-3 rounded-md">
+              <div className="bg-primaryBlue dark:bg-primaryGreen/75 dark:border-primaryGreen dark:border text-white font-semibold px-3 py-2 sm:px-4 sm:py-3 rounded-lg">
                 4 działy
               </div>
-              <div className="bg-primaryBlue dark:bg-primaryGreen/75 dark:border-primaryGreen dark:border text-white font-semibold px-3 py-2 sm:px-4 sm:py-3 rounded-md">
+              <div className="bg-primaryBlue dark:bg-primaryGreen/75 dark:border-primaryGreen dark:border text-white font-semibold px-3 py-2 sm:px-4 sm:py-3 rounded-lg">
                 100+ lekcji
               </div>
-              <div className="bg-primaryBlue dark:bg-primaryGreen/75 dark:border-primaryGreen dark:border text-white font-semibold px-3 py-2 sm:px-4 sm:py-3 rounded-md">
+              <div className="bg-primaryBlue dark:bg-primaryGreen/75 dark:border-primaryGreen dark:border text-white font-semibold px-3 py-2 sm:px-4 sm:py-3 rounded-lg">
                 100+ zadań
               </div>
             </div>
@@ -189,6 +199,7 @@ function CourseList({ activePage, setActivePage, setTutorialVisible, tutorialVis
     error,
     fetchCourses,
   } = useCourseStore();
+  const { resources, loading: resourcesLoading, fetchResources } = useResourcesStore();
   const { initialized } = useAuthStore();
   const navigate = useNavigate();
 
@@ -197,6 +208,12 @@ function CourseList({ activePage, setActivePage, setTutorialVisible, tutorialVis
   useEffect(() => {
     if (initialized) fetchCourses();
   }, [initialized]);
+
+  useEffect(() => {
+    if (initialized && activePage === "resources") {
+      fetchResources();
+    }
+  }, [initialized, activePage, fetchResources]);
 
   const handleNavigate = useCallback(
     (id) => navigate(`/course/${id}`),
@@ -216,12 +233,13 @@ function CourseList({ activePage, setActivePage, setTutorialVisible, tutorialVis
     [courses, handleNavigate]
   );
 
-  const filteredVideos = useMemo(() => {
-    if (selectedCategory === "Wszystkie") return videoResources;
-    return videoResources.filter(
-      (video) => video.category === selectedCategory
+  const filteredResources = useMemo(() => {
+    if (!resources || resources.length === 0) return [];
+    if (selectedCategory === "Wszystkie") return resources;
+    return resources.filter(
+      (resource) => resource.category === selectedCategory
     );
-  }, [selectedCategory]);
+  }, [resources, selectedCategory]);
 
   if (authLoading || coursesLoading) return <Loading />;
   if (error) return <Error />;
@@ -230,7 +248,7 @@ function CourseList({ activePage, setActivePage, setTutorialVisible, tutorialVis
     <div className="flex flex-col items-center w-full h-full">
       <div className="flex flex-col lg:flex-row w-full h-full">
         <div className="flex-1 order-1 lg:order-2 h-full">
-          <div className="flex flex-col items-center w-full h-full bg-gray-50 shadow-md relative dark:bg-DarkblackBorder py-2 px-4 sm:px-6 rounded-[12px] overflow-y-auto hide-scrollbar">
+          <div className="flex flex-col items-center w-full h-full bg-gray-50 shadow-md relative dark:bg-DarkblackBorder py-2 px-4 sm:px-6 rounded-2xl overflow-y-auto hide-scrollbar">
               
               {/* DASHBOARD */}
               {activePage === "dashboard" && (
@@ -287,7 +305,7 @@ function CourseList({ activePage, setActivePage, setTutorialVisible, tutorialVis
                         <button
                           key={cat}
                           onClick={() => setSelectedCategory(cat)}
-                          className={`px-4 py-2 rounded-[8px] text-sm font-semibold transition  cursor-pointer 
+                          className={`px-4 py-2 rounded-xl text-sm font-semibold transition cursor-pointer 
                             ${
                               selectedCategory === cat
                                 ? "bg-primaryBlue text-white dark:bg-primaryGreen"
@@ -300,16 +318,24 @@ function CourseList({ activePage, setActivePage, setTutorialVisible, tutorialVis
                     )}
                   </div>
 
-                  <div className="w-full mt-4 grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-                    {filteredVideos.map((video, index) => (
-                      <ResourceVideo
-                        key={video.title + index}
-                        videoTitle={video.title}
-                        videoDescription={video.description}
-                        category={video.category}
-                      />
-                    ))}
-                  </div>
+                  {resourcesLoading ? (
+                    <div className="w-full mt-8 text-center text-gray-500 dark:text-gray-400">
+                      Ładowanie zasobów...
+                    </div>
+                  ) : filteredResources.length === 0 ? (
+                    <div className="w-full mt-8 text-center text-gray-500 dark:text-gray-400">
+                      Brak zasobów w tej kategorii
+                    </div>
+                  ) : (
+                    <div className="w-full mt-4 grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+                      {filteredResources.map((resource) => (
+                        <ResourceVideo
+                          key={resource.id}
+                          resource={resource}
+                        />
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
               {/* DEV: END ZASOBY */}

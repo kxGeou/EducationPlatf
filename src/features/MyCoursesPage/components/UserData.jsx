@@ -1,4 +1,4 @@
-import { Mail, BookOpen, LogOut, ShieldCheck, Key, Eye, EyeOff, Star, Calendar } from 'lucide-react'
+import { Mail, BookOpen, LogOut, ShieldCheck, Key, Eye, EyeOff, Star, Calendar, CheckCircle } from 'lucide-react'
 import React, { useState, useEffect } from 'react'
 import Avatar from 'boring-avatars'
 import { useAuthStore } from '../../../store/authStore';
@@ -7,7 +7,7 @@ import { useToast } from '../../../context/ToastContext';
 import supabase from '../../../util/supabaseClient';
 import ConfirmationModal from '../../../components/ui/ConfirmationModal';
 
-function UserData() {
+function UserData({ isInCourse = false }) {
   const toast = useToast();
   const user = useAuthStore(state => state.user)
   const userPoints = useAuthStore(state => state.userPoints)
@@ -115,26 +115,32 @@ function UserData() {
     }
   }, [maturaDate])
   return (
-    <div className="flex flex-col items-start w-full mt-2 px-3">
-      <span className="flex gap-2 text-lg items-center mt-1 font-semibold border-l-4 px-3 border-primaryBlue dark:border-primaryGreen text-primaryBlue dark:text-primaryGreen mb-12">
+    <div className={`flex flex-col items-start w-full mt-2 ${isInCourse ? 'px-4' : ''}`}>
+      <span className="flex gap-2 text-lg items-center mt-1 font-semibold border-l-4 px-3 border-primaryBlue dark:border-primaryGreen text-primaryBlue dark:text-primaryGreen mb-8">
         Profil użytkownika
       </span>
 
-      <div className="w-full bg-white dark:bg-DarkblackText rounded-[12px] shadow-md p-6 mb-6">
+      {/* Profile Header */}
+      <div className="w-full py-6 border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center gap-6">
-          <Avatar
-            name={user?.user_metadata?.full_name || 'Użytkownik'}
-            colors={['#0056d6', '#669c35', '#ffffff', '#74a7fe', '#cce8b5']}
-            variant="beam"
-            size={80}
-          />
+          <div className="relative">
+            <Avatar
+              name={user?.user_metadata?.full_name || 'Użytkownik'}
+              colors={['#0056d6', '#669c35', '#ffffff', '#74a7fe', '#cce8b5']}
+              variant="beam"
+              size={90}
+            />
+            <div className="absolute -bottom-1 -right-1 bg-primaryBlue dark:bg-primaryGreen rounded-full p-1.5 border-2 border-white dark:border-DarkblackText">
+              <ShieldCheck className="w-4 h-4 text-white" />
+            </div>
+          </div>
           <div className="flex-1">
             <h3 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">
               {user?.user_metadata?.full_name || 'Nieznany użytkownik'}
             </h3>
             <p className="text-gray-600 dark:text-gray-400 mb-4">{user?.email || 'Brak e-maila'}</p>
-            <div className="flex items-center gap-2">
-              <Star className="w-5 h-5 text-yellow-500" />
+            <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-yellow-900/20 dark:to-amber-900/20 rounded-xl border border-yellow-200 dark:border-yellow-800 w-fit">
+              <Star className="w-5 h-5 text-yellow-500 fill-yellow-500" />
               <span className="text-lg font-bold text-gray-800 dark:text-white">{userPoints}</span>
               <span className="text-gray-600 dark:text-gray-400">punktów</span>
             </div>
@@ -143,34 +149,42 @@ function UserData() {
       </div>
 
       {/* Matura Date Section */}
-      <div className="w-full bg-white dark:bg-DarkblackText rounded-[12px] shadow-md p-6 mb-6">
+      <div className="w-full py-6 border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
-            <Calendar className="w-6 h-6 text-primaryBlue dark:text-primaryGreen" />
-            <h4 className="font-semibold text-gray-800 dark:text-white">Data matury</h4>
+            <div className="p-2 bg-primaryBlue/10 dark:bg-primaryGreen/10 rounded-xl">
+              <Calendar className="w-5 h-5 text-primaryBlue dark:text-primaryGreen" />
+            </div>
+            <div>
+              <h4 className="font-semibold text-gray-800 dark:text-white">Data matury</h4>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Ustaw datę egzaminu maturalnego</p>
+            </div>
           </div>
           {!maturaDate && (
             <button
               onClick={() => setShowMaturaDate(!showMaturaDate)}
-              className="px-4 py-2 bg-primaryBlue dark:bg-primaryGreen text-white rounded-lg hover:bg-secondaryBlue dark:hover:bg-secondaryGreen transition-colors text-sm font-medium"
+              className="px-5 py-2.5 bg-primaryBlue dark:bg-primaryGreen text-white rounded-xl hover:bg-secondaryBlue dark:hover:bg-secondaryGreen transition-all duration-200 text-sm font-medium shadow-sm hover:shadow-md"
             >
-              {showMaturaDate ? 'Anuluj' : 'Ustaw'}
+              {showMaturaDate ? 'Anuluj' : 'Ustaw datę'}
             </button>
           )}
         </div>
 
         {maturaDate && !showMaturaDate && (
-          <div className="mb-4">
-            <p className="text-sm text-gray-600 dark:text-gray-400">Ustawiona data:</p>
-            <p className="text-lg font-semibold text-gray-800 dark:text-white">{maturaDate.split('-')[0]}</p>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+          <div className="mb-4 p-4 bg-gradient-to-r from-primaryBlue/5 to-primaryGreen/5 dark:from-primaryBlue/10 dark:to-primaryGreen/10 rounded-xl border border-primaryBlue/20 dark:border-primaryGreen/20">
+            <div className="flex items-center gap-2 mb-2">
+              <CheckCircle className="w-5 h-5 text-green-500 dark:text-green-400" />
+              <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Ustawiona data:</p>
+            </div>
+            <p className="text-2xl font-bold text-primaryBlue dark:text-primaryGreen mb-2">{maturaDate.split('-')[0]}</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">
               Data matury może być ustawiona tylko raz. Kursy zostaną automatycznie usunięte w lipcu {maturaDate.split('-')[0]}.
             </p>
           </div>
         )}
 
         {showMaturaDate && (
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-4 mt-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Wybierz rok matury:
@@ -178,7 +192,7 @@ function UserData() {
               <select
                 value={maturaDateInput}
                 onChange={(e) => setMaturaDateInput(e.target.value)}
-                className="w-full p-3 border border-gray-300 dark:border-gray-600 dark:bg-DarkblackText rounded-lg text-sm focus:ring-2 focus:ring-primaryBlue dark:focus:ring-primaryGreen focus:border-transparent"
+                className="w-full p-3 border border-gray-300 dark:border-gray-600 dark:bg-DarkblackText rounded-xl text-sm focus:ring-2 focus:ring-primaryBlue dark:focus:ring-primaryGreen focus:border-transparent bg-white dark:bg-DarkblackText text-gray-800 dark:text-white"
               >
                 <option value="">Wybierz rok</option>
                 {Array.from({ length: 4 }, (_, i) => {
@@ -198,7 +212,7 @@ function UserData() {
               <button
                 onClick={handleMaturaDateUpdate}
                 disabled={loading || !maturaDateInput}
-                className="flex-1 bg-primaryBlue dark:bg-primaryGreen text-white px-4 py-2 rounded-lg text-sm font-medium transition disabled:opacity-50 disabled:cursor-not-allowed hover:bg-secondaryBlue dark:hover:bg-secondaryGreen"
+                className="flex-1 bg-primaryBlue dark:bg-primaryGreen text-white px-5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-secondaryBlue dark:hover:bg-secondaryGreen"
               >
                 {loading ? 'Zapisywanie...' : 'Zapisz datę'}
               </button>
@@ -207,7 +221,7 @@ function UserData() {
                   setShowMaturaDate(false)
                   setMaturaDateInput(maturaDate || '')
                 }}
-                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
+                className="px-5 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200"
               >
                 Anuluj
               </button>
@@ -216,73 +230,72 @@ function UserData() {
         )}
       </div>
 
-      {/* Stats Grid */}
-      <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-        <div className="bg-white dark:bg-DarkblackText rounded-[12px] shadow-md p-6">
-          <div className="flex items-center gap-3 mb-3">
-            <Mail className="w-6 h-6 text-primaryBlue dark:text-primaryGreen" />
-            <h4 className="font-semibold text-gray-800 dark:text-white">Email</h4>
+      {/* Stats Section */}
+      <div className="w-full py-6 border-b border-gray-200 dark:border-gray-700">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="flex flex-col">
+            <div className="flex items-center gap-3 mb-3">
+              <Mail className="w-5 h-5 text-primaryBlue dark:text-primaryGreen" />
+              <h4 className="font-semibold text-gray-800 dark:text-white">Email</h4>
+            </div>
+            <p className="text-sm text-gray-600 dark:text-gray-400 break-words">{user?.email || 'Brak'}</p>
           </div>
-          <p className="text-sm text-gray-600 dark:text-gray-400">{user?.email || 'Brak'}</p>
-        </div>
 
-        <div className="bg-white dark:bg-DarkblackText rounded-[12px] shadow-md p-6">
-          <div className="flex items-center gap-3 mb-3">
-            <BookOpen className="w-6 h-6 text-primaryBlue dark:text-primaryGreen" />
-            <h4 className="font-semibold text-gray-800 dark:text-white">Kursy</h4>
+          <div className="flex flex-col">
+            <div className="flex items-center gap-3 mb-3">
+              <BookOpen className="w-5 h-5 text-primaryBlue dark:text-primaryGreen" />
+              <h4 className="font-semibold text-gray-800 dark:text-white">Kursy</h4>
+            </div>
+            {coursesLoading ? (
+              <p className="text-sm text-gray-400">Ładowanie...</p>
+            ) : error ? (
+              <p className="text-sm text-red-500">Błąd</p>
+            ) : (
+              <p className="text-sm text-gray-600 dark:text-gray-400">{courses?.length || 0}</p>
+            )}
           </div>
-          {coursesLoading ? (
-            <p className="text-sm text-gray-400">Ładowanie...</p>
-          ) : error ? (
-            <p className="text-sm text-red-500">Błąd</p>
-          ) : (
-            <p className="text-sm text-gray-600 dark:text-gray-400">{courses?.length || 0}</p>
-          )}
-        </div>
 
-        <div className="bg-white dark:bg-DarkblackText rounded-[12px] shadow-md p-6">
-          <div className="flex items-center gap-3 mb-3">
-            <ShieldCheck
-              className={`w-6 h-6 ${user?.user_metadata?.email_verified ? 'text-green-500 dark:text-green-400' : 'text-red-500'}`}
-            />
-            <h4 className="font-semibold text-gray-800 dark:text-white">Status</h4>
+          <div className="flex flex-col">
+            <div className="flex items-center gap-3 mb-3">
+              <ShieldCheck
+                className={`w-5 h-5 ${user?.user_metadata?.email_verified ? 'text-green-500 dark:text-green-400' : 'text-red-500'}`}
+              />
+              <h4 className="font-semibold text-gray-800 dark:text-white">Status</h4>
+            </div>
+            <p
+              className={`text-sm font-medium ${
+                user?.user_metadata?.email_verified
+                  ? 'text-green-600 dark:text-green-400'
+                  : 'text-red-500'
+              }`}
+            >
+              {user?.user_metadata?.email_verified ? 'Zweryfikowany' : 'Niezweryfikowany'}
+            </p>
           </div>
-          <p
-            className={`text-sm font-medium ${
-              user?.user_metadata?.email_verified
-                ? 'text-green-600 dark:text-green-400'
-                : 'text-red-500'
-            }`}
-          >
-            {user?.user_metadata?.email_verified ? 'Zweryfikowany' : 'Niezweryfikowany'}
-          </p>
         </div>
       </div>
 
       {/* Password Reset Section */}
-      <div className="w-full bg-white dark:bg-DarkblackText rounded-[12px] shadow-md p-6 mb-6">
+      <div className="w-full py-6 border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3">
-            <Key className="w-6 h-6 text-primaryBlue dark:text-primaryGreen" />
-            <h4 className="font-semibold text-gray-800 dark:text-white">Bezpieczeństwo</h4>
-          </div>
+          <h4 className="font-semibold text-gray-800 dark:text-white">Zmiana hasła</h4>
           <button
             onClick={() => setShowPasswordReset(!showPasswordReset)}
-            className="px-4 py-2 bg-primaryBlue dark:bg-primaryGreen text-white rounded-lg hover:bg-secondaryBlue dark:hover:bg-secondaryGreen transition-colors text-sm font-medium"
+            className="px-4 py-2 bg-primaryBlue dark:bg-primaryGreen text-white rounded-xl hover:bg-secondaryBlue dark:hover:bg-secondaryGreen transition-colors text-sm font-medium"
           >
             {showPasswordReset ? 'Anuluj' : 'Zmień hasło'}
           </button>
         </div>
 
         {showPasswordReset && (
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-4 mt-4">
             <div className="relative">
               <input
                 type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Wprowadź nowe hasło"
-                className="w-full p-3 pr-12 border border-gray-300 dark:border-gray-600 dark:bg-DarkblackText rounded-lg text-sm focus:ring-2 focus:ring-primaryBlue dark:focus:ring-primaryGreen focus:border-transparent"
+                className="w-full p-3 pr-12 border border-gray-300 dark:border-gray-600 dark:bg-DarkblackText rounded-xl text-sm focus:ring-2 focus:ring-primaryBlue dark:focus:ring-primaryGreen focus:border-transparent"
               />
               <button
                 type="button"
@@ -299,7 +312,7 @@ function UserData() {
               <button
                 onClick={handlePasswordReset}
                 disabled={loading || password.length < 6}
-                className="flex-1 bg-primaryBlue dark:bg-primaryGreen text-white px-4 py-2 rounded-lg text-sm font-medium transition disabled:opacity-50 disabled:cursor-not-allowed hover:bg-secondaryBlue dark:hover:bg-secondaryGreen"
+                className="flex-1 bg-primaryBlue dark:bg-primaryGreen text-white px-4 py-2 rounded-xl text-sm font-medium transition disabled:opacity-50 disabled:cursor-not-allowed hover:bg-secondaryBlue dark:hover:bg-secondaryGreen"
               >
                 {loading ? 'Zapisywanie...' : 'Zapisz hasło'}
               </button>
@@ -309,7 +322,7 @@ function UserData() {
                   setPassword('')
                   setShowPassword(false)
                 }}
-                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
+                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
               >
                 Anuluj
               </button>
@@ -318,33 +331,34 @@ function UserData() {
         )}
       </div>
 
-      {/* Test Cleanup Button */}
-      <div className="w-full bg-white dark:bg-DarkblackText rounded-[12px] shadow-md p-6 mb-6">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3">
-            <div className="w-6 h-6 text-orange-500">
-              <svg fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-              </svg>
-            </div>
-            <h4 className="font-semibold text-gray-800 dark:text-white">Test funkcji</h4>
+      {/* Test Cleanup Section */}
+      <div className="w-full py-6 border-b border-gray-200 dark:border-gray-700">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-6 h-6 text-orange-500">
+            <svg fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+            </svg>
+          </div>
+          <div className="flex-1">
+            <h4 className="font-semibold text-gray-800 dark:text-white mb-1">Test funkcji</h4>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+              Przycisk testowy do sprawdzenia funkcji czyszczenia zakupionych kursów.
+            </p>
           </div>
         </div>
-        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-          Przycisk testowy do sprawdzenia funkcji czyszczenia zakupionych kursów.
-        </p>
         <button
           onClick={handleTestCleanup}
-          className="w-full bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+          className="w-full bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-xl text-sm font-medium transition-colors"
         >
           Wyczyść zakupione kursy (TEST)
         </button>
       </div>
 
-      <div className="w-full bg-white dark:bg-DarkblackText rounded-[12px] shadow-md p-6">
+      {/* Logout Section */}
+      <div className="w-full py-6">
         <button
           onClick={logout}
-          className="w-full flex items-center justify-center gap-3 bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-lg font-medium transition-colors cursor-pointer"
+          className="w-full flex items-center justify-center gap-3 bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-xl font-medium transition-colors cursor-pointer"
         >
           <LogOut size={20} />
           Wyloguj się
