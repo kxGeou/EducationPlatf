@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { motion } from "framer-motion";
 import { useExamStore } from '../../../store/examStore';
 
 export default function ExamSettings() {
@@ -77,28 +78,55 @@ export default function ExamSettings() {
           <div className="mb-8">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {courses.map((c) => (
-                <button
+                <motion.button
                   key={c.id}
                   type="button"
-                  className={`relative rounded-2xl transition-all duration-200 border-2 overflow-hidden text-left ${
+                  className={`group relative rounded-2xl border-2 overflow-hidden text-left ${
                     course === c.id 
                       ? "shadow-lg border-primaryBlue dark:border-primaryGreen" 
-                      : "bg-gray-100 dark:bg-DarkblackText hover:bg-primaryBlue/10 dark:hover:bg-primaryGreen/10 hover:shadow-md border-transparent hover:border-primaryBlue/20 dark:hover:border-primaryGreen/20"
+                      : "bg-gray-100 dark:bg-DarkblackText border-transparent hover:bg-primaryBlue/10 dark:hover:bg-primaryGreen/10 hover:shadow-md hover:border-primaryBlue/20 dark:hover:border-primaryGreen/20"
                   }`}
                   onClick={() => setCourse(c.id)}
+                  whileHover={{
+                    scale: 1.03,
+                    y: -4,
+                    transition: {
+                      duration: 0.3,
+                      ease: [0.4, 0, 0.2, 1]
+                    }
+                  }}
+                  whileTap={{
+                    scale: 0.98,
+                    transition: {
+                      duration: 0.1
+                    }
+                  }}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{
+                    duration: 0.4,
+                    ease: [0.4, 0, 0.2, 1]
+                  }}
                 >
                   {/* Course Image with Overlay */}
                   {c.image_url ? (
                     <div className="relative w-full h-96 overflow-hidden bg-gray-200 dark:bg-DarkblackText">
-                      <img
+                      <motion.img
                         src={c.image_url}
                         alt={c.title}
                         className="w-full h-full object-cover"
+                        whileHover={{
+                          scale: 1.08,
+                          transition: {
+                            duration: 0.4,
+                            ease: [0.4, 0, 0.2, 1]
+                          }
+                        }}
                       />
                       {/* Dark gradient overlay from bottom */}
                       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent"></div>
                       {/* Course Title on image */}
-                      <div className={`absolute bottom-0 left-0 right-0 p-4 font-semibold text-sm text-white ${
+                      <div className={`absolute bottom-0 left-0 right-0 p-4 font-semibold text-sm text-white transition-transform duration-300 group-hover:translate-y-[-2px] ${
                         course === c.id ? "text-white" : "text-white"
                       }`}>
                         {c.title}
@@ -106,7 +134,7 @@ export default function ExamSettings() {
                     </div>
                   ) : (
                     /* Fallback when no image */
-                    <div className={`w-full h-96 p-4 flex items-end font-semibold text-sm ${
+                    <div className={`w-full h-96 p-4 flex items-end font-semibold text-sm transition-all duration-300 ${
                       course === c.id 
                         ? "bg-primaryBlue dark:bg-primaryGreen text-white" 
                         : "bg-gray-200 dark:bg-DarkblackText text-gray-900 dark:text-white"
@@ -114,7 +142,7 @@ export default function ExamSettings() {
                       {c.title}
                     </div>
                   )}
-                </button>
+                </motion.button>
               ))}
             </div>
           </div>

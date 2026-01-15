@@ -1,4 +1,4 @@
-import { Facebook, Instagram, Mail, MessageCircle } from "lucide-react";
+import { Facebook, Instagram, Mail } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Logo from '../assets/logo_biale.svg';
 import LogoDark from '../assets/logoDesk.png'
@@ -48,31 +48,6 @@ function Footer({isDark}) {
                         <li className="opacity-60 hover:opacity-100 transition cursor-pointer">Dokumenty</li>
                     </ul>
                 </div>
-            </div>
-
-            {/* Discord Banner */}
-            <div className="mt-12 mb-6 rounded-xl border border-gray-200 dark:border-gray-700 shadow-[0_0_6px_rgba(0,0,0,0.1)] overflow-hidden">
-                <a 
-                    href="https://discord.gg/example" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="flex items-center justify-between px-6 py-4 bg-gradient-to-r from-[#5865F2] to-[#7289DA]"
-                >
-                    <div className="flex items-center gap-4">
-                        <div className="bg-white/20 dark:bg-white/10 p-2 rounded-sm">
-                            <MessageCircle className="w-6 h-6 text-white" />
-                        </div>
-                        <div>
-                            <h3 className="text-white font-semibold text-lg">Dołącz do naszego Discord!</h3>
-                            <p className="text-white/90 text-sm">Bądź na bieżąco z aktualnościami i poznaj innych uczniów</p>
-                        </div>
-                    </div>
-                    <div className="hidden sm:block">
-                        <span className="text-white font-medium px-4 py-2 bg-white/20 rounded-lg hover:bg-white/30 transition-colors cursor-pointer inline-block">
-                            Dołącz →
-                        </span>
-                    </div>
-                </a>
             </div>
 
             <div className="mt-18 mb-4 text-center text-xs opacity-60">

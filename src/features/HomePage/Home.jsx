@@ -12,6 +12,8 @@ import Footer from '../../ui/Footer';
 import StripeHero from "./components/StripeHero";
 import Header from '../../ui/Header';
 import HowWeLearn from './components/HowWeLearn';
+import DiscordCTA from "./components/DiscordCTA";
+import FAQ from "./components/FAQ";
 function Home({isDark, setIsDark}) {
  
   return (
@@ -58,7 +60,9 @@ function Home({isDark, setIsDark}) {
 
 
       <Reviews></Reviews>
+      <FAQ></FAQ>
       <StripeHero></StripeHero>
+      <DiscordCTA></DiscordCTA>
   
       <div className="flex w-full max-w-[1100px]">
        <Footer ></Footer>

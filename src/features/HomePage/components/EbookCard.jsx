@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { BookOpen } from "lucide-react";
+import { BookOpen, Lightbulb } from "lucide-react";
 import { useEffect, useState } from "react";
 import supabase from "../../../util/supabaseClient";
 
@@ -42,7 +42,7 @@ export default function EbookCard({ ebook }) {
   return (
     <div
       onClick={handleClick}
-      className="group relative flex flex-col md:flex-row cursor-pointer rounded-2xl overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 border border-gray-100 bg-white dark:border-DarkblackBorder dark:bg-DarkblackBorder dark:text-white  md:min-h-[280px]"
+      className="group relative flex flex-col md:flex-row cursor-pointer rounded-2xl overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 border border-gray-100 bg-white dark:border-DarkblackBorder dark:bg-DarkblackBorder dark:text-white  md:min-h-[280px] hover:-translate-y-1"
     >
       <div 
         className="w-full md:w-72 h-48 md:h-full bg-red-300 dark:bg-red-900"
@@ -71,6 +71,11 @@ export default function EbookCard({ ebook }) {
             <span className="text-sm font-semibold">Zobacz szczegóły</span>
           </div>
         </div>
+      </div>
+
+      {/* Mini badge na hover */}
+      <div className="absolute top-3 left-4 bg-secondaryGreen/80 text-white text-xs px-3 py-1 rounded-lg border border-white/20 backdrop-blur-sm flex items-center gap-2 opacity-0 -translate-x-4 group-hover:translate-x-0 group-hover:opacity-100 transition-all duration-300 shadow-md">
+        Zobacz szczegóły <Lightbulb size={16} />
       </div>
 
       <div className="absolute bottom-0 left-0 h-1 w-full bg-gradient-to-r from-blue-500 via-indigo-500 to-green-500 dark:from-blue-700 dark:via-indigo-700 dark:to-green-700 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />

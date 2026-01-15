@@ -19,6 +19,7 @@ import EbookInfoPanel from "../EbookPage/components/EbookInfoPanel";
 import EbookTasksPanel from "../EbookPage/components/EbookTasksPanel";
 import { BookOpen } from 'lucide-react';
 import { useEbookStore } from '../../store/ebookStore';
+import kartakursImage from '../../assets/kartakurs.png';
 // DEV: END VideoPanel import
 import { useAuthStore } from '../../store/authStore';
 import { useSingleCourseStore } from '../../store/singleCourseStore';
@@ -222,31 +223,66 @@ export default function CoursePage({ isDark, setIsDark }) {
                     <span className="flex gap-2 text-lg items-center font-semibold border-l-4 px-3 border-primaryBlue dark:border-primaryGreen text-primaryBlue dark:text-primaryGreen">
                       E-booki
                     </span>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div className="flex flex-col gap-4">
                       {courseEbooks.map((courseEbook) => (
                         <div
                           key={courseEbook.id}
                           onClick={() => setSelectedEbookId(courseEbook.id)}
-                          className="bg-white dark:bg-DarkblackBorder rounded-lg shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer overflow-hidden border border-gray-200 dark:border-DarkblackText hover:-translate-y-1"
+                          className="group relative flex flex-col md:flex-row cursor-pointer rounded-xl overflow-hidden shadow-[0_0_6px_rgba(0,0,0,0.1)] border border-gray-200 dark:border-gray-700 transition-all duration-300 hover:shadow-[0_0_8px_rgba(0,0,0,0.15)] hover:-translate-y-1 bg-white dark:bg-DarkblackBorder"
                         >
-                          {courseEbook.image_url && (
-                            <div className="aspect-[16/9] overflow-hidden bg-gray-100 dark:bg-DarkblackText">
-                              <img
-                                src={courseEbook.image_url}
-                                alt={courseEbook.title}
-                                className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                              />
+                          {/* Image Section - Left */}
+                          <img
+                            src={courseEbook.image_url || kartakursImage}
+                            alt={courseEbook.title}
+                            className="w-full md:w-72 h-[350px] object-cover md:rounded-l-xl rounded-t-xl md:rounded-t-none flex-shrink-0"
+                            loading="lazy"
+                          />
+
+                          {/* Content Section - Right */}
+                          <div className="flex flex-col justify-between flex-1 p-4 sm:p-6 gap-4">
+                            <div className="flex flex-col gap-3">
+                              {/* Badge */}
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className="px-3 py-1 rounded-lg bg-primaryBlue dark:bg-primaryGreen text-white dark:text-blackText text-xs font-semibold">
+                                  E-book
+                                </span>
+                                {/* Mini badges */}
+                                <span className="px-3 py-1 rounded-lg bg-primaryBlue/80 dark:bg-primaryGreen/80 text-white dark:text-blackText text-xs font-semibold">
+                                  {courseEbook.pages || 150} stron
+                                </span>
+                                <span className="px-3 py-1 rounded-lg bg-primaryBlue/80 dark:bg-primaryGreen/80 text-white dark:text-blackText text-xs font-semibold">
+                                  {courseEbook.duration || "2h"} czytania
+                                </span>
+                                {courseEbook.slides && (
+                                  <span className="px-3 py-1 rounded-lg bg-primaryBlue/80 dark:bg-primaryGreen/80 text-white dark:text-blackText text-xs font-semibold">
+                                    {courseEbook.slides} slajdów
+                                  </span>
+                                )}
+                              </div>
+
+                              {/* Title */}
+                              <h3 className="text-xl sm:text-2xl font-semibold text-blackText dark:text-white">
+                                {courseEbook.title}
+                              </h3>
+
+                              {/* Description */}
+                              {courseEbook.description && (
+                                <p className="text-sm text-blackText/60 dark:text-white/70 line-clamp-3">
+                                  {courseEbook.description}
+                                </p>
+                              )}
                             </div>
-                          )}
-                          <div className="p-4">
-                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 line-clamp-2">
-                              {courseEbook.title}
-                            </h3>
-                            {courseEbook.description && (
-                              <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
-                                {courseEbook.description}
-                              </p>
-                            )}
+
+                            {/* Action Button */}
+                            <button
+                              className="w-full md:w-fit px-6 py-2.5 bg-gradient-to-r from-primaryBlue to-secondaryBlue dark:from-primaryGreen dark:to-secondaryGreen text-white dark:text-blackText font-semibold rounded-lg transition-all duration-300 hover:opacity-90 hover:scale-[1.02] active:scale-[0.98]"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                setSelectedEbookId(courseEbook.id)
+                              }}
+                            >
+                              Otwórz ebook
+                            </button>
                           </div>
                         </div>
                       ))}
