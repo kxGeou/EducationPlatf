@@ -94,9 +94,45 @@ function AppContent({ isDark, setIsDark }) {
 
 export default function App() {
   const [isDark, setIsDark] = useState(() => {
-    const theme = localStorage.getItem("theme");
-    return theme === "dark" ? true : false;
+    // Najpierw sprawdź localStorage - jeśli użytkownik wcześniej wybrał motyw, użyj go
+    const savedTheme = localStorage.getItem("theme");
+    if (savedTheme === "dark" || savedTheme === "light") {
+      return savedTheme === "dark";
+    }
+    
+    // Jeśli nie ma zapisanego motywu, sprawdź preferencje systemowe
+    if (typeof window !== "undefined") {
+      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      return prefersDark;
+    }
+    
+    // Fallback do light mode
+    return false;
   });
+
+  // Słuchaj zmian preferencji systemowych tylko jeśli użytkownik nie ma zapisanego motywu
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("theme");
+    if (savedTheme === "dark" || savedTheme === "light") {
+      // Użytkownik ma zapisany motyw, nie reaguj na zmiany systemowe
+      return;
+    }
+
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    const handleChange = (e) => {
+      setIsDark(e.matches);
+    };
+
+    // Sprawdź czy istnieje addEventListener (nowsze API)
+    if (mediaQuery.addEventListener) {
+      mediaQuery.addEventListener("change", handleChange);
+      return () => mediaQuery.removeEventListener("change", handleChange);
+    } else {
+      // Fallback dla starszych przeglądarek
+      mediaQuery.addListener(handleChange);
+      return () => mediaQuery.removeListener(handleChange);
+    }
+  }, []);
 
   return (
     <ToastProvider>

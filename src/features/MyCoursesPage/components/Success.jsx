@@ -126,13 +126,6 @@ export default function Success() {
 
           setPurchasedItems(items)
           setLoading(false)
-          
-          // Fire confetti and toast only once
-          if (!confettiFired.current) {
-            confettiFired.current = true
-            toast.success('Zakupy zapisane! Kursy zostały dodane do Twojego konta.')
-            confetti({ particleCount: 80, spread: 70, origin: { y: 0.7 } })
-          }
         } else {
           const errorMessage = data?.error || `Status: ${res.status}`
           console.error('Payment confirmation error:', errorMessage)
@@ -150,6 +143,15 @@ export default function Success() {
 
     confirmPayment()
   }, [params, toast, navigate, clearCart, fetchUserData])
+
+  // Osobny useEffect dla konfetti i toast - uruchamia się tylko raz gdy loading się kończy
+  useEffect(() => {
+    if (!loading && purchasedItems.length > 0 && !confettiFired.current) {
+      confettiFired.current = true
+      toast.success('Zakupy zapisane! Kursy zostały dodane do Twojego konta.')
+      confetti({ particleCount: 80, spread: 70, origin: { y: 0.7 } })
+    }
+  }, [loading, purchasedItems.length, toast])
 
   const handleGoToProduct = (item) => {
     // Dla ebooków i sekcji kursu przekierowuj do strony kursu

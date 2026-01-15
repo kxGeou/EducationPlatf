@@ -4,7 +4,7 @@ import { useResourcesStore } from '../../../store/resourcesStore';
 import Error from '../../../components/systemLayouts/Error';
 import Loading from '../../../components/systemLayouts/Loading';
 import ReportPanel from "./ReportPanel";
-import { MessageCircleQuestionIcon, ShoppingCart, Star } from "lucide-react";
+import { MessageCircleQuestionIcon, ShoppingCart, Star, Lightbulb } from "lucide-react";
 import { memo, useMemo, useEffect, useCallback, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import BlogPanel from "./BlogPanel";
@@ -117,8 +117,16 @@ const CourseItem = memo(({ course, onClick }) => {
 
   return (
     <li 
-      className="flex flex-col sm:flex-row p-4 border rounded-xl bg-white border-blackText/10 dark:text-white dark:bg-DarkblackText shadow-md text-blackText gap-4 relative"
+      className="group flex flex-col sm:flex-row p-4 border rounded-xl bg-white border-blackText/10 dark:text-white dark:bg-DarkblackText shadow-md text-blackText gap-4 relative hover:-translate-y-1 transition-all duration-300 cursor-pointer"
+      onClick={() => !isBlocked && onClick(course.id)}
     >
+      {/* Mini badge na hover */}
+      {!isBlocked && (
+        <div className="absolute top-3 left-4 bg-secondaryGreen/80 text-white text-xs px-3 py-1 rounded-lg border border-white/20 backdrop-blur-sm flex items-center gap-2 opacity-0 -translate-x-4 group-hover:translate-x-0 group-hover:opacity-100 transition-all duration-300 shadow-md z-50">
+          Zobacz szczegóły <Lightbulb size={16} />
+        </div>
+      )}
+
       {/* Overlay z tekstem - POZA blur */}
       {isBlocked && (
         <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 dark:bg-black/80 rounded-xl pointer-events-auto">
@@ -186,6 +194,11 @@ const CourseItem = memo(({ course, onClick }) => {
         </div>
         </div>
       </div>
+
+      {/* Kolorowy pasek na hover */}
+      {!isBlocked && (
+        <div className="absolute bottom-0 left-0 h-1 w-full bg-gradient-to-r from-blue-500 via-indigo-500 to-green-500 dark:from-blue-700 dark:via-indigo-700 dark:to-green-700 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left rounded-b-xl" />
+      )}
     </li>
   );
 });
